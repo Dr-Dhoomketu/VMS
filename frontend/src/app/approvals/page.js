@@ -20,7 +20,7 @@ export default function ApprovalsPage() {
 
   const fetchVisits = async (t) => {
     try {
-      const res = await fetch('http://localhost:5000/api/v1/visits/pending', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/v1/visits/pending`, {
         headers: { 'Authorization': `Bearer ${t}` }
       });
       const data = await res.json();
@@ -34,7 +34,7 @@ export default function ApprovalsPage() {
 
   const handleUpdate = async (id, status) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/v1/visits/${id}/status`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/v1/visits/${id}/status`, {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
@@ -70,7 +70,7 @@ export default function ApprovalsPage() {
               <GlassCard key={visit._id} className="flex flex-col">
                 <div className="flex items-center space-x-4 mb-4">
                   <div className="w-16 h-16 rounded-full overflow-hidden border border-white/20">
-                    <img src={visit.visitor?.imageUrl ? `http://localhost:5000${visit.visitor.imageUrl}` : "https://via.placeholder.com/150"} alt="avatar" className="w-full h-full object-cover" />
+                    <img src={visit.visitor?.imageUrl ? `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}${visit.visitor.imageUrl}` : "https://via.placeholder.com/150"} alt="avatar" className="w-full h-full object-cover" />
                   </div>
                   <div>
                     <h3 className="text-xl font-bold text-white">{visit.visitor?.name || 'Unknown'}</h3>

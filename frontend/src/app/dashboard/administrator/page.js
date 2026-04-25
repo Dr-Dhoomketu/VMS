@@ -18,7 +18,7 @@ export default function UserManagement() {
   const fetchUsers = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/v1/users?role=Admin', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/v1/users?role=Admin`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -35,8 +35,8 @@ export default function UserManagement() {
     const token = localStorage.getItem('token');
     const method = currentUser ? 'PUT' : 'POST';
     const url = currentUser 
-      ? `http://localhost:5000/api/v1/users/${currentUser._id}`
-      : 'http://localhost:5000/api/v1/users';
+      ? `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/v1/users/${currentUser._id}`
+      : `${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/v1/users`;
 
     try {
       const res = await fetch(url, {
@@ -60,7 +60,7 @@ export default function UserManagement() {
     if (!confirm('Are you sure you want to remove this admin?')) return;
     const token = localStorage.getItem('token');
     try {
-      await fetch(`http://localhost:5000/api/v1/users/${id}`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/v1/users/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });

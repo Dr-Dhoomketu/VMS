@@ -26,7 +26,7 @@ export default function ApprovalsPage() {
   const fetchPending = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/v1/visits/pending', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/v1/visits/pending`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -41,7 +41,7 @@ export default function ApprovalsPage() {
   const handleUpdate = async (id, status) => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`http://localhost:5000/api/v1/visits/${id}/status`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/v1/visits/${id}/status`, {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
@@ -78,7 +78,7 @@ export default function ApprovalsPage() {
               <div className="flex gap-6 relative z-10">
                 <div className="w-20 h-20 rounded-2xl overflow-hidden border border-white/10 shrink-0">
                   {visit.visitor?.imageUrl ? (
-                    <img src={`http://localhost:5000${visit.visitor.imageUrl}`} className="w-full h-full object-cover" />
+                    <img src={`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}${visit.visitor.imageUrl}`} className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full bg-white/5 flex items-center justify-center text-[8px] text-gray-500 uppercase font-black">No Photo</div>
                   )}

@@ -20,7 +20,7 @@ export default function AppointmentPage() {
 
   const fetchEmployees = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/v1/users/employees');
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}`}/api/v1/users/employees`);
       const data = await res.json();
       if (res.ok) setEmployees(data);
     } catch (err) {
@@ -42,7 +42,7 @@ export default function AppointmentPage() {
     setIsSubmitting(true);
 
     try {
-      const res = await fetch('http://localhost:5000/api/v1/visits/request', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}`}/api/v1/visits/request`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)

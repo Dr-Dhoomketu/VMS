@@ -13,7 +13,7 @@ export default function VisitorLog() {
   const fetchVisitors = async () => {
     try {
       const token = localStorage.getItem('token');
-      let url = 'http://localhost:5000/api/v1/visits?';
+      let url = `${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/v1/visits?`;
       if (filters.status) url += `status=${filters.status}&`;
       if (filters.startDate) url += `startDate=${filters.startDate}&`;
       if (filters.endDate) url += `endDate=${filters.endDate}&`;
@@ -34,7 +34,7 @@ export default function VisitorLog() {
     if (!confirm('Proceed with Check-out for this visitor?')) return;
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`http://localhost:5000/api/v1/visits/${id}/checkout`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/v1/visits/${id}/checkout`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });

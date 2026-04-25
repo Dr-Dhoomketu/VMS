@@ -16,7 +16,7 @@ export default function DesignationManagement() {
   const fetchDesignations = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/v1/designations', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/v1/designations`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -33,8 +33,8 @@ export default function DesignationManagement() {
     const token = localStorage.getItem('token');
     const method = currentDes ? 'PUT' : 'POST';
     const url = currentDes 
-      ? `http://localhost:5000/api/v1/designations/${currentDes._id}`
-      : 'http://localhost:5000/api/v1/designations';
+      ? `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/v1/designations/${currentDes._id}`
+      : `${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/v1/designations`;
 
     try {
       const res = await fetch(url, {
@@ -58,7 +58,7 @@ export default function DesignationManagement() {
     if (!confirm('Are you sure you want to remove this designation?')) return;
     const token = localStorage.getItem('token');
     try {
-      await fetch(`http://localhost:5000/api/v1/designations/${id}`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/v1/designations/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });

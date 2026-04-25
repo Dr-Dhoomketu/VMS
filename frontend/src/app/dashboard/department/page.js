@@ -18,7 +18,7 @@ export default function DepartmentManagement() {
   const fetchDepartments = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/v1/departments', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/v1/departments`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -35,8 +35,8 @@ export default function DepartmentManagement() {
     const token = localStorage.getItem('token');
     const method = currentDept ? 'PUT' : 'POST';
     const url = currentDept 
-      ? `http://localhost:5000/api/v1/departments/${currentDept._id}`
-      : 'http://localhost:5000/api/v1/departments';
+      ? `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/v1/departments/${currentDept._id}`
+      : `${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/v1/departments`;
 
     try {
       const res = await fetch(url, {
@@ -60,7 +60,7 @@ export default function DepartmentManagement() {
     if (!confirm('Are you sure you want to remove this department?')) return;
     const token = localStorage.getItem('token');
     try {
-      await fetch(`http://localhost:5000/api/v1/departments/${id}`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/v1/departments/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });

@@ -13,7 +13,7 @@ export default function AppointmentLog() {
   const fetchPreVisitors = async () => {
     try {
       const token = localStorage.getItem('token');
-      let url = 'http://localhost:5000/api/v1/visits?';
+      let url = `${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/v1/visits?`;
       if (searchDate) {
         url += `startDate=${searchDate}&endDate=${searchDate}T23:59:59&`;
       }
@@ -35,7 +35,7 @@ export default function AppointmentLog() {
   const handleUpdateStatus = async (id, status) => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`http://localhost:5000/api/v1/visits/${id}/status`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/v1/visits/${id}/status`, {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',

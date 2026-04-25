@@ -20,7 +20,7 @@ export default function AdminDepartments() {
 
   const fetchDepartments = async (t) => {
     try {
-      const res = await fetch('http://localhost:5000/api/v1/departments', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/v1/departments`, {
         headers: { 'Authorization': `Bearer ${t}` }
       });
       const data = await res.json();

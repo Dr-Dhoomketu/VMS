@@ -24,9 +24,9 @@ export default function EmployeePage() {
     const headers = { 'Authorization': `Bearer ${token}` };
     try {
       const [empRes, deptRes, desRes] = await Promise.all([
-        fetch('http://localhost:5000/api/v1/users', { headers }),
-        fetch('http://localhost:5000/api/v1/departments', { headers }),
-        fetch('http://localhost:5000/api/v1/designations', { headers })
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/v1/users`, { headers }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/v1/departments`, { headers }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/v1/designations`, { headers })
       ]);
 
       const [empData, deptData, desData] = await Promise.all([
@@ -71,8 +71,8 @@ export default function EmployeePage() {
     setError('');
     const method = currentEmp ? 'PUT' : 'POST';
     const url = currentEmp 
-      ? `http://localhost:5000/api/v1/users/${currentEmp._id}`
-      : 'http://localhost:5000/api/v1/users';
+      ? `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/v1/users/${currentEmp._id}`
+      : `${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/v1/users`;
 
     try {
       const token = localStorage.getItem('token');
@@ -104,7 +104,7 @@ export default function EmployeePage() {
     if (!confirm('Are you sure you want to remove this employee?')) return;
     try {
       const token = localStorage.getItem('token');
-      await fetch(`http://localhost:5000/api/v1/users/${id}`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/v1/users/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });

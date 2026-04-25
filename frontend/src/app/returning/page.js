@@ -18,7 +18,7 @@ export default function ReturningVisitor() {
 
   const fetchEmployees = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/v1/users/employees');
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/v1/users/employees`);
       const data = await res.json();
       if (res.ok) setEmployees(data);
     } catch (err) {
@@ -30,7 +30,7 @@ export default function ReturningVisitor() {
     e.preventDefault();
     setError('');
     try {
-      const res = await fetch(`http://localhost:5000/api/v1/visits/history?phone=${phone}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/v1/visits/history?phone=${phone}`);
       const data = await res.json();
       if (res.ok) {
         setVisitorData(data.visitor);
@@ -64,7 +64,7 @@ export default function ReturningVisitor() {
         duration: formData.duration
       };
       
-      const res = await fetch('http://localhost:5000/api/v1/visits/request', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/v1/visits/request`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -117,7 +117,7 @@ export default function ReturningVisitor() {
             </div>
 
              <div className="w-24 h-24 mx-auto rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
-               <img src={visitorData?.imageUrl ? `http://localhost:5000${visitorData.imageUrl}` : "https://via.placeholder.com/150"} alt="avatar" className="w-full h-full object-cover" />
+               <img src={visitorData?.imageUrl ? `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}${visitorData.imageUrl}` : "https://via.placeholder.com/150"} alt="avatar" className="w-full h-full object-cover" />
              </div>
              
              <div>

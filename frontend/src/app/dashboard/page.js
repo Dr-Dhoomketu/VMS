@@ -40,7 +40,7 @@ export default function AdminDashboard() {
   const fetchStats = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/v1/visits/stats', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/v1/visits/stats`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -53,7 +53,7 @@ export default function AdminDashboard() {
   const fetchVisitors = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/v1/visits?status=Approved', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/v1/visits?status=Approved`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -68,7 +68,7 @@ export default function AdminDashboard() {
   const handleCheckout = async (id) => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`http://localhost:5000/api/v1/visits/${id}/checkout`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/v1/visits/${id}/checkout`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -144,7 +144,7 @@ export default function AdminDashboard() {
                   <td className="font-bold text-white theme-coffee:text-black">
                     <div className="flex items-center gap-3">
                        <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden">
-                         {v.visitor?.imageUrl ? <img src={`http://localhost:5000${v.visitor.imageUrl}`} className="w-full h-full object-cover" /> : <div className="text-[10px]">VIS</div>}
+                         {v.visitor?.imageUrl ? <img src={`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}${v.visitor.imageUrl}`} className="w-full h-full object-cover" /> : <div className="text-[10px]">VIS</div>}
                        </div>
                        <div>
                          <p>{v.visitor?.name}</p>
