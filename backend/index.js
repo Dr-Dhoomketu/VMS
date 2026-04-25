@@ -42,11 +42,6 @@ const checkinLimiter = rateLimit({
 app.use('/api/v1/mobile/checkin', checkinLimiter);
 app.use('/api/v1/visits/request', checkinLimiter);
 
-// Ping endpoint for Uptime monitors (Render Keep-Alive)
-app.get('/api/v1/ping', (req, res) => {
-  res.status(200).json({ status: 'ok', message: 'Server is awake' });
-});
-
 // Socket.io Namespace & Channels
 io.on('connection', (socket) => {
   logger.info(`New client connected: ${socket.id}`);

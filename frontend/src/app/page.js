@@ -24,27 +24,27 @@ export default function Home(props) {
       ease: "expo.inOut",
       delay: 0.2
     })
-    .from(".nav-item", {
-      y: -20,
-      opacity: 0,
-      stagger: 0.1,
-      ease: "power3.out"
-    }, "-=0.5")
-    .from(".hero-char", {
-      y: 150,
-      opacity: 0,
-      rotateX: -90,
-      stagger: 0.05,
-      duration: 1.2,
-      ease: "back.out(1.7)",
-      transformOrigin: "50% 50% -50"
-    }, "-=0.5")
-    .from(".hero-sub", {
-      opacity: 0,
-      y: 30,
-      duration: 1,
-      ease: "power2.out"
-    }, "-=0.8");
+      .from(".nav-item", {
+        y: -20,
+        opacity: 0,
+        stagger: 0.1,
+        ease: "power3.out"
+      }, "-=0.5")
+      .from(".hero-char", {
+        y: 150,
+        opacity: 0,
+        rotateX: -90,
+        stagger: 0.05,
+        duration: 1.2,
+        ease: "back.out(1.7)",
+        transformOrigin: "50% 50% -50"
+      }, "-=0.5")
+      .from(".hero-sub", {
+        opacity: 0,
+        y: 30,
+        duration: 1,
+        ease: "power2.out"
+      }, "-=0.8");
 
     // 2. Scroll-triggered Massive Typography
     gsap.to(".massive-text", {
@@ -65,7 +65,7 @@ export default function Home(props) {
         const rect = card.getBoundingClientRect();
         const x = e.clientX - rect.left - rect.width / 2;
         const y = e.clientY - rect.top - rect.height / 2;
-        
+
         gsap.to(card, {
           x: x * 0.2,
           y: y * 0.2,
@@ -75,7 +75,7 @@ export default function Home(props) {
           ease: "power2.out"
         });
       });
-      
+
       card.addEventListener("mouseleave", () => {
         gsap.to(card, {
           x: 0,
@@ -101,15 +101,15 @@ export default function Home(props) {
   }, { scope: containerRef });
 
   // Split text for animation
-  const titleText = "VISITOR PASS".split("");
-  const subtitleText = "MANAGEMENT SYSTEM".split("");
+  const titleText = "ENTERPRISE".split("");
+  const subtitleText = "SECURITY".split("");
 
   return (
     <main ref={containerRef} className="relative min-h-[150vh] flex flex-col bg-[#050505] theme-coffee:bg-[#fbfbfd] text-white theme-coffee:text-[#1d1d1f] overflow-hidden perspective-[1000px]">
-      
+
       {/* Premium Loader Overlay */}
       <div className="loader-overlay fixed inset-0 z-[100] bg-white theme-coffee:bg-black flex items-center justify-center origin-top">
-         <div className="text-black theme-coffee:text-white font-black text-2xl tracking-[0.5em] uppercase animate-pulse">Initializing Protocol</div>
+        <div className="text-black theme-coffee:text-white font-black text-2xl tracking-[0.5em] uppercase animate-pulse">Initializing Protocol</div>
       </div>
 
       {/* Dynamic Background */}
@@ -134,16 +134,16 @@ export default function Home(props) {
         <div className="text-center w-full">
           <h1 className="text-[10vw] md:text-[8vw] font-black leading-[0.8] tracking-tighter uppercase mb-2 flex justify-center overflow-hidden">
             {titleText.map((char, i) => (
-              <span key={i} className="hero-char inline-block">{char === " " ? "\u00A0" : char}</span>
+              <span key={i} className="hero-char inline-block">{char}</span>
             ))}
           </h1>
-          <h1 className="text-[10vw] md:text-[8vw] font-black leading-[0.8] tracking-tighter uppercase mb-10 flex justify-center overflow-hidden text-gray-400 theme-coffee:text-gray-700">
+          <h1 className="text-[10vw] md:text-[8vw] font-black leading-[0.8] tracking-tighter uppercase mb-10 flex justify-center overflow-hidden text-transparent bg-clip-text bg-gradient-to-r from-gray-200 to-gray-500 theme-coffee:from-gray-700 theme-coffee:to-gray-900">
             {subtitleText.map((char, i) => (
-              <span key={i} className="hero-char inline-block">{char === " " ? "\u00A0" : char}</span>
+              <span key={i} className="hero-char inline-block">{char}</span>
             ))}
           </h1>
           <p className="hero-sub text-xl md:text-2xl text-gray-400 theme-coffee:text-gray-500 font-light max-w-2xl mx-auto leading-relaxed px-6">
-            The next generation of visitor management. <br/><span className="font-bold text-white theme-coffee:text-black">Seamless. Secure. Cinematic.</span>
+            The next generation of visitor management. <br /><span className="font-bold text-white theme-coffee:text-black">Seamless. Secure. Cinematic.</span>
           </p>
         </div>
 
@@ -157,13 +157,13 @@ export default function Home(props) {
       {/* Interactive Flow Section */}
       <section className="relative z-10 py-32 px-8 max-w-7xl mx-auto w-full">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <Link href="/appointment" className="group">
+          <Link href="/check-in" className="group">
             <div className="magnetic-card p-10 rounded-[2.5rem] h-full bg-white/5 theme-coffee:bg-white border border-white/10 theme-coffee:border-black/10 backdrop-blur-xl transition-colors duration-500 hover:bg-white/10 theme-coffee:hover:bg-gray-50 hover:border-white/30">
               <div className="w-16 h-16 bg-white text-black rounded-2xl flex items-center justify-center mb-10 shadow-[0_10px_30px_rgba(255,255,255,0.1)] theme-coffee:bg-black theme-coffee:text-white">
-                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path></svg>
               </div>
-              <h3 className="text-4xl font-black mb-4 tracking-tighter">PRE-REGISTER</h3>
-              <p className="text-gray-400 theme-coffee:text-gray-500 font-light text-sm leading-relaxed">Schedule your visit in advance for a frictionless, zero-wait arrival experience.</p>
+              <h3 className="text-4xl font-black mb-4 tracking-tighter">NEW VISITOR</h3>
+              <p className="text-gray-400 theme-coffee:text-gray-500 font-light text-sm leading-relaxed">Initiate a secure check-in sequence and register your arrival using our advanced neural scanners.</p>
             </div>
           </Link>
 
@@ -177,13 +177,13 @@ export default function Home(props) {
             </div>
           </Link>
 
-          <Link href="/check-in" className="group">
+          <Link href="/appointment" className="group">
             <div className="magnetic-card p-10 rounded-[2.5rem] h-full bg-white/5 theme-coffee:bg-white border border-white/10 theme-coffee:border-black/10 backdrop-blur-xl transition-colors duration-500 hover:bg-white/10 theme-coffee:hover:bg-gray-50 hover:border-white/30">
               <div className="w-16 h-16 bg-gray-800 text-gray-200 theme-coffee:bg-gray-200 theme-coffee:text-gray-800 rounded-2xl flex items-center justify-center mb-10 shadow-[0_10px_30px_rgba(255,255,255,0.05)]">
-                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path></svg>
+                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
               </div>
-              <h3 className="text-4xl font-black mb-4 tracking-tighter">CHECK-IN</h3>
-              <p className="text-gray-400 theme-coffee:text-gray-500 font-light text-sm leading-relaxed">Walk-in registration. Initiate a secure check-in sequence and register your arrival instantly.</p>
+              <h3 className="text-4xl font-black mb-4 tracking-tighter">PRE-BOOK</h3>
+              <p className="text-gray-400 theme-coffee:text-gray-500 font-light text-sm leading-relaxed">Schedule your visit in advance for a frictionless, zero-wait arrival experience.</p>
             </div>
           </Link>
         </div>
@@ -192,7 +192,7 @@ export default function Home(props) {
       {/* Massive Scroll Typography */}
       <section className="massive-text-container relative z-10 py-32 overflow-hidden border-t border-white/5 theme-coffee:border-black/5 mt-20">
         <div className="massive-text whitespace-nowrap text-[15vw] font-black tracking-tighter text-transparent opacity-10" style={{ WebkitTextStroke: '2px currentColor' }}>
-          SECURE PROTOCOL • DIGITAL GATE PASS • REAL-TIME ANALYTICS • ZERO FRICTION • 
+          SECURE PROTOCOL • DIGITAL GATE PASS • REAL-TIME ANALYTICS • ZERO FRICTION •
         </div>
       </section>
 

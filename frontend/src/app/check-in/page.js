@@ -144,64 +144,91 @@ export default function CheckInPage() {
             </div>
 
             <div className="space-y-10">
+              {/* Personal Information */}
               <div className="p-8 rounded-3xl bg-white/5 border border-white/10 relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-1 h-full bg-blue-500 theme-coffee:bg-blue-600" />
-                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400 theme-coffee:text-gray-600 mb-8">WALK-IN DETAILS</h3>
-                
+                <div className="absolute top-0 left-0 w-1 h-full bg-gray-500 theme-coffee:bg-gray-400" />
+                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400 theme-coffee:text-gray-600 mb-8">PERSONAL INFORMATION</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  {/* Row 1 */}
                   <div className="space-y-2">
-                    <label className="block text-[10px] uppercase tracking-widest text-gray-500 font-black">Name <span className="text-red-500">*</span></label>
+                    <label className="block text-[10px] uppercase tracking-widest text-gray-500 font-black">Full Name <span className="text-red-500">*</span></label>
                     <input required type="text" className="w-full"
-                      value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} placeholder="Name" />
+                      value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} placeholder="e.g. John Doe" />
                   </div>
-                  <div className="space-y-2 hidden md:block"></div> {/* Spacer to match screenshot layout without Adhaar */}
-
-                  {/* Row 2 */}
+                  <div className="space-y-2">
+                    <label className="block text-[10px] uppercase tracking-widest text-gray-500 font-black">Email Address</label>
+                    <input type="email" className="w-full"
+                      value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} placeholder="you@example.com" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="block text-[10px] uppercase tracking-widest text-gray-500 font-black">Phone Number <span className="text-red-500">*</span></label>
+                    <input required type="tel" className="w-full"
+                      value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} placeholder="e.g. 555-0123" />
+                  </div>
                   <div className="space-y-2">
                     <label className="block text-[10px] uppercase tracking-widest text-gray-500 font-black">Gender</label>
                     <select className="w-full"
                       value={formData.gender} onChange={e => setFormData({ ...formData, gender: e.target.value })}>
-                      <option value="">--Select--</option>
+                      <option value="">-- Select --</option>
                       <option value="Male">Male</option>
                       <option value="Female">Female</option>
                       <option value="Other">Other</option>
                     </select>
                   </div>
+
+                  <div className="space-y-2">
+                    <label className="block text-[10px] uppercase tracking-widest text-gray-500 font-black">Address</label>
+                    <input type="text" className="w-full"
+                      value={formData.address} onChange={e => setFormData({ ...formData, address: e.target.value })} placeholder="Street, City, State" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Visit Details */}
+              <div className="p-8 rounded-3xl bg-white/5 border border-white/10 relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-1 h-full bg-gray-600 theme-coffee:bg-gray-500" />
+                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400 theme-coffee:text-gray-600 mb-8">VISIT DETAILS</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="space-y-2">
                     <label className="block text-[10px] uppercase tracking-widest text-gray-500 font-black">Meet With <span className="text-red-500">*</span></label>
                     <select required className="w-full" value={formData.meetWith} onChange={e => setFormData({ ...formData, meetWith: e.target.value })}>
-                      <option value="">-- Select --</option>
+                      <option value="">-- Select Employee or Team --</option>
                       {employees.map(emp => (
                         <option key={emp._id} value={emp._id}>{emp.name}</option>
                       ))}
                     </select>
                   </div>
-
-                  {/* Row 3 */}
                   <div className="space-y-2">
-                    <label className="block text-[10px] uppercase tracking-widest text-gray-500 font-black">Phone No. <span className="text-red-500">*</span></label>
-                    <input required type="tel" className="w-full"
-                      value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} placeholder="Phone No." />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="block text-[10px] uppercase tracking-widest text-gray-500 font-black">E-mail <span className="text-red-500">*</span></label>
-                    <input required type="email" className="w-full"
-                      value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} placeholder="Email" />
-                  </div>
-
-                  {/* Row 4 */}
-                  <div className="md:col-span-2 space-y-2">
                     <label className="block text-[10px] uppercase tracking-widest text-gray-500 font-black">Purpose <span className="text-red-500">*</span></label>
                     <input required type="text" className="w-full"
-                      value={formData.purpose} onChange={e => setFormData({ ...formData, purpose: e.target.value })} placeholder="purpose" />
+                      value={formData.purpose} onChange={e => setFormData({ ...formData, purpose: e.target.value })} placeholder="e.g. Interview, Meeting" />
                   </div>
-
-                  {/* Row 5 */}
+                  <div className="space-y-2">
+                    <label className="block text-[10px] uppercase tracking-widest text-gray-500 font-black">Date</label>
+                    <input type="date" className="w-full"
+                      value={formData.scheduledTime} onChange={e => setFormData({ ...formData, scheduledTime: e.target.value })} />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="block text-[10px] uppercase tracking-widest text-gray-500 font-black">Status</label>
+                    <select className="w-full" value={formData.visitorStatus} onChange={e => setFormData({ ...formData, visitorStatus: e.target.value })}>
+                      <option value="">-- Select --</option>
+                      <option value="New">New Visitor</option>
+                      <option value="Returning">Returning Visitor</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="block text-[10px] uppercase tracking-widest text-gray-500 font-black">From Time</label>
+                    <input type="time" className="w-full"
+                      value={formData.fromTime} onChange={e => setFormData({ ...formData, fromTime: e.target.value })} />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="block text-[10px] uppercase tracking-widest text-gray-500 font-black">To Time</label>
+                    <input type="time" className="w-full"
+                      value={formData.toTime} onChange={e => setFormData({ ...formData, toTime: e.target.value })} />
+                  </div>
                   <div className="md:col-span-2 space-y-2">
-                    <label className="block text-[10px] uppercase tracking-widest text-gray-500 font-black">Address</label>
+                    <label className="block text-[10px] uppercase tracking-widest text-gray-500 font-black">Duration (Hours)</label>
                     <input type="text" className="w-full"
-                      value={formData.address} onChange={e => setFormData({ ...formData, address: e.target.value })} placeholder="Address" />
+                      value={formData.duration} onChange={e => setFormData({ ...formData, duration: e.target.value })} placeholder="e.g. 1.5" />
                   </div>
                 </div>
               </div>

@@ -1,15 +1,13 @@
 const nodemailer = require('nodemailer');
 const logger = require('../utils/logger');
 
-// Setup Nodemailer transport for Gmail
+// Setup Nodemailer transport (dummy config for now)
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  host: process.env.SMTP_HOST || 'smtp.gmail.com',
-  port: process.env.SMTP_PORT || 465,
-  secure: true,
+  host: process.env.SMTP_HOST || 'smtp.mailtrap.io',
+  port: process.env.SMTP_PORT || 2525,
   auth: {
-    user: process.env.SMTP_USER || 'shauryaujjwal102@gmail.com',
-    pass: process.env.SMTP_PASS, // You will need to set SMTP_PASS in your .env file using a Google App Password
+    user: process.env.SMTP_USER || 'user',
+    pass: process.env.SMTP_PASS || 'pass',
   },
 });
 
@@ -33,7 +31,7 @@ class EmailQueue {
       this.isProcessing = false;
       return;
     }
-    
+
     this.isProcessing = true;
     const mailOptions = this.queue.shift();
 
@@ -53,7 +51,7 @@ const emailQueue = new EmailQueue();
 
 const sendEmail = (to, subject, text, html) => {
   const mailOptions = {
-    from: '"VMS System" <shauryaujjwal102@gmail.com>',
+    from: '"VMS System" <noreply@vms.com>',
     to,
     subject,
     text,

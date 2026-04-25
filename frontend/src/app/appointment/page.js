@@ -40,7 +40,7 @@ export default function AppointmentPage() {
     e.preventDefault();
     setError('');
     setIsSubmitting(true);
-    
+
     try {
       const res = await fetch('http://localhost:5000/api/v1/visits/request', {
         method: 'POST',
@@ -62,8 +62,8 @@ export default function AppointmentPage() {
 
   return (
     <main className="min-h-screen flex items-center justify-center p-4 bg-black relative">
-       {/* Close Button on Top Left */}
-       <Link href="/" className="absolute top-8 left-8 z-50 w-12 h-12 rounded-full border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all text-gray-400 hover:text-white">
+      {/* Close Button on Top Left */}
+      <Link href="/" className="absolute top-8 left-8 z-50 w-12 h-12 rounded-full border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all text-gray-400 hover:text-white">
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
       </Link>
 
@@ -74,7 +74,7 @@ export default function AppointmentPage() {
               <h2 className="text-5xl font-black tracking-tighter uppercase text-white">Book Appointment</h2>
               <p className="text-gray-500 text-[10px] uppercase tracking-[0.4em] font-bold mt-2">Schedule your visit in advance</p>
             </div>
-            
+
             {error && <p className="text-red-500 text-[10px] uppercase font-bold text-center tracking-widest p-4 bg-red-500/10 border border-red-500/20 rounded-xl">{error}</p>}
 
             <div className="space-y-10">
@@ -86,15 +86,15 @@ export default function AppointmentPage() {
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="space-y-2">
-                    <label className="block text-[10px] uppercase tracking-widest text-gray-500 font-black">Full Name <span className="text-red-500">*</span></label>
+                    <label className="block text-[10px] uppercase tracking-widest text-gray-500 font-black">Full Name</label>
                     <input required name="name" onChange={handleChange} type="text" className="w-full" placeholder="e.g. John Doe" />
                   </div>
                   <div className="space-y-2">
-                    <label className="block text-[10px] uppercase tracking-widest text-gray-500 font-black">Email Address <span className="text-red-500">*</span></label>
+                    <label className="block text-[10px] uppercase tracking-widest text-gray-500 font-black">Email Address</label>
                     <input required name="email" onChange={handleChange} type="email" className="w-full" placeholder="you@example.com" />
                   </div>
                   <div className="space-y-2">
-                    <label className="block text-[10px] uppercase tracking-widest text-gray-500 font-black">Mobile Number <span className="text-red-500">*</span></label>
+                    <label className="block text-[10px] uppercase tracking-widest text-gray-500 font-black">Mobile Number</label>
                     <input required name="phone" onChange={handleChange} type="tel" className="w-full" placeholder="e.g. 555-0123" />
                   </div>
                   <div className="space-y-2">
@@ -177,7 +177,7 @@ export default function AppointmentPage() {
             </div>
             <h2 className="text-4xl font-black text-white tracking-tighter uppercase mb-4">Request Sent</h2>
             <p className="text-gray-500 font-bold text-[10px] uppercase tracking-widest leading-relaxed max-w-sm mx-auto">
-              Your request has been sent for approval. <br/><br/>
+              Your request has been sent for approval. <br /><br />
               You will receive an email once confirmed.
             </p>
             <Link href="/" className="inline-block mt-12 text-[10px] font-black uppercase tracking-[0.4em] text-blue-500 hover:text-white transition-all">
