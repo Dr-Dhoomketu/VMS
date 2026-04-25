@@ -13,7 +13,7 @@ export default function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}`;
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
     try {
       const res = await fetch(`${API_URL}/api/v1/auth/login`, {
         method: 'POST',

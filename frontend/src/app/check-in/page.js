@@ -36,7 +36,7 @@ export default function CheckInPage() {
 
   const fetchEmployees = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}`}/api/v1/users/employees`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/v1/users/employees`);
       const data = await res.json();
       if (res.ok) setEmployees(data);
     } catch (err) {
@@ -102,7 +102,7 @@ export default function CheckInPage() {
         form.append('webcamImage', blob, 'visitor_photo.jpg');
       }
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/v1/visits/request`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/v1/visits/request`, {
         method: 'POST',
         body: form,
       });
