@@ -119,7 +119,7 @@ export default function DesignationManagement() {
               designations.map((des) => (
                 <tr key={des._id} className="group hover:bg-white/5 transition-colors">
                   <td className="px-6 py-4">
-                    <span className="text-white font-bold uppercase tracking-wide">{des.name}</span>
+                    <span className="text-main font-bold uppercase tracking-wide">{des.name}</span>
                   </td>
                   <td className="px-6 py-4 text-gray-500 text-sm">Rank {des.level}</td>
                   <td className="px-6 py-4 text-center">

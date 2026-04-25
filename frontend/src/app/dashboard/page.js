@@ -104,7 +104,7 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-16">
         <div className="holographic-card p-8 rounded-3xl text-center">
           <p className="caption text-[8px] mb-4">Total Integrity</p>
-          <p className="text-5xl font-black mb-2">{stats.total}</p>
+          <p className="text-5xl font-black mb-2 text-main">{stats.total}</p>
           <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Gross Visits</p>
         </div>
         <div className="holographic-card p-8 rounded-3xl text-center border-blue-500/10">
@@ -119,7 +119,7 @@ export default function AdminDashboard() {
         </div>
         <div className="holographic-card p-8 rounded-3xl text-center">
           <p className="caption text-[8px] mb-4">Finalized</p>
-          <p className="text-5xl font-black mb-2">{stats.checkedOut}</p>
+          <p className="text-5xl font-black mb-2 text-main">{stats.checkedOut}</p>
           <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Cleared Site</p>
         </div>
         <div className="holographic-card p-8 rounded-3xl text-center border-yellow-500/10">
@@ -153,7 +153,7 @@ export default function AdminDashboard() {
             ) : (
               visitors.map((v) => (
                 <tr key={v._id} className="group transition-colors">
-                  <td className="font-bold text-white theme-coffee:text-black">
+                  <td className="font-bold text-main">
                     <div className="flex items-center gap-3">
                        <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden">
                          {v.visitor?.imageUrl ? <img src={`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}${v.visitor.imageUrl}`} className="w-full h-full object-cover" /> : <div className="text-[10px]">VIS</div>}

@@ -138,7 +138,31 @@ body {
   border-radius: 12px;
 }
 
+/* Theme-aware Text Colors */
+.text-main {
+  color: #ffffff;
+}
+
+.theme-coffee .text-main {
+  color: #1d1d1f !important;
+}
+
+.text-muted {
+  color: #555555;
+}
+
+.theme-coffee .text-muted {
+  color: #86868b !important;
+}
+
 /* Tables */
+.dark-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  table-layout: fixed;
+}
+
 .dark-table-container {
   background: rgba(10, 10, 10, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.05);

@@ -124,7 +124,7 @@ export default function DepartmentManagement() {
               departments.map((dept) => (
                 <tr key={dept._id} className="group hover:bg-white/5 transition-colors">
                   <td className="px-6 py-4">
-                    <span className="text-white font-bold uppercase tracking-wide">{dept.name}</span>
+                    <span className="text-main font-bold uppercase tracking-wide">{dept.name}</span>
                   </td>
                   <td className="px-6 py-4 text-gray-500 text-sm font-mono">{dept.code}</td>
                   <td className="px-6 py-4 text-center">
