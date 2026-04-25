@@ -102,7 +102,7 @@ export default function Home(props) {
 
   // Split text for animation
   const titleText = "VISITOR PASS".split("");
-  const subtitleText = "MANAGEMENT".split("");
+  const subtitleText = "MANAGEMENT SYSTEM".split("");
 
   return (
     <main ref={containerRef} className="relative min-h-[150vh] flex flex-col bg-[#050505] theme-coffee:bg-[#fbfbfd] text-white theme-coffee:text-[#1d1d1f] overflow-hidden perspective-[1000px]">
@@ -132,14 +132,14 @@ export default function Home(props) {
       {/* Main Hero Section */}
       <section className="relative z-10 min-h-screen flex flex-col items-center justify-center pt-20">
         <div className="text-center w-full">
-          <h1 className="text-[10vw] md:text-[8vw] font-black leading-[0.8] tracking-tighter uppercase mb-2 flex justify-center overflow-hidden">
+          <h1 className="text-[8vw] md:text-[6vw] font-black leading-[0.8] tracking-tighter uppercase mb-2 flex justify-center overflow-hidden">
             {titleText.map((char, i) => (
-              <span key={i} className="hero-char inline-block">{char}</span>
+              <span key={i} className="hero-char inline-block">{char === " " ? "\u00A0" : char}</span>
             ))}
           </h1>
-          <h1 className="text-[10vw] md:text-[8vw] font-black leading-[0.8] tracking-tighter uppercase mb-10 flex justify-center overflow-hidden text-transparent bg-clip-text bg-gradient-to-r from-gray-200 to-gray-500 theme-coffee:from-gray-700 theme-coffee:to-gray-900">
+          <h1 className="text-[6vw] md:text-[4vw] font-black leading-[0.8] tracking-tighter uppercase mb-10 flex justify-center overflow-hidden text-transparent bg-clip-text bg-gradient-to-r from-gray-200 to-gray-500 theme-coffee:from-gray-700 theme-coffee:to-gray-900">
             {subtitleText.map((char, i) => (
-              <span key={i} className="hero-char inline-block">{char}</span>
+              <span key={i} className="hero-char inline-block">{char === " " ? "\u00A0" : char}</span>
             ))}
           </h1>
           <p className="hero-sub text-xl md:text-2xl text-gray-400 theme-coffee:text-gray-500 font-light max-w-2xl mx-auto leading-relaxed px-6">
