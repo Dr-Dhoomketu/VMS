@@ -120,8 +120,8 @@ export default function Home(props) {
       </div>
 
       {/* Glass Navbar */}
-      <nav className="fixed top-0 w-full z-50 flex justify-between items-center px-12 py-8 backdrop-blur-md border-b border-white/5 theme-coffee:border-black/5">
-        <div className="nav-item"><ValueTechLogo className="h-16" /></div>
+      <nav className="fixed top-0 w-full z-50 flex justify-between items-center px-12 py-12 backdrop-blur-md border-b border-white/5 theme-coffee:border-black/5">
+        <div className="nav-item"><ValueTechLogo className="h-[180px] w-auto" /></div>
         <div className="flex gap-8 items-center nav-item">
           <Link href="/login" className="btn-primary px-8 py-3 rounded-full text-xs uppercase tracking-widest font-bold group">
             Employee Portal <span className="inline-block group-hover:translate-x-1 transition-transform">→</span>
@@ -130,17 +130,17 @@ export default function Home(props) {
       </nav>
 
       {/* Main Hero Section */}
-      <section className="relative z-10 min-h-screen flex flex-col items-center justify-center pt-20">
+      <section className="relative z-10 min-h-screen flex flex-col items-center justify-center pt-40">
         <div className="text-center w-full px-4">
           <div className="overflow-hidden mb-2">
-            <h1 className="text-[10vw] md:text-[8vw] font-black leading-none tracking-tighter uppercase flex justify-center">
+            <h1 className="text-[10vw] md:text-[8vw] font-black leading-none tracking-tighter uppercase flex justify-center text-white theme-coffee:text-black">
               {titleText.map((char, i) => (
                 <span key={i} className="hero-char inline-block">{char === " " ? "\u00A0" : char}</span>
               ))}
             </h1>
           </div>
           <div className="overflow-hidden mb-12">
-            <h1 className="text-[6vw] md:text-[5vw] font-black leading-none tracking-tighter uppercase flex justify-center text-transparent bg-clip-text bg-gradient-to-r from-gray-300 to-gray-600 theme-coffee:from-gray-700 theme-coffee:to-gray-900">
+            <h1 className="text-[6vw] md:text-[5vw] font-black leading-none tracking-tighter uppercase flex justify-center text-gray-400 theme-coffee:text-gray-600">
               {subtitleText.map((char, i) => (
                 <span key={i} className="hero-char inline-block">{char === " " ? "\u00A0" : char}</span>
               ))}

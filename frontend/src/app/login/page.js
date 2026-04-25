@@ -37,12 +37,13 @@ export default function Login() {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-4 bg-[#050505]">
-      <GlassCard className="w-full max-w-md p-10 border border-[#1f1f1f] bg-[#0a0a0a]/80 backdrop-blur-xl shadow-2xl">
+    <main className="min-h-screen flex items-center justify-center p-4 bg-[#000000] dot-bg">
+      <div className="w-full max-w-md p-12 rounded-[2.5rem] border border-white/5 bg-[#0a0a0a] shadow-2xl relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-purple-500 opacity-50"></div>
         <div className="flex flex-col items-center mb-12">
-          <ValueTechLogo className="w-20 h-20 mb-4" />
-          <h2 className="text-xl font-bold tracking-widest uppercase text-white">VMS Portal</h2>
-          <p className="text-[10px] text-gray-500 uppercase tracking-[0.5em] mt-2">Authorized Access Only</p>
+          <ValueTechLogo className="h-[120px] w-auto mb-6" />
+          <h2 className="hero-title text-2xl mb-2">VMS Portal</h2>
+          <p className="caption text-[8px]">Authorized Security Personnel Only</p>
         </div>
         
         {error && (
@@ -92,11 +93,11 @@ export default function Login() {
               </button>
             </div>
           </div>
-          <button type="submit" className="w-full bg-white hover:bg-gray-200 text-black font-black uppercase tracking-[0.3em] text-[10px] py-4 rounded-xl transition-all shadow-xl shadow-white/5 active:scale-95">
-            Authenticate →
+          <button type="submit" className="w-full btn-primary py-4 rounded-xl text-sm">
+            AUTHENTICATE →
           </button>
         </form>
-      </GlassCard>
+      </div>
     </main>
   );
 }
