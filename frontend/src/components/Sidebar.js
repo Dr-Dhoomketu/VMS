@@ -35,13 +35,13 @@ export default function Sidebar() {
   const filteredLinks = navLinks.filter(link => !user || link.roles.includes(user.role));
 
   return (
-    <aside className="w-80 bg-[#050505] border-r border-white/5 min-h-screen flex flex-col shrink-0 z-[60] shadow-2xl relative overflow-hidden">
+    <aside className="w-80 bg-[#050505] theme-coffee:bg-[#ffffff] border-r border-white/5 theme-coffee:border-black/5 min-h-screen flex flex-col shrink-0 z-[60] shadow-2xl relative overflow-hidden">
       {/* Decorative background glow */}
-      <div className="absolute -top-24 -left-24 w-48 h-48 bg-blue-600/10 rounded-full blur-[80px] pointer-events-none"></div>
+      <div className="absolute -top-24 -left-24 w-48 h-48 bg-blue-600/10 theme-coffee:bg-blue-500/5 rounded-full blur-[80px] pointer-events-none"></div>
       
       <div className="p-12 flex flex-col items-center relative z-10">
         <ValueTechLogo className="h-14 w-auto mb-4" />
-        <div className="h-[1px] w-12 bg-white/10 mt-6"></div>
+        <div className="h-[1px] w-12 bg-white/10 theme-coffee:bg-black/10 mt-6"></div>
       </div>
       
       <div className="flex-1 overflow-y-auto py-8 flex flex-col gap-1 px-8 relative z-10">
@@ -52,12 +52,12 @@ export default function Sidebar() {
             <Link 
               key={link.name} 
               href={link.path}
-              className={`flex items-center gap-4 px-5 py-4 rounded-xl transition-all duration-300 relative group ${isActive ? 'bg-white/5 text-white' : 'text-gray-500 hover:text-white hover:bg-white/[0.02]'}`}
+              className={`flex items-center gap-4 px-5 py-4 rounded-xl transition-all duration-300 relative group ${isActive ? 'bg-white/5 theme-coffee:bg-black/5 text-white theme-coffee:text-black' : 'text-gray-500 hover:text-white theme-coffee:hover:text-black hover:bg-white/[0.02] theme-coffee:hover:bg-black/[0.02]'}`}
             >
               {isActive && (
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[2px] h-6 bg-white rounded-r-full shadow-[0_0_15px_rgba(255,255,255,0.8)]" />
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[2px] h-6 bg-white theme-coffee:bg-black rounded-r-full shadow-[0_0_15px_rgba(255,255,255,0.8)] theme-coffee:shadow-[0_0_15px_rgba(0,0,0,0.1)]" />
               )}
-              <svg className={`w-5 h-5 transition-all duration-500 ${isActive ? 'text-white' : 'group-hover:text-white opacity-40 group-hover:opacity-100'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className={`w-5 h-5 transition-all duration-500 ${isActive ? 'text-white theme-coffee:text-black' : 'group-hover:text-white theme-coffee:group-hover:text-black opacity-40 group-hover:opacity-100'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d={link.icon} />
               </svg>
               <span className={`font-bold text-[10px] uppercase tracking-[0.25em] transition-all ${isActive ? 'translate-x-1' : 'group-hover:translate-x-1'}`}>{link.name}</span>
@@ -66,10 +66,10 @@ export default function Sidebar() {
         })}
       </div>
 
-      <div className="p-8 border-t border-white/5 relative z-10">
+      <div className="p-8 border-t border-white/5 theme-coffee:border-black/5 relative z-10">
         <button 
           onClick={handleLogout}
-          className="flex items-center gap-4 px-6 py-4 w-full rounded-xl text-gray-500 hover:text-red-400 hover:bg-red-500/5 transition-all group"
+          className="flex items-center gap-4 px-6 py-4 w-full rounded-xl text-gray-500 hover:text-red-400 theme-coffee:hover:text-red-600 hover:bg-red-500/5 theme-coffee:hover:bg-red-500/5 transition-all group"
         >
           <svg className="w-5 h-5 opacity-40 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
           <span className="font-bold text-[9px] uppercase tracking-[0.3em]">System Logout</span>
