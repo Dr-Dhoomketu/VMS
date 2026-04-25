@@ -101,8 +101,8 @@ export default function Home(props) {
   }, { scope: containerRef });
 
   // Split text for animation
-  const titleText = "ENTERPRISE".split("");
-  const subtitleText = "SECURITY".split("");
+  const titleText = "VISITOR PASS".split("");
+  const subtitleText = "MANAGEMENT".split("");
 
   return (
     <main ref={containerRef} className="relative min-h-[150vh] flex flex-col bg-[#050505] theme-coffee:bg-[#fbfbfd] text-white theme-coffee:text-[#1d1d1f] overflow-hidden perspective-[1000px]">
