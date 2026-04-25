@@ -86,21 +86,22 @@ export default function DesignationManagement() {
 
   return (
     <div className="fade-up w-full">
-      <div className="flex justify-between items-center mb-12">
+      <div className="flex justify-between items-end mb-16 border-b border-white/5 pb-12">
         <div>
-          <h1 className="text-4xl font-black tracking-tighter uppercase mb-2">Designations</h1>
-          <p className="text-gray-500 text-sm">Manage employee roles and authority levels.</p>
+          <p className="caption mb-4">Management Console</p>
+          <h1 className="hero-title text-6xl">Designations</h1>
+          <p className="text-gray-500 text-xs mt-4 tracking-wide">Configure employee hierarchical roles and access levels.</p>
         </div>
         <button 
           onClick={() => handleOpenModal()}
-          className="btn-primary px-8 py-4 rounded-2xl font-bold flex items-center gap-2"
+          className="btn-primary px-10 py-5 rounded-xl font-black flex items-center gap-3 transition-all hover:gap-5"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path></svg>
-          ADD DESIGNATION
+          <span>ADD ROLE</span>
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 4v16m8-8H4"></path></svg>
         </button>
       </div>
 
-      <div className="dark-table-container">
+      <div className="dark-table-container shadow-2xl">
         <table className="dark-table w-full">
           <thead>
             <tr>
