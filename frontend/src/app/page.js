@@ -112,13 +112,6 @@ export default function Home(props) {
         <div className="text-black theme-coffee:text-white font-black text-2xl tracking-[0.5em] uppercase animate-pulse">Initializing Protocol</div>
       </div>
 
-      {/* Dynamic Background */}
-      <div className="fixed inset-0 z-0 opacity-30 pointer-events-none parallax-bg-container">
-        <div className="absolute top-20 left-[10%] w-[30vw] h-[30vw] rounded-full bg-white/10 theme-coffee:bg-gray-400/10 blur-[120px]" data-speed="0.2" />
-        <div className="absolute bottom-20 right-[10%] w-[40vw] h-[40vw] rounded-full bg-gray-500/10 theme-coffee:bg-gray-300/20 blur-[150px]" data-speed="0.5" />
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150 mix-blend-overlay" />
-      </div>
-
       {/* Glass Navbar */}
       <nav className="fixed top-0 w-full z-50 flex justify-between items-center px-12 py-12 backdrop-blur-md border-b border-white/5 theme-coffee:border-black/5">
         <div className="nav-item"><ValueTechLogo className="h-[180px] w-auto" /></div>

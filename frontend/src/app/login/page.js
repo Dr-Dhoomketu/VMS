@@ -37,13 +37,12 @@ export default function Login() {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-4 bg-[#000000] dot-bg">
-      <div className="w-full max-w-md p-12 rounded-[2.5rem] border border-white/5 bg-[#0a0a0a] shadow-2xl relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-purple-500 opacity-50"></div>
-        <div className="flex flex-col items-center mb-12">
-          <ValueTechLogo className="h-[120px] w-auto mb-6" />
-          <h2 className="hero-title text-2xl mb-2">VMS Portal</h2>
-          <p className="caption text-[8px]">Authorized Security Personnel Only</p>
+    <main className="min-h-screen flex items-center justify-center p-4 bg-[#000000] dot-bg relative">
+      <div className="w-full max-w-lg p-16 rounded-[3rem] border border-white/10 bg-[#0a0a0a]/90 backdrop-blur-2xl shadow-2xl flex flex-col items-center">
+        <div className="mb-12 flex flex-col items-center">
+          <ValueTechLogo className="h-[180px] w-auto mb-8" />
+          <h2 className="hero-title text-3xl mb-2">VMS Portal</h2>
+          <p className="caption text-[9px] text-gray-500">Secure Administrative Access</p>
         </div>
         
         {error && (
