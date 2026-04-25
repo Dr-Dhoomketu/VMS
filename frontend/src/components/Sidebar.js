@@ -39,8 +39,8 @@ export default function Sidebar() {
       {/* Decorative background glow */}
       <div className="absolute -top-24 -left-24 w-48 h-48 bg-blue-600/10 theme-coffee:bg-blue-500/5 rounded-full blur-[80px] pointer-events-none"></div>
       
-      <div className="p-12 flex flex-col items-center relative z-10">
-        <ValueTechLogo className="h-14 w-auto mb-4" />
+      <div className="p-8 flex flex-col items-center relative z-10">
+        <ValueTechLogo className="h-[140px] w-auto mb-4" />
         <div className="h-[1px] w-12 bg-white/10 theme-coffee:bg-black/10 mt-6"></div>
       </div>
       
