@@ -131,17 +131,21 @@ export default function Home(props) {
 
       {/* Main Hero Section */}
       <section className="relative z-10 min-h-screen flex flex-col items-center justify-center pt-20">
-        <div className="text-center w-full">
-          <h1 className="text-[8vw] md:text-[6vw] font-black leading-[0.8] tracking-tighter uppercase mb-2 flex justify-center overflow-hidden">
-            {titleText.map((char, i) => (
-              <span key={i} className="hero-char inline-block">{char === " " ? "\u00A0" : char}</span>
-            ))}
-          </h1>
-          <h1 className="text-[6vw] md:text-[4vw] font-black leading-[0.8] tracking-tighter uppercase mb-10 flex justify-center overflow-hidden text-transparent bg-clip-text bg-gradient-to-r from-gray-200 to-gray-500 theme-coffee:from-gray-700 theme-coffee:to-gray-900">
-            {subtitleText.map((char, i) => (
-              <span key={i} className="hero-char inline-block">{char === " " ? "\u00A0" : char}</span>
-            ))}
-          </h1>
+        <div className="text-center w-full px-4">
+          <div className="overflow-hidden mb-2">
+            <h1 className="text-[10vw] md:text-[8vw] font-black leading-none tracking-tighter uppercase flex justify-center">
+              {titleText.map((char, i) => (
+                <span key={i} className="hero-char inline-block">{char === " " ? "\u00A0" : char}</span>
+              ))}
+            </h1>
+          </div>
+          <div className="overflow-hidden mb-12">
+            <h1 className="text-[6vw] md:text-[5vw] font-black leading-none tracking-tighter uppercase flex justify-center text-transparent bg-clip-text bg-gradient-to-r from-gray-300 to-gray-600 theme-coffee:from-gray-700 theme-coffee:to-gray-900">
+              {subtitleText.map((char, i) => (
+                <span key={i} className="hero-char inline-block">{char === " " ? "\u00A0" : char}</span>
+              ))}
+            </h1>
+          </div>
           <p className="hero-sub text-xl md:text-2xl text-gray-400 theme-coffee:text-gray-500 font-light max-w-2xl mx-auto leading-relaxed px-6">
             The next generation of visitor management. <br /><span className="font-bold text-white theme-coffee:text-black">Seamless. Secure. Cinematic.</span>
           </p>
