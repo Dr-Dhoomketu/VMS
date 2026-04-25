@@ -887,3 +887,4 @@
 {"level":"info","message":"::1 - - [25/Apr/2026:13:36:23 +0000] \"GET /api/v1/departments HTTP/1.1\" 304 - \"-\" \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36\"","timestamp":"2026-04-25T13:36:23.999Z"}
 {"level":"info","message":"::1 - - [25/Apr/2026:13:36:24 +0000] \"GET /api/v1/designations HTTP/1.1\" 304 - \"-\" \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36\"","timestamp":"2026-04-25T13:36:24.013Z"}
 {"level":"info","message":"::1 - - [25/Apr/2026:13:36:24 +0000] \"GET /api/v1/users HTTP/1.1\" 200 2235 \"-\" \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36\"","timestamp":"2026-04-25T13:36:24.034Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2026-04-25T14:13:36.927Z"}

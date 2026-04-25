@@ -23,14 +23,21 @@ const connectDB = async () => {
       const Department = require('../models/Department');
       const Designation = require('../models/Designation');
       
-      if (await User.countDocuments() === 0) {
-        console.log('[DATABASE] SEEDING INITIAL ACCOUNTS...');
-        const hr = await Department.create({ name: 'Human Resources', code: 'HR' });
-        const manager = await Designation.create({ name: 'Manager', level: 5 });
+      const adminEmail = 'admin@vms.com';
+      const adminExists = await User.findOne({ email: adminEmail });
+
+      if (!adminExists) {
+        console.log('[DATABASE] ADMIN NOT FOUND. SEEDING INITIAL ACCOUNTS...');
+        
+        let hr = await Department.findOne({ code: 'HR' });
+        if (!hr) hr = await Department.create({ name: 'Human Resources', code: 'HR' });
+        
+        let manager = await Designation.findOne({ name: 'Manager' });
+        if (!manager) manager = await Designation.create({ name: 'Manager', level: 5 });
         
         await User.create({ 
           name: 'Admin', 
-          email: 'admin@vms.com', 
+          email: adminEmail, 
           password: 'password123', 
           role: 'Admin', 
           department: hr._id,
@@ -38,17 +45,29 @@ const connectDB = async () => {
         });
 
         // Seed Generic Teams
-        const it = await Department.create({ name: 'Information Technology', code: 'IT' });
-        const gen = await Department.create({ name: 'General', code: 'GEN' });
-        const staff = await Designation.create({ name: 'Staff', level: 1 });
+        let it = await Department.findOne({ code: 'IT' });
+        if (!it) it = await Department.create({ name: 'Information Technology', code: 'IT' });
+        
+        let gen = await Department.findOne({ code: 'GEN' });
+        if (!gen) gen = await Department.create({ name: 'General', code: 'GEN' });
+        
+        let staff = await Designation.findOne({ name: 'Staff' });
+        if (!staff) staff = await Designation.create({ name: 'Staff', level: 1 });
 
-        await User.insertMany([
+        const teams = [
           { name: 'IT Team', email: 'it@vms.com', password: 'password123', role: 'Employee', department: it._id, designation: staff._id },
           { name: 'HR Team', email: 'hr@vms.com', password: 'password123', role: 'Employee', department: hr._id, designation: staff._id },
           { name: 'General Team', email: 'general@vms.com', password: 'password123', role: 'Employee', department: gen._id, designation: staff._id }
-        ]);
+        ];
 
-        console.log('[DATABASE] SEED COMPLETE: Login with admin@vms.com / password123');
+        for (const team of teams) {
+          const teamExists = await User.findOne({ email: team.email });
+          if (!teamExists) await User.create(team);
+        }
+
+        console.log(`[DATABASE] SEED COMPLETE: Admin account created (${adminEmail})`);
+      } else {
+        console.log(`[DATABASE] VERIFIED: Admin account exists (${adminEmail})`);
       }
     }
   } catch (error) {
