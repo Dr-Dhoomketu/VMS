@@ -109,6 +109,8 @@ const updateVisitStatus = async (req, res) => {
       if (visit.visitor.email) {
         const hostName = visit.meetWith ? visit.meetWith.name : 'your host';
         const dateStr = visit.scheduledTime ? new Date(visit.scheduledTime).toLocaleDateString() : new Date().toLocaleDateString();
+        const baseUrl = process.env.BASE_URL || 'http://localhost:5000';
+        const visitorPhoto = visit.visitor.imageUrl ? `${baseUrl}${visit.visitor.imageUrl}` : null;
         
         const gatePassHtml = `
           <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f4f4f7; padding: 40px 20px; color: #1d1d1f; line-height: 1.6;">
@@ -125,6 +127,16 @@ const updateVisitStatus = async (req, res) => {
                 <p style="margin: 0 0 20px 0; font-size: 16px; color: #86868b; text-align: center;">
                   Hello <strong>${visit.visitor.name}</strong>,<br>Your visit has been approved by ${hostName}.
                 </p>
+
+                ${visitorPhoto ? `
+                <!-- Photo Section -->
+                <div style="text-align: center; margin-bottom: 25px;">
+                  <div style="width: 100px; height: 120px; margin: 0 auto; border-radius: 16px; overflow: hidden; border: 4px solid #fbfbfd; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                    <img src="${visitorPhoto}" alt="Visitor Photo" style="width: 100%; height: 100%; object-fit: cover;" />
+                  </div>
+                  <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #86868b; margin-top: 8px;">Photo Identity</div>
+                </div>
+                ` : ''}
 
                 <div style="background: #fbfbfd; border-radius: 16px; padding: 20px; margin-bottom: 30px; border: 1px solid #e5e5ea;">
                   <table style="width: 100%; border-collapse: collapse;">

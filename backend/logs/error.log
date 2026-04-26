@@ -2,3 +2,5 @@
 {"level":"error","message":"Failed to send email to it@vms.com: Invalid login: 535 5.7.0 Invalid credentials","timestamp":"2026-04-25T10:13:48.890Z"}
 {"level":"error","message":"Failed to send email to hr@vms.com: Missing credentials for \"PLAIN\"","timestamp":"2026-04-25T11:05:25.458Z"}
 {"level":"error","message":"Failed to send email to shauryaujjwal102@gmail.com: Missing credentials for \"PLAIN\"","timestamp":"2026-04-25T11:07:05.656Z"}
+{"level":"error","message":"Failed to send email to shauryaujjwal07@gmail.com: Invalid login: 535 5.7.0 Invalid credentials","timestamp":"2026-04-26T05:56:22.354Z"}
+{"level":"error","message":"Failed to send email to cmdo@dsimf: Invalid login: 535 5.7.0 Invalid credentials","timestamp":"2026-04-26T05:56:57.169Z"}

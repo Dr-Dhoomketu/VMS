@@ -1,6 +1,7 @@
 'use client';
 import { useState, useRef, useCallback, useEffect } from 'react';
 import Webcam from 'react-webcam';
+import Cropper from 'react-easy-crop';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import Link from 'next/link';
@@ -344,6 +345,40 @@ export default function CheckInPage() {
   const [image, setImage] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isWebcamReady, setIsWebcamReady] = useState(false);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+  const [isFinalized, setIsFinalized] = useState(false);
+
+  const onCropComplete = useCallback((croppedArea, croppedAreaPixels) => {
+    setCroppedAreaPixels(croppedAreaPixels);
+  }, []);
+
+  const createCroppedImage = async () => {
+    try {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      img.src = image;
+      await new Promise(r => img.onload = r);
+
+      canvas.width = croppedAreaPixels.width;
+      canvas.height = croppedAreaPixels.height;
+
+      ctx.drawImage(
+        img,
+        croppedAreaPixels.x, croppedAreaPixels.y,
+        croppedAreaPixels.width, croppedAreaPixels.height,
+        0, 0,
+        croppedAreaPixels.width, croppedAreaPixels.height
+      );
+
+      return canvas.toDataURL('image/jpeg', 0.9);
+    } catch (e) {
+      console.error(e);
+      return image;
+    }
+  };
   const [webcamError, setWebcamError] = useState(null);
   const [videoConstraints, setVideoConstraints] = useState(null);
 
@@ -613,8 +648,33 @@ export default function CheckInPage() {
                 <h1 className="text-[clamp(2.5rem,6vw,5rem)] font-black tracking-tighter uppercase leading-none">Photo<br />Identity</h1>
               </div>
 
-              <div className="w-full max-w-2xl rounded-[2.5rem] border border-white/10 bg-black/60 overflow-hidden relative aspect-video flex items-center justify-center shadow-[0_20px_60px_rgba(0,0,0,0.6)]">
-                {image ? (
+              <div className="w-full max-w-2xl rounded-[2.5rem] border border-white/10 bg-black/60 overflow-hidden relative aspect-square md:aspect-video flex items-center justify-center shadow-[0_20px_60px_rgba(0,0,0,0.6)]">
+                {image && !isFinalized ? (
+                  <div className="relative w-full h-full">
+                    <Cropper
+                      image={image}
+                      crop={crop}
+                      zoom={zoom}
+                      aspect={1}
+                      onCropChange={setCrop}
+                      onCropComplete={onCropComplete}
+                      onZoomChange={setZoom}
+                      cropShape="round"
+                      showGrid={false}
+                      style={{
+                        containerStyle: { background: '#000' },
+                        cropAreaStyle: { border: '2px solid rgba(255,255,255,0.3)' }
+                      }}
+                    />
+                    {/* Circle Grid Overlay inside Cropper area */}
+                    <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+                       <div className="w-[300px] h-[300px] rounded-full border border-white/10" style={{
+                         backgroundImage: 'radial-gradient(rgba(255,255,255,0.2) 1px, transparent 1px)',
+                         backgroundSize: '20px 20px'
+                       }} />
+                    </div>
+                  </div>
+                ) : image && isFinalized ? (
                   <img src={image} alt="captured" className="w-full h-full object-cover" />
                 ) : webcamError ? (
                   <div className="flex flex-col items-center gap-4 p-10 text-center">
@@ -633,11 +693,31 @@ export default function CheckInPage() {
                       </div>
                     )}
                     {videoConstraints !== null && (
-                      <Webcam audio={false} ref={webcamRef} screenshotFormat="image/jpeg" videoConstraints={videoConstraints}
-                        className="w-full h-full object-cover"
-                        onUserMedia={() => { setIsWebcamReady(true); setWebcamError(null); setWebcamLoading(false); }}
-                        onUserMediaError={handleWebcamError}
-                      />
+                      <div className="relative w-full h-full">
+                        <Webcam audio={false} ref={webcamRef} screenshotFormat="image/jpeg" videoConstraints={videoConstraints}
+                          className="w-full h-full object-cover"
+                          onUserMedia={() => { setIsWebcamReady(true); setWebcamError(null); setWebcamLoading(false); }}
+                          onUserMediaError={handleWebcamError}
+                        />
+                        {/* Cinematic Dot Grid Overlay */}
+                        {isWebcamReady && !image && (
+                          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                             <div className="absolute inset-0 opacity-40" style={{
+                               backgroundImage: 'radial-gradient(rgba(255,255,255,0.15) 1px, transparent 1px)',
+                               backgroundSize: '24px 24px'
+                             }} />
+                             <div className="absolute top-0 left-0 w-full h-1 bg-white/10 animate-scan" style={{
+                               background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)',
+                               boxShadow: '0 0 20px rgba(255,255,255,0.2)'
+                             }} />
+                             {/* Corners */}
+                             <div className="absolute top-10 left-10 w-8 h-8 border-t-2 border-l-2 border-white/30" />
+                             <div className="absolute top-10 right-10 w-8 h-8 border-t-2 border-r-2 border-white/30" />
+                             <div className="absolute bottom-10 left-10 w-8 h-8 border-b-2 border-l-2 border-white/30" />
+                             <div className="absolute bottom-10 right-10 w-8 h-8 border-b-2 border-r-2 border-white/30" />
+                          </div>
+                        )}
+                      </div>
                     )}
                   </>
                 )}
@@ -647,7 +727,31 @@ export default function CheckInPage() {
               </div>
 
               <div className="flex flex-col items-center gap-5 w-full">
-                {!image ? (
+                {image && !isFinalized ? (
+                  <div className="w-full max-w-xs space-y-6">
+                    <div className="space-y-3">
+                      <label className="block text-[10px] uppercase tracking-widest text-gray-500 text-center font-black">Zoom to Focus Face</label>
+                      <input 
+                        type="range" min="1" max="3" step="0.1" 
+                        value={zoom} onChange={(e) => setZoom(e.target.value)}
+                        className="w-full accent-white"
+                      />
+                    </div>
+                    <button 
+                      onClick={async () => {
+                        const cropped = await createCroppedImage();
+                        setImage(cropped);
+                        setIsFinalized(true);
+                      }}
+                      className="w-full btn-primary py-5 rounded-2xl font-black uppercase tracking-[0.4em] text-[10px]"
+                    >
+                      ✓ Finalize Identity
+                    </button>
+                    <button onClick={() => { setImage(null); setIsFinalized(false); }} className="w-full text-gray-500 text-[10px] uppercase font-black tracking-widest hover:text-white transition-colors">
+                      Retake Photo
+                    </button>
+                  </div>
+                ) : !image ? (
                   <div className="flex gap-4 flex-wrap justify-center">
                     <button onClick={capture} disabled={!isWebcamReady || !!webcamError}
                       className="btn-primary py-5 px-12 rounded-2xl font-black uppercase tracking-[0.4em] text-[10px] disabled:opacity-30 disabled:cursor-not-allowed">
