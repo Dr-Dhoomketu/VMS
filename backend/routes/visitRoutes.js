@@ -4,7 +4,7 @@ const multer = require('multer');
 const path = require('path');
 const { 
   requestVisit, getPendingVisits, updateVisitStatus, 
-  checkoutVisit, getAllVisits, getHistoryByPhone, getStats 
+  checkoutVisit, getAllVisits, getHistoryByPhone, getStats, getApprovedVisits 
 } = require('../controllers/visitController');
 const { protect, authorize } = require('../middlewares/authMiddleware');
 
@@ -30,5 +30,6 @@ router.put('/:id/status', protect, authorize('Admin', 'Employee'), updateVisitSt
 router.post('/:id/checkout', protect, authorize('Admin'), checkoutVisit);
 router.get('/history', getHistoryByPhone);
 router.get('/stats', protect, authorize('Admin'), getStats);
+router.get('/approved', protect, authorize('Admin', 'Employee'), getApprovedVisits);
 
 module.exports = router;

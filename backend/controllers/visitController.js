@@ -275,7 +275,26 @@ const getStats = async (req, res) => {
   }
 };
 
+// @desc    Get approved visits
+// @route   GET /api/v1/visits/approved
+// @access  Private (Admin/Employee)
+const getApprovedVisits = async (req, res) => {
+  try {
+    let query = { status: 'Approved' };
+    if (req.user.role === 'Employee') {
+      query.meetWith = req.user._id;
+    }
+    const visits = await Visit.find(query)
+      .populate('visitor', 'name phone email imageUrl aadhar gender address')
+      .populate('meetWith', 'name email')
+      .sort({ updatedAt: -1 });
+    res.json(visits);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 module.exports = { 
   requestVisit, getPendingVisits, updateVisitStatus, 
-  checkoutVisit, getAllVisits, getHistoryByPhone, getStats 
+  checkoutVisit, getAllVisits, getHistoryByPhone, getStats, getApprovedVisits
 };
