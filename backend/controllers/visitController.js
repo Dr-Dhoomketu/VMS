@@ -108,69 +108,121 @@ const updateVisitStatus = async (req, res) => {
 
       if (visit.visitor.email) {
         const hostName = visit.meetWith ? visit.meetWith.name : 'your host';
-        const dateStr = visit.scheduledTime ? new Date(visit.scheduledTime).toLocaleDateString() : new Date().toLocaleDateString();
-        const baseUrl = process.env.BASE_URL || 'http://localhost:5000';
+        const dateStr = visit.scheduledTime ? new Date(visit.scheduledTime).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : new Date().toLocaleDateString();
+        const baseUrl = process.env.BASE_URL || 'https://vms-pa97.onrender.com';
         const visitorPhoto = visit.visitor.imageUrl ? `${baseUrl}${visit.visitor.imageUrl}` : null;
-        
+        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(visit.qrToken)}&color=ffffff&bgcolor=000000`;
+        const passId = `VMS-${visit._id.toString().slice(-6).toUpperCase()}`;
+
         const gatePassHtml = `
-          <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f4f4f7; padding: 40px 20px; color: #1d1d1f; line-height: 1.6;">
-            <div style="max-w-md mx-auto; background: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin: 0 auto; max-width: 450px;">
-              
-              <!-- Header -->
-              <div style="background: linear-gradient(135deg, #111111, #000000); padding: 30px 20px; text-align: center;">
-                <h2 style="color: #ffffff; margin: 0; font-size: 14px; text-transform: uppercase; letter-spacing: 4px;">Premium VMS</h2>
-                <h1 style="color: #ffffff; margin: 10px 0 0 0; font-size: 28px; font-weight: 300;">Digital Gate Pass</h1>
-              </div>
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          </head>
+          <body style="margin: 0; padding: 0; background-color: #000000; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #000000;">
+              <tr>
+                <td align="center" style="padding: 40px 10px;">
+                  
+                  <!-- Premium Card Container -->
+                  <div style="max-width: 480px; width: 100%; background-color: #0a0a0a; border: 1px solid rgba(255,255,255,0.08); border-radius: 32px; overflow: hidden; box-shadow: 0 40px 100px rgba(0,0,0,0.8); margin: 0 auto; text-align: left;">
+                    
+                    <!-- Top Accent -->
+                    <div style="height: 4px; background: linear-gradient(90deg, #ffffff 0%, rgba(255,255,255,0.1) 100%);"></div>
 
-              <!-- Body -->
-              <div style="padding: 30px;">
-                <p style="margin: 0 0 20px 0; font-size: 16px; color: #86868b; text-align: center;">
-                  Hello <strong>${visit.visitor.name}</strong>,<br>Your visit has been approved by ${hostName}.
-                </p>
+                    <!-- Header -->
+                    <div style="padding: 30px 40px; background-color: #ffffff; display: block; text-align: center;">
+                      <div style="font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 5px; color: #888888; margin-bottom: 4px;">Premium VMS</div>
+                      <div style="font-size: 22px; font-weight: 900; letter-spacing: -1px; color: #000000; text-transform: uppercase;">Digital Gate Pass</div>
+                    </div>
 
-                ${visitorPhoto ? `
-                <!-- Photo Section -->
-                <div style="text-align: center; margin-bottom: 25px;">
-                  <div style="width: 100px; height: 120px; margin: 0 auto; border-radius: 16px; overflow: hidden; border: 4px solid #fbfbfd; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
-                    <img src="${visitorPhoto}" alt="Visitor Photo" style="width: 100%; height: 100%; object-fit: cover;" />
+                    <!-- Body -->
+                    <div style="padding: 40px;">
+                      
+                      <!-- Greeting -->
+                      <div style="text-align: center; margin-bottom: 35px;">
+                        <p style="margin: 0; font-size: 16px; color: #86868b;">Hello <strong>${visit.visitor.name}</strong>,</p>
+                        <p style="margin: 5px 0 0 0; font-size: 14px; color: #555555;">Your access request has been authorized.</p>
+                      </div>
+
+                      <!-- Photo & QR Section -->
+                      <div style="background-color: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 24px; padding: 30px; margin-bottom: 30px; text-align: center;">
+                        
+                        <table width="100%" cellspacing="0" cellpadding="0" border="0">
+                          <tr>
+                            <td align="center" style="padding-bottom: 25px;">
+                               <div style="width: 200px; height: 200px; background-color: #000000; border-radius: 16px; padding: 15px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 0 30px rgba(255,255,255,0.05);">
+                                 <img src="${qrUrl}" alt="Secure QR" width="200" height="200" style="display: block; border-radius: 8px;" />
+                               </div>
+                               <div style="margin-top: 15px; font-size: 10px; text-transform: uppercase; letter-spacing: 3px; color: #555555; font-weight: 800;">Scan at Terminal</div>
+                            </td>
+                          </tr>
+                          ${visitorPhoto ? `
+                          <tr>
+                            <td align="center">
+                              <div style="width: 80px; height: 100px; border-radius: 12px; overflow: hidden; border: 2px solid rgba(255,255,255,0.1); display: inline-block;">
+                                <img src="${visitorPhoto}" alt="Visitor" width="80" height="100" style="display: block; object-fit: cover;" />
+                              </div>
+                              <div style="margin-top: 8px; font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: #444444; font-weight: 800;">Photo ID</div>
+                            </td>
+                          </tr>
+                          ` : ''}
+                        </table>
+                      </div>
+
+                      <!-- Visit Details -->
+                      <div style="background-color: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 20px; padding: 25px;">
+                        <table width="100%" cellspacing="0" cellpadding="0" border="0">
+                          <tr>
+                            <td style="padding-bottom: 20px;">
+                              <div style="font-size: 9px; text-transform: uppercase; letter-spacing: 2px; color: #555555; font-weight: 800; margin-bottom: 4px;">Host / Meet With</div>
+                              <div style="font-size: 15px; color: #ffffff; font-weight: 600;">${hostName}</div>
+                            </td>
+                            <td style="padding-bottom: 20px; text-align: right;">
+                              <div style="font-size: 9px; text-transform: uppercase; letter-spacing: 2px; color: #555555; font-weight: 800; margin-bottom: 4px;">Pass ID</div>
+                              <div style="font-size: 15px; color: #ffffff; font-weight: 600; font-family: monospace;">${passId}</div>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td>
+                              <div style="font-size: 9px; text-transform: uppercase; letter-spacing: 2px; color: #555555; font-weight: 800; margin-bottom: 4px;">Visit Date</div>
+                              <div style="font-size: 15px; color: #ffffff; font-weight: 600;">${dateStr}</div>
+                            </td>
+                            <td style="text-align: right;">
+                              <div style="font-size: 9px; text-transform: uppercase; letter-spacing: 2px; color: #555555; font-weight: 800; margin-bottom: 4px;">Purpose</div>
+                              <div style="font-size: 15px; color: #ffffff; font-weight: 600;">${visit.purpose || 'Meeting'}</div>
+                            </td>
+                          </tr>
+                        </table>
+                      </div>
+
+                      <!-- Instructions -->
+                      <div style="margin-top: 40px; text-align: center; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 30px;">
+                        <p style="margin: 0; font-size: 12px; color: #555555; line-height: 1.8;">
+                          Please present this digital pass at the entrance.<br>
+                          Authorization is valid only for the date mentioned above.
+                        </p>
+                      </div>
+
+                    </div>
+
+                    <!-- Footer -->
+                    <div style="padding: 25px 40px; background-color: #050505; text-align: center; border-top: 1px solid rgba(255,255,255,0.03);">
+                      <div style="font-size: 10px; color: #333333; text-transform: uppercase; letter-spacing: 3px; font-weight: 800;">ValueTech Systems</div>
+                    </div>
+
                   </div>
-                  <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #86868b; margin-top: 8px;">Photo Identity</div>
-                </div>
-                ` : ''}
 
-                <div style="background: #fbfbfd; border-radius: 16px; padding: 20px; margin-bottom: 30px; border: 1px solid #e5e5ea;">
-                  <table style="width: 100%; border-collapse: collapse;">
-                    <tr>
-                      <td style="padding-bottom: 15px;">
-                        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #86868b;">Date</div>
-                        <div style="font-size: 16px; font-weight: 600; color: #1d1d1f;">${dateStr}</div>
-                      </td>
-                      <td style="padding-bottom: 15px; text-align: right;">
-                        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #86868b;">Purpose</div>
-                        <div style="font-size: 16px; font-weight: 600; color: #1d1d1f;">${visit.purpose || 'Meeting'}</div>
-                      </td>
-                    </tr>
-                  </table>
-                </div>
+                  <!-- Branding -->
+                  <p style="margin-top: 30px; font-size: 11px; color: #444444; letter-spacing: 1px; font-weight: 600;">PROTECTED BY PREMIUM VMS 2.0</p>
 
-                <!-- QR Code Section -->
-                <div style="text-align: center;">
-                  <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #86868b; margin-bottom: 15px;">Scan at Terminal</div>
-                  <div style="display: inline-block; padding: 15px; background: #ffffff; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border: 1px solid #f0f0f0;">
-                    <img src="${qrImage}" alt="Secure QR Code" style="width: 200px; height: 200px; display: block;" />
-                  </div>
-                </div>
-              </div>
-
-              <!-- Footer -->
-              <div style="background: #fbfbfd; padding: 20px; text-align: center; border-top: 1px solid #e5e5ea;">
-                <p style="margin: 0; font-size: 12px; color: #86868b;">
-                  Please present this QR code at the security desk upon arrival.
-                </p>
-              </div>
-
-            </div>
-          </div>
+                </td>
+              </tr>
+            </table>
+          </body>
+          </html>
         `;
 
         sendEmail(

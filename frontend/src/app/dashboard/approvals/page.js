@@ -304,7 +304,7 @@ export default function ApprovalsPage() {
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {pendingVisits.map((visit) => (
-              <div key={visit._id} className="holographic-glass p-8 border border-white/5 bg-white/[0.03] rounded-3xl shadow-2xl relative overflow-hidden group">
+              <div key={visit._id} className="holographic-glass p-8 border border-white/5 theme-coffee:border-black/5 bg-white/[0.03] theme-coffee:bg-white rounded-3xl shadow-2xl relative overflow-hidden group">
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
                 {/* Pending request header */}
@@ -322,11 +322,11 @@ export default function ApprovalsPage() {
                     )}
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-xl font-black text-white uppercase tracking-tighter">{visit.visitor?.name}</h3>
-                    <p className="text-blue-400 text-[10px] uppercase tracking-widest font-black mt-1">Host: {visit.meetWith?.name}</p>
+                    <h3 className="text-xl font-black text-white theme-coffee:text-[#1d1d1f] uppercase tracking-tighter">{visit.visitor?.name}</h3>
+                    <p className="text-blue-500 theme-coffee:text-blue-600 text-[10px] uppercase tracking-widest font-black mt-1">Host: {visit.meetWith?.name}</p>
                     <div className="mt-4 space-y-1">
-                      <p className="text-xs text-gray-400">Purpose: <span className="text-gray-200 font-semibold">{visit.purpose}</span></p>
-                      <p className="text-xs text-gray-400">Phone: <span className="text-gray-200 font-mono">{visit.visitor?.phone}</span></p>
+                      <p className="text-xs text-gray-500">Purpose: <span className="text-gray-200 theme-coffee:text-gray-800 font-semibold">{visit.purpose}</span></p>
+                      <p className="text-xs text-gray-500">Phone: <span className="text-gray-200 theme-coffee:text-gray-800 font-mono">{visit.visitor?.phone}</span></p>
                     </div>
                   </div>
                 </div>
