@@ -1,13 +1,12 @@
 const nodemailer = require('nodemailer');
 const logger = require('../utils/logger');
 
-// Setup Nodemailer transport (dummy config for now)
+// Setup Nodemailer transport (Gmail optimized)
 const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || 'smtp.mailtrap.io',
-  port: process.env.SMTP_PORT || 2525,
+  service: 'gmail',
   auth: {
-    user: process.env.SMTP_USER || 'user',
-    pass: process.env.SMTP_PASS || 'pass',
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
   },
 });
 
