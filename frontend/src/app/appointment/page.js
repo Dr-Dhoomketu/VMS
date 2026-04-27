@@ -68,14 +68,18 @@ export default function AppointmentPage() {
       {/* Navbar - matches check-in page */}
       <nav className="relative z-50 flex justify-between items-center px-10 py-8 border-b border-white/5 theme-coffee:border-black/5 backdrop-blur-sm">
         <ValueTechLogo className="h-[60px] w-auto" />
-        <Link href="/" className="w-10 h-10 rounded-full border border-white/10 theme-coffee:border-black/10 flex items-center justify-center hover:bg-white/10 theme-coffee:hover:bg-black/5 transition-all text-gray-500 hover:text-white theme-coffee:hover:text-black">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
-        </Link>
       </nav>
 
       {/* Content */}
       <div className="flex-1 flex items-start justify-center py-16 px-6">
         <div className="w-full max-w-4xl">
+          {/* Close button */}
+          <Link href="/" className="inline-flex items-center gap-2 mb-8 text-gray-500 hover:text-white theme-coffee:hover:text-black text-[10px] uppercase tracking-[0.2em] font-bold transition-colors group">
+            <span className="w-8 h-8 rounded-full border border-white/10 theme-coffee:border-black/10 flex items-center justify-center group-hover:bg-white/10 theme-coffee:group-hover:bg-black/5 transition-all">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            </span>
+            Close
+          </Link>
 
           {step === 1 ? (
             <form onSubmit={handleSubmit} className="space-y-10 fade-up">
