@@ -134,7 +134,7 @@ const updateVisitStatus = async (req, res) => {
 
                     <!-- Header -->
                     <div style="padding: 30px 40px; background-color: #ffffff; display: block; text-align: center;">
-                      <div style="font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 5px; color: #888888; margin-bottom: 4px;">Premium VMS</div>
+                      <div style="font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 5px; color: #888888; margin-bottom: 4px;">VMS</div>
                       <div style="font-size: 22px; font-weight: 900; letter-spacing: -1px; color: #000000; text-transform: uppercase;">Digital Gate Pass</div>
                     </div>
 
@@ -216,7 +216,7 @@ const updateVisitStatus = async (req, res) => {
                   </div>
 
                   <!-- Branding -->
-                  <p style="margin-top: 30px; font-size: 11px; color: #444444; letter-spacing: 1px; font-weight: 600;">PROTECTED BY PREMIUM VMS 2.0</p>
+                  <p style="margin-top: 30px; font-size: 11px; color: #444444; letter-spacing: 1px; font-weight: 600;">PROTECTED BY VMS 2.0</p>
 
                 </td>
               </tr>

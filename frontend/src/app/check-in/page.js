@@ -509,7 +509,7 @@ export default function CheckInPage() {
       {/* Navbar */}
       <nav className="relative z-50 flex justify-between items-center px-10 py-8 border-b border-white/5 theme-coffee:border-black/5 backdrop-blur-sm">
         <ValueTechLogo className="h-[60px] w-auto" />
-        <Link href="/" className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all text-gray-500 hover:text-white">
+        <Link href="/" className="w-10 h-10 rounded-full border border-white/10 theme-coffee:border-black/10 flex items-center justify-center hover:bg-white/10 theme-coffee:hover:bg-black/5 transition-all text-gray-500 hover:text-white theme-coffee:hover:text-black">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
         </Link>
       </nav>

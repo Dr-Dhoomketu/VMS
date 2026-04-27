@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
-import GlassCard from '@/components/GlassCard';
 import Link from 'next/link';
+import ValueTechLogo from '@/components/ValueTechLogo';
 
 export default function ReturningVisitor() {
   const [phone, setPhone] = useState('');
@@ -82,98 +82,117 @@ export default function ReturningVisitor() {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-4 bg-black relative">
-      {/* Close Button on Top Left */}
-      <Link href="/" className="absolute top-8 left-8 z-50 w-12 h-12 rounded-full border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all text-gray-400 hover:text-white">
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-      </Link>
+    <main className="min-h-screen flex flex-col bg-[#050505] theme-coffee:bg-[#fbfbfd] text-white theme-coffee:text-[#1d1d1f] relative dot-bg">
+      {/* Navbar - matches check-in page */}
+      <nav className="relative z-50 flex justify-between items-center px-10 py-8 border-b border-white/5 theme-coffee:border-black/5 backdrop-blur-sm">
+        <ValueTechLogo className="h-[60px] w-auto" />
+        <Link href="/" className="w-10 h-10 rounded-full border border-white/10 theme-coffee:border-black/10 flex items-center justify-center hover:bg-white/10 theme-coffee:hover:bg-black/5 transition-all text-gray-500 hover:text-white theme-coffee:hover:text-black">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+        </Link>
+      </nav>
 
-      <GlassCard className="w-full max-w-md">
-        {step === 1 && (
-          <form onSubmit={handleSearch} className="space-y-8 fade-up py-4">
-            <div className="text-center">
-              <h2 className="text-4xl font-black tracking-tighter uppercase text-white">Returning Visitor</h2>
-              <p className="text-gray-500 text-[10px] uppercase tracking-[0.3em] font-bold mt-1">Please enter your registered number</p>
-            </div>
-            
-            {error && <p className="text-red-500 text-[10px] uppercase font-bold text-center tracking-widest">{error}</p>}
-            
-            <div>
-              <label className="block text-[10px] uppercase tracking-widest text-gray-400 font-black mb-2">Mobile Number</label>
-              <input required type="tel" className="w-full" 
-                value={phone} onChange={e => setPhone(e.target.value)} placeholder="+91 ..." />
-            </div>
-            <button type="submit" className="btn-action btn-primary w-full py-4 text-xs font-black tracking-[0.2em]">
-              Search Records →
-            </button>
-          </form>
-        )}
+      {/* Content */}
+      <div className="flex-1 flex items-center justify-center p-6">
+        <div className="w-full max-w-md">
 
-        {step === 2 && (
-          <form onSubmit={handleCheckIn} className="space-y-8 text-center fade-up py-4">
-             <div className="text-center">
-              <h2 className="text-4xl font-black tracking-tighter uppercase text-white">Record Found</h2>
-              <p className="text-gray-500 text-[10px] uppercase tracking-[0.3em] font-bold mt-1">Welcome back!</p>
-            </div>
-
-             <div className="w-24 h-24 mx-auto rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
-               <img src={visitorData?.imageUrl ? `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}${visitorData.imageUrl}` : "https://via.placeholder.com/150"} alt="avatar" className="w-full h-full object-cover" />
-             </div>
-             
-             <div>
-               <h3 className="text-2xl font-black text-white tracking-tighter uppercase">Hello, {visitorData?.name}</h3>
-               <p className="text-gray-500 text-[10px] uppercase tracking-widest font-bold">Please confirm your visit details</p>
-             </div>
-             
-             <div className="text-left space-y-4">
-                 <div>
-                   <label className="block text-[10px] uppercase tracking-widest text-gray-400 font-black mb-2">Who are you meeting?</label>
-                   <select required className="w-full" value={formData.meetWith} onChange={e => setFormData({...formData, meetWith: e.target.value})}>
-                     <option value="">Select Employee</option>
-                     {employees.map(emp => (
-                       <option key={emp._id} value={emp._id}>{emp.name}</option>
-                     ))}
-                   </select>
-                 </div>
-                 <div>
-                   <label className="block text-[10px] uppercase tracking-widest text-gray-400 font-black mb-2">Purpose of Visit</label>
-                   <input required type="text" className="w-full" value={formData.purpose} onChange={e => setFormData({...formData, purpose: e.target.value})} />
-                 </div>
-                 <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-[10px] uppercase tracking-widest text-gray-400 font-black mb-2">Check-In Time</label>
-                      <input required type="time" className="w-full" value={formData.fromTime} onChange={e => setFormData({...formData, fromTime: e.target.value})} />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] uppercase tracking-widest text-gray-400 font-black mb-2">Duration</label>
-                      <input type="text" className="w-full" value={formData.duration} onChange={e => setFormData({...formData, duration: e.target.value})} placeholder="e.g. 1hr" />
-                    </div>
-                 </div>
+          {step === 1 && (
+            <div className="fade-up">
+              <div className="relative overflow-hidden rounded-3xl bg-white/[0.03] theme-coffee:bg-white border border-white/[0.07] theme-coffee:border-black/[0.07] p-8 shadow-[0_4px_40px_rgba(0,0,0,0.4)] theme-coffee:shadow-[0_4px_40px_rgba(0,0,0,0.04)]">
+                <div className="absolute top-0 left-0 w-[2px] h-full bg-gradient-to-b from-white/40 theme-coffee:from-black/20 to-transparent" />
+                <form onSubmit={handleSearch} className="space-y-8 py-4">
+                  <div className="text-center">
+                    <h2 className="text-4xl font-black tracking-tighter uppercase">Returning Visitor</h2>
+                    <p className="text-gray-500 theme-coffee:text-gray-400 text-[10px] uppercase tracking-[0.3em] font-bold mt-1">Please enter your registered number</p>
+                  </div>
+                  
+                  {error && <p className="text-red-500 text-[10px] uppercase font-bold text-center tracking-widest p-4 bg-red-500/10 border border-red-500/20 rounded-xl">{error}</p>}
+                  
+                  <div>
+                    <label className="block text-[10px] uppercase tracking-widest text-gray-500 font-black mb-2">Mobile Number</label>
+                    <input required type="tel" className="w-full" 
+                      value={phone} onChange={e => setPhone(e.target.value)} placeholder="+91 ..." />
+                  </div>
+                  <button type="submit" className="btn-primary w-full py-4 text-xs font-black tracking-[0.2em]">
+                    Search Records →
+                  </button>
+                </form>
               </div>
-
-             <button type="submit" disabled={isSubmitting} className="btn-action btn-danger w-full py-4 text-xs font-black tracking-[0.2em]">
-                {isSubmitting ? 'Submitting...' : 'Submit Request →'}
-             </button>
-             
-             <button type="button" onClick={() => setStep(1)} className="text-[10px] uppercase tracking-widest text-gray-500 hover:text-white font-bold">Not you? Search again</button>
-          </form>
-        )}
-
-        {step === 3 && (
-          <div className="text-center py-16 fade-up">
-            <div className="w-24 h-24 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center mx-auto mb-8 shadow-2xl">
-              <svg className="w-12 h-12 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
             </div>
-            <h3 className="text-3xl font-black text-white tracking-tighter uppercase mb-4">Request Sent</h3>
-            <p className="text-gray-500 font-bold text-[10px] uppercase tracking-widest leading-relaxed">
-              Host notified. Please wait for approval.
-            </p>
-            <Link href="/" className="inline-block mt-12 text-[10px] font-black uppercase tracking-[0.4em] text-blue-500 hover:text-white transition-all">
-              Return to Home
-            </Link>
-          </div>
-        )}
-      </GlassCard>
+          )}
+
+          {step === 2 && (
+            <div className="fade-up">
+              <div className="relative overflow-hidden rounded-3xl bg-white/[0.03] theme-coffee:bg-white border border-white/[0.07] theme-coffee:border-black/[0.07] p-8 shadow-[0_4px_40px_rgba(0,0,0,0.4)] theme-coffee:shadow-[0_4px_40px_rgba(0,0,0,0.04)]">
+                <div className="absolute top-0 left-0 w-[2px] h-full bg-gradient-to-b from-white/40 theme-coffee:from-black/20 to-transparent" />
+                <form onSubmit={handleCheckIn} className="space-y-8 text-center py-4">
+                  <div className="text-center">
+                    <h2 className="text-4xl font-black tracking-tighter uppercase">Record Found</h2>
+                    <p className="text-gray-500 theme-coffee:text-gray-400 text-[10px] uppercase tracking-[0.3em] font-bold mt-1">Welcome back!</p>
+                  </div>
+
+                  <div className="w-24 h-24 mx-auto rounded-2xl overflow-hidden border border-white/10 theme-coffee:border-black/10 shadow-2xl theme-coffee:shadow-lg">
+                    <img src={visitorData?.imageUrl ? `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}${visitorData.imageUrl}` : "https://via.placeholder.com/150"} alt="avatar" className="w-full h-full object-cover" />
+                  </div>
+                  
+                  <div>
+                    <h3 className="text-2xl font-black tracking-tighter uppercase">Hello, {visitorData?.name}</h3>
+                    <p className="text-gray-500 theme-coffee:text-gray-400 text-[10px] uppercase tracking-widest font-bold">Please confirm your visit details</p>
+                  </div>
+                  
+                  <div className="text-left space-y-4">
+                    <div>
+                      <label className="block text-[10px] uppercase tracking-widest text-gray-500 font-black mb-2">Who are you meeting?</label>
+                      <select required className="w-full" value={formData.meetWith} onChange={e => setFormData({...formData, meetWith: e.target.value})}>
+                        <option value="">Select Employee</option>
+                        {employees.map(emp => (
+                          <option key={emp._id} value={emp._id}>{emp.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-[10px] uppercase tracking-widest text-gray-500 font-black mb-2">Purpose of Visit</label>
+                      <input required type="text" className="w-full" value={formData.purpose} onChange={e => setFormData({...formData, purpose: e.target.value})} />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-[10px] uppercase tracking-widest text-gray-500 font-black mb-2">Check-In Time</label>
+                        <input required type="time" className="w-full" value={formData.fromTime} onChange={e => setFormData({...formData, fromTime: e.target.value})} />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] uppercase tracking-widest text-gray-500 font-black mb-2">Duration</label>
+                        <input type="text" className="w-full" value={formData.duration} onChange={e => setFormData({...formData, duration: e.target.value})} placeholder="e.g. 1hr" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <button type="submit" disabled={isSubmitting} className="btn-primary w-full py-4 text-xs font-black tracking-[0.2em]">
+                    {isSubmitting ? 'Submitting...' : 'Submit Request →'}
+                  </button>
+                  
+                  <button type="button" onClick={() => setStep(1)} className="text-[10px] uppercase tracking-widest text-gray-500 hover:text-white theme-coffee:hover:text-black font-bold transition-colors">Not you? Search again</button>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {step === 3 && (
+            <div className="text-center py-16 fade-up">
+              <div className="w-28 h-28 rounded-full bg-white/5 theme-coffee:bg-black/5 border border-white/10 theme-coffee:border-black/10 flex items-center justify-center mx-auto mb-8 shadow-[0_0_60px_rgba(255,255,255,0.05)] theme-coffee:shadow-lg">
+                <svg className="w-14 h-14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
+              </div>
+              <p className="caption mb-4 text-gray-600">Request dispatched</p>
+              <h3 className="text-3xl font-black tracking-tighter uppercase mb-4">Request Sent</h3>
+              <p className="text-gray-500 font-bold text-[10px] uppercase tracking-widest leading-relaxed">
+                Host notified. Please wait for approval.
+              </p>
+              <Link href="/" className="inline-block mt-12 btn-primary py-4 px-12 rounded-2xl text-[10px] font-black uppercase tracking-[0.4em]">
+                Return to Home
+              </Link>
+            </div>
+          )}
+
+        </div>
+      </div>
     </main>
   );
 }

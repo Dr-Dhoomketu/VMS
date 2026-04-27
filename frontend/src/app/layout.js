@@ -6,7 +6,7 @@ const outfit = Outfit({ subsets: ["latin"], weight: ["300", "400", "500", "700",
 
 export const metadata = {
   title: "VMS | Cinematic Visitor Management",
-  description: "Premium Visitor Management System",
+  description: "Visitor Management System",
 };
 
 export default function RootLayout({ children }) {
