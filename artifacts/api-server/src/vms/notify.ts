@@ -5,7 +5,7 @@ import { logger } from '../lib/logger.js';
 async function sendViaResend(to: string, subject: string, html: string, text: string): Promise<boolean> {
   const apiKey = process.env['RESEND_API_KEY'];
   if (!apiKey) return false;
-  const from = process.env['RESEND_FROM'] || `VISITORPASS <${process.env['SMTP_USER'] || 'onboarding@resend.dev'}>`;
+  const from = process.env['RESEND_FROM'] || 'VISITORPASS <onboarding@resend.dev>';
   try {
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',

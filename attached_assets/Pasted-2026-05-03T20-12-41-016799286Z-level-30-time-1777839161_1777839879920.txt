@@ -1,0 +1,50 @@
+2026-05-03T20:12:41.016799286Z {"level":30,"time":1777839161016,"pid":68,"hostname":"srv-d7mbpflckfvc73ecni9g-hibernate-9f677db7c-w8v6k","msg":"MongoDB connected"}
+2026-05-03T20:12:41.020131442Z {"level":30,"time":1777839161016,"pid":68,"hostname":"srv-d7mbpflckfvc73ecni9g-hibernate-9f677db7c-w8v6k","msg":"Production mode — skipping auto-seed. Set SEED_DB=true to seed explicitly."}
+2026-05-03T20:12:46.318032937Z {"level":30,"time":1777839166317,"pid":68,"hostname":"srv-d7mbpflckfvc73ecni9g-hibernate-9f677db7c-w8v6k","req":{"id":2,"method":"GET","url":"/"},"res":{"statusCode":404},"responseTime":1,"msg":"request completed"}
+2026-05-03T20:12:46.383150085Z ==> 
+2026-05-03T20:12:46.389691367Z ==> ///////////////////////////////////////////////////////////
+2026-05-03T20:12:46.395426654Z ==> 
+2026-05-03T20:12:46.401639831Z ==> Available at your primary URL https://vms-pe97.onrender.com
+2026-05-03T20:12:46.405569864Z ==> 
+2026-05-03T20:12:46.413297899Z ==> ///////////////////////////////////////////////////////////
+2026-05-03T20:14:06.048510766Z {"level":30,"time":1777839246048,"pid":68,"hostname":"srv-d7mbpflckfvc73ecni9g-hibernate-9f677db7c-w8v6k","req":{"id":3,"method":"GET","url":"/api/v1/auth/test-email"},"res":{"statusCode":null},"responseTime":71403,"msg":"request aborted"}
+2026-05-03T20:15:12.81987041Z {"level":30,"time":1777839312819,"pid":68,"hostname":"srv-d7mbpflckfvc73ecni9g-hibernate-9f677db7c-w8v6k","req":{"id":5,"method":"GET","url":"/"},"res":{"statusCode":404},"responseTime":1,"msg":"request completed"}
+2026-05-03T20:16:09.765285869Z {"level":30,"time":1777839369765,"pid":68,"hostname":"srv-d7mbpflckfvc73ecni9g-hibernate-9f677db7c-w8v6k","req":{"id":4,"method":"GET","url":"/api/v1/auth/test-email"},"res":{"statusCode":200},"responseTime":120004,"msg":"request completed"}
+2026-05-03T20:16:10.627206745Z {"level":30,"time":1777839370626,"pid":68,"hostname":"srv-d7mbpflckfvc73ecni9g-hibernate-9f677db7c-w8v6k","req":{"id":6,"method":"GET","url":"/favicon.ico"},"res":{"statusCode":404},"responseTime":0,"msg":"request completed"}
+2026-05-03T20:17:46.333074277Z ==> Detected service running on port 10000
+2026-05-03T20:17:46.437697638Z ==> Docs on specifying a port: https://render.com/docs/web-services#port-binding
+2026-05-03T20:20:12.81994254Z {"level":30,"time":1777839612819,"pid":68,"hostname":"srv-d7mbpflckfvc73ecni9g-hibernate-9f677db7c-w8v6k","req":{"id":7,"method":"GET","url":"/"},"res":{"statusCode":404},"responseTime":1,"msg":"request completed"}
+2026-05-03T20:20:22.310612131Z ==> Deploying...
+2026-05-03T20:20:22.375722313Z ==> Setting WEB_CONCURRENCY=1 by default, based on available CPUs in the instance
+2026-05-03T20:20:53.802627679Z ==> Running 'node --enable-source-maps artifacts/api-server/dist/index.mjs'
+2026-05-03T20:21:01.207791797Z {"level":30,"time":1777839661207,"pid":69,"hostname":"srv-d7mbpflckfvc73ecni9g-hibernate-66b686f8dc-978qf","port":10000,"msg":"VMS Server listening"}
+2026-05-03T20:21:01.761509981Z {"level":30,"time":1777839661761,"pid":69,"hostname":"srv-d7mbpflckfvc73ecni9g-hibernate-66b686f8dc-978qf","req":{"id":1,"method":"HEAD","url":"/"},"res":{"statusCode":404},"responseTime":96,"msg":"request completed"}
+2026-05-03T20:21:03.553953394Z ==> Your service is live 🎉
+2026-05-03T20:21:03.602502438Z {"level":30,"time":1777839663602,"pid":69,"hostname":"srv-d7mbpflckfvc73ecni9g-hibernate-66b686f8dc-978qf","msg":"MongoDB connected"}
+2026-05-03T20:21:03.623447574Z {"level":30,"time":1777839663602,"pid":69,"hostname":"srv-d7mbpflckfvc73ecni9g-hibernate-66b686f8dc-978qf","msg":"Production mode — skipping auto-seed. Set SEED_DB=true to seed explicitly."}
+2026-05-03T20:21:03.627039404Z {"level":30,"time":1777839663626,"pid":69,"hostname":"srv-d7mbpflckfvc73ecni9g-hibernate-66b686f8dc-978qf","req":{"id":2,"method":"GET","url":"/"},"res":{"statusCode":404},"responseTime":1,"msg":"request completed"}
+2026-05-03T20:21:03.678120657Z ==> 
+2026-05-03T20:21:03.705395107Z ==> ///////////////////////////////////////////////////////////
+2026-05-03T20:21:03.710512732Z ==> 
+2026-05-03T20:21:03.716053586Z ==> Available at your primary URL https://vms-pe97.onrender.com
+2026-05-03T20:21:03.724619596Z ==> 
+2026-05-03T20:21:03.735746374Z ==> ///////////////////////////////////////////////////////////
+2026-05-03T20:22:47.915524225Z ==> Deploying...
+2026-05-03T20:22:48.002169533Z ==> Setting WEB_CONCURRENCY=1 by default, based on available CPUs in the instance
+2026-05-03T20:23:23.77168578Z ==> Running 'node --enable-source-maps artifacts/api-server/dist/index.mjs'
+2026-05-03T20:23:33.664279225Z {"level":30,"time":1777839813586,"pid":69,"hostname":"srv-d7mbpflckfvc73ecni9g-hibernate-969455cf9-k5455","port":10000,"msg":"VMS Server listening"}
+2026-05-03T20:23:34.134094103Z {"level":30,"time":1777839814133,"pid":69,"hostname":"srv-d7mbpflckfvc73ecni9g-hibernate-969455cf9-k5455","req":{"id":1,"method":"HEAD","url":"/"},"res":{"statusCode":404},"responseTime":163,"msg":"request completed"}
+2026-05-03T20:23:36.329966911Z {"level":30,"time":1777839816329,"pid":69,"hostname":"srv-d7mbpflckfvc73ecni9g-hibernate-969455cf9-k5455","msg":"MongoDB connected"}
+2026-05-03T20:23:36.332963053Z {"level":30,"time":1777839816329,"pid":69,"hostname":"srv-d7mbpflckfvc73ecni9g-hibernate-969455cf9-k5455","msg":"Production mode — skipping auto-seed. Set SEED_DB=true to seed explicitly."}
+2026-05-03T20:23:39.186971241Z ==> Your service is live 🎉
+2026-05-03T20:23:39.35130071Z {"level":30,"time":1777839819350,"pid":69,"hostname":"srv-d7mbpflckfvc73ecni9g-hibernate-969455cf9-k5455","req":{"id":2,"method":"GET","url":"/"},"res":{"statusCode":404},"responseTime":1,"msg":"request completed"}
+2026-05-03T20:23:39.467809113Z ==> 
+2026-05-03T20:23:39.470526857Z ==> ///////////////////////////////////////////////////////////
+2026-05-03T20:23:39.473746909Z ==> 
+2026-05-03T20:23:39.476727998Z ==> Available at your primary URL https://vms-pe97.onrender.com
+2026-05-03T20:23:39.479238756Z ==> 
+2026-05-03T20:23:39.483275995Z ==> ///////////////////////////////////////////////////////////
+2026-05-03T20:23:44.408498278Z {"level":50,"time":1777839824407,"pid":69,"hostname":"srv-d7mbpflckfvc73ecni9g-hibernate-969455cf9-k5455","data":{"statusCode":403,"message":"The gmail.com domain is not verified. Please, add and verify your domain on https://resend.com/domains","name":"validation_error"},"to":"shauryaujjwal102@gmail.com","msg":"Resend API error"}
+2026-05-03T20:23:54.409910362Z {"level":50,"time":1777839834409,"pid":69,"hostname":"srv-d7mbpflckfvc73ecni9g-hibernate-969455cf9-k5455","err":{"type":"Object","message":"SMTP timeout","stack":""},"to":"shauryaujjwal102@gmail.com","msg":"SMTP send failed"}
+2026-05-03T20:23:54.412807261Z {"level":30,"time":1777839834411,"pid":69,"hostname":"srv-d7mbpflckfvc73ecni9g-hibernate-969455cf9-k5455","req":{"id":3,"method":"GET","url":"/api/v1/auth/test-email"},"res":{"statusCode":200},"responseTime":10319,"msg":"request completed"}
+2026-05-03T20:23:54.767213081Z {"level":30,"time":1777839834766,"pid":69,"hostname":"srv-d7mbpflckfvc73ecni9g-hibernate-969455cf9-k5455","req":{"id":4,"method":"GET","url":"/favicon.ico"},"res":{"statusCode":404},"responseTime":0,"msg":"request completed"}
