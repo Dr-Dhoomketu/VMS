@@ -51,20 +51,46 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
 const otpStore = new Map<string, { otp: string; expires: number }>();
 function generateOTP() { return Math.floor(100000 + Math.random() * 900000).toString(); }
 
+async function sendSmsOtp(phone: string, otp: string): Promise<boolean> {
+  const apiKey = process.env['FAST2SMS_API_KEY'];
+  if (!apiKey) return false;
+  // Strip country code — Fast2SMS expects 10-digit Indian number
+  const digits = phone.replace(/\D/g, '');
+  const number = digits.length > 10 ? digits.slice(-10) : digits;
+  const message = `Your VISITORPASS OTP is ${otp}. Valid for 10 minutes. Do not share with anyone.`;
+  try {
+    const url = `https://www.fast2sms.com/dev/bulkV2?authorization=${apiKey}&route=q&message=${encodeURIComponent(message)}&numbers=${number}&flash=0`;
+    const res = await fetch(url);
+    const data: any = await res.json();
+    return data.return === true;
+  } catch {
+    return false;
+  }
+}
+
 router.post('/send-otp', async (req: Request, res: Response): Promise<void> => {
   const { email, phone } = req.body;
   if (!email && !phone) { res.status(400).json({ message: 'Email or phone required' }); return; }
   const result: any = { message: 'OTP sent' };
+
   if (email) {
     const otp = generateOTP();
     otpStore.set(`email:${email}`, { otp, expires: Date.now() + 10 * 60 * 1000 });
+    // Always return email OTP in result (no email service configured by default)
     result.emailOtp = otp;
   }
+
   if (phone) {
     const otp = generateOTP();
     otpStore.set(`phone:${phone}`, { otp, expires: Date.now() + 10 * 60 * 1000 });
-    result.phoneOtp = otp;
+    const smsSent = await sendSmsOtp(phone, otp);
+    if (!smsSent) {
+      // Dev mode — return OTP in response if SMS not configured
+      result.phoneOtp = otp;
+    }
+    // smsSent=true means real SMS was delivered, don't expose OTP in response
   }
+
   res.json(result);
 });
 
