@@ -328,7 +328,7 @@ export default function CheckInPage() {
   const [badgeColor, setBadgeColor] = useState('#2F5DAA');
   const [formData, setFormData] = useState({
     name: '', email: '', phone: '', gender: '', address: '', nationality: '',
-    aadhar: '', meetWith: '', purpose: '', fromTime: '', duration: '',
+    aadhar: '', meetWith: '', purpose: '', fromTime: '', toTime: '', duration: '',
   });
   const [photo, setPhoto] = useState<string | null>(null);
   const [croppedPhoto, setCroppedPhoto] = useState<File | null>(null);
@@ -347,6 +347,9 @@ export default function CheckInPage() {
   const [otpLoading, setOtpLoading] = useState(false);
   const [otpError, setOtpError] = useState('');
   const [phoneOtp, setPhoneOtp] = useState('');
+  const [emailOtp, setEmailOtp] = useState('');
+  const [phoneOtpVerified, setPhoneOtpVerified] = useState(false);
+  const [emailOtpVerified, setEmailOtpVerified] = useState(false);
   const [otpVerified, setOtpVerified] = useState(false);
   const confirmationResultRef = useRef<ConfirmationResult | null>(null);
   const recaptchaVerifierRef = useRef<RecaptchaVerifier | null>(null);
@@ -438,7 +441,18 @@ export default function CheckInPage() {
     try {
       const fullPhone = `${countryCode}${formData.phone}`;
 
-      // Create verifier only if one doesn't already exist — avoids "already rendered" error
+      // Send email OTP via backend if email is provided
+      if (formData.email) {
+        try {
+          await fetch(`${API_URL}/api/v1/auth/send-otp`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: formData.email }),
+          });
+        } catch { /* non-fatal */ }
+      }
+
+      // Send phone OTP via Firebase
       if (!recaptchaVerifierRef.current) {
         recaptchaVerifierRef.current = new RecaptchaVerifier(auth, 'recaptcha-container', {
           size: 'invisible',
@@ -451,7 +465,6 @@ export default function CheckInPage() {
       setOtpSent(true);
     } catch (err: any) {
       console.error('Firebase OTP error:', err);
-      // Reset on error so the next attempt gets a completely fresh verifier + DOM node
       resetRecaptcha();
       if (err.code === 'auth/billing-not-enabled') {
         setOtpError('Firebase billing not enabled. Add your number as a test number in Firebase Console → Authentication → Sign-in method → Phone → "Phone numbers for testing".');
@@ -471,13 +484,36 @@ export default function CheckInPage() {
     if (!confirmationResultRef.current) { setOtpError('Please request OTP first.'); return; }
     setOtpLoading(true); setOtpError('');
     try {
+      // Verify phone OTP via Firebase
       await confirmationResultRef.current.confirm(phoneOtp);
+      setPhoneOtpVerified(true);
+
+      // Verify email OTP via backend if email was provided
+      if (formData.email && emailOtp) {
+        const res = await fetch(`${API_URL}/api/v1/auth/verify-otp`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: formData.email, emailOtp }),
+        });
+        if (!res.ok) {
+          const d = await res.json();
+          setOtpError(d.message || 'Email OTP verification failed.');
+          setOtpLoading(false);
+          return;
+        }
+        setEmailOtpVerified(true);
+      } else if (formData.email && !emailOtp) {
+        setOtpError('Please enter the OTP sent to your email.');
+        setOtpLoading(false);
+        return;
+      }
+
       setOtpVerified(true);
       setStep(2);
     } catch (err: any) {
       console.error('Firebase verify error:', err);
       if (err.code === 'auth/invalid-verification-code') {
-        setOtpError('Incorrect OTP. Please check and try again.');
+        setOtpError('Incorrect mobile OTP. Please check and try again.');
       } else if (err.code === 'auth/code-expired') {
         setOtpError('OTP has expired. Please request a new one.');
         setOtpSent(false);
@@ -774,33 +810,45 @@ export default function CheckInPage() {
                   <p style={{ fontSize: '0.75rem', color: '#6B7FA3' }}>Enter the 6-digit codes sent to your phone{formData.email ? ' and email' : ''}</p>
                 </div>
 
-                {/* Firebase badge */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center', marginBottom: '20px' }}>
-                  <svg style={{ width: '14px', height: '14px', color: '#22c55e' }} fill="currentColor" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
-                  <span style={{ fontSize: '0.6rem', fontWeight: 700, color: '#6B7FA3', letterSpacing: '0.08em' }}>
-                    OTP sent via <strong style={{ color: '#0A1F44' }}>Firebase</strong> to {countryCode}{formData.phone}
-                  </span>
+                {/* OTP channels info */}
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center', marginBottom: '20px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '5px 12px', borderRadius: '20px', background: 'rgba(47,93,170,0.06)', border: '1px solid rgba(47,93,170,0.15)' }}>
+                    <svg style={{ width: '12px', height: '12px', color: '#22c55e' }} fill="currentColor" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+                    <span style={{ fontSize: '0.6rem', fontWeight: 700, color: '#6B7FA3' }}>SMS → <strong style={{ color: '#0A1F44' }}>{countryCode}{formData.phone}</strong></span>
+                  </div>
+                  {formData.email && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '5px 12px', borderRadius: '20px', background: 'rgba(47,93,170,0.06)', border: '1px solid rgba(47,93,170,0.15)' }}>
+                      <svg style={{ width: '12px', height: '12px', color: '#2F5DAA' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                      <span style={{ fontSize: '0.6rem', fontWeight: 700, color: '#6B7FA3' }}>Email → <strong style={{ color: '#0A1F44' }}>{formData.email}</strong></span>
+                    </div>
+                  )}
                 </div>
 
-                <OtpInput value={phoneOtp} onChange={setPhoneOtp} label="Enter 6-digit OTP" hint="Check your SMS messages"/>
+                <OtpInput value={phoneOtp} onChange={setPhoneOtp} label="Mobile OTP (SMS)" hint="Check your SMS messages"/>
+
+                {formData.email && (
+                  <div style={{ marginTop: '20px' }}>
+                    <OtpInput value={emailOtp} onChange={setEmailOtp} label="Email OTP" hint={`Check your inbox at ${formData.email}`}/>
+                  </div>
+                )}
 
                 {otpError && <div style={{ padding: '10px 14px', background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '10px', color: '#dc2626', fontSize: '0.75rem', marginTop: '16px', textAlign: 'center' }}>{otpError}</div>}
 
                 <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
-                  <button type="button" onClick={() => { setOtpSent(false); setOtpError(''); setPhoneOtp(''); confirmationResultRef.current = null; resetRecaptcha(); }} style={{ flex: 1, padding: '13px', borderRadius: '10px', border: '1.5px solid rgba(10,31,68,0.12)', background: 'transparent', color: '#0A1F44', cursor: 'pointer', fontSize: '0.72rem', fontWeight: 700 }}>← Back</button>
+                  <button type="button" onClick={() => { setOtpSent(false); setOtpError(''); setPhoneOtp(''); setEmailOtp(''); confirmationResultRef.current = null; resetRecaptcha(); }} style={{ flex: 1, padding: '13px', borderRadius: '10px', border: '1.5px solid rgba(10,31,68,0.12)', background: 'transparent', color: '#0A1F44', cursor: 'pointer', fontSize: '0.72rem', fontWeight: 700 }}>← Back</button>
                   <button
                     type="button"
                     onClick={verifyOtp}
-                    disabled={otpLoading || phoneOtp.length < 6}
+                    disabled={otpLoading || phoneOtp.length < 6 || (!!formData.email && emailOtp.length < 6)}
                     className="btn-vp-primary"
-                    style={{ flex: 2, justifyContent: 'center', opacity: phoneOtp.length < 6 ? 0.5 : 1 }}
+                    style={{ flex: 2, justifyContent: 'center', opacity: (phoneOtp.length < 6 || (!!formData.email && emailOtp.length < 6)) ? 0.5 : 1 }}
                   >
                     {otpLoading ? 'Verifying…' : 'Verify & Continue →'}
                   </button>
                 </div>
                 <p style={{ textAlign: 'center', fontSize: '0.65rem', color: '#A0AEC0', marginTop: '12px' }}>
                   Didn't receive?{' '}
-                  <button type="button" onClick={() => { setOtpSent(false); setPhoneOtp(''); confirmationResultRef.current = null; resetRecaptcha(); setTimeout(sendOtp, 150); }} style={{ background: 'none', border: 'none', color: '#2F5DAA', cursor: 'pointer', fontSize: '0.65rem', fontWeight: 700, padding: 0 }}>Resend OTP</button>
+                  <button type="button" onClick={() => { setOtpSent(false); setPhoneOtp(''); setEmailOtp(''); confirmationResultRef.current = null; resetRecaptcha(); setTimeout(sendOtp, 150); }} style={{ background: 'none', border: 'none', color: '#2F5DAA', cursor: 'pointer', fontSize: '0.65rem', fontWeight: 700, padding: 0 }}>Resend OTP</button>
                 </p>
               </div>
             ) : !otpVerified ? (
@@ -848,6 +896,10 @@ export default function CheckInPage() {
                   <QuickTimePicker value={formData.fromTime} onChange={v => setFormData(f => ({ ...f, fromTime: v }))} placeholder="Select time"/>
                 </div>
                 <div>
+                  <label className="vp-label">Expected Check-Out Time</label>
+                  <QuickTimePicker value={formData.toTime} onChange={v => setFormData(f => ({ ...f, toTime: v }))} placeholder="Select time"/>
+                </div>
+                <div style={{ gridColumn: '1/-1' }}>
                   <label className="vp-label">Expected Duration</label>
                   <DurationPicker value={formData.duration} onChange={v => setFormData(f => ({ ...f, duration: v }))}/>
                 </div>

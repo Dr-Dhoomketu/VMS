@@ -22,11 +22,12 @@ A Visitor Management System (VMS) for enterprises. Handles visitor check-ins, ap
 
 ### Routes (Frontend)
 - `/` — Landing page
-- `/login` — Admin/employee login
-- `/check-in` — New visitor check-in
-- `/appointment` — Pre-booked appointments
+- `/login` — Admin/employee login (left panel always visible with VISITORPASS branding)
+- `/check-in` — New visitor check-in (phone + email OTP, blink detection, checkout time)
+- `/appointment` — Pre-booked appointments (webcam+blink detection, no file upload)
 - `/returning` — Returning visitor flow
 - `/approvals` — Public approval page
+- `/video` — Animated explainer video (4-scene, 45-sec, visitor journey)
 - `/dashboard/*` — Admin dashboard (requires auth)
 
 ### API (Backend - Express)
@@ -39,8 +40,16 @@ A Visitor Management System (VMS) for enterprises. Handles visitor check-ins, ap
 
 ### Auth
 - JWT tokens stored in `localStorage`
-- Firebase Auth for OTP/biometric verification
+- Firebase Auth for phone OTP verification on new visitor check-in
+- Backend email OTP via `POST /api/v1/auth/send-otp` + `POST /api/v1/auth/verify-otp` (in-memory store, optional SMTP)
 - Seeded users: `admin@vms.com`, `admin@visitorpass.com`, `employee@visitorpass.com`
+
+### Recent Changes (Session)
+- **Login page**: Left panel now always visible (hidden only on mobile); floating cards enlarged (150×178px); VTS INFOSOFT logo enlarged
+- **CheckInPage**: Dual OTP (phone via Firebase + email via backend); checkout time picker added in Step 2
+- **AppointmentPage**: File upload removed; replaced with webcam + blink detection liveness check
+- **Sidebar**: Logo enlarged from 30px → 46px height
+- **Video**: 4-scene animated explainer at `/video` (office arrival → QR email → scan → entry → VISITORPASS logo)
 
 ## Key Commands
 

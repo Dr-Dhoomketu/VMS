@@ -1,0 +1,20 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "mGLyaxpEUYWHiM47XY2MI"
+uri = "file://artifacts/visitor-pass/public/images/office_exterior.png"
+type = "image"
+title = "modern office building exterior"
+
+[[generated]]
+id = "h4mzmekFeF0VGf_6lNutu"
+uri = "file://artifacts/visitor-pass/public/images/qr_scanner.png"
+type = "image"
+title = "sleek qr scanner device"
+
+[[generated]]
+id = "TZBF6IQ1l_ddzubNYq2H1"
+uri = "file://artifacts/visitor-pass/public/images/office_reception.png"
+type = "image"
+title = "modern office reception"

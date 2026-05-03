@@ -79,7 +79,7 @@ export default function Sidebar() {
       }}>
         {!collapsed && (
           <div style={{ overflow: 'hidden', whiteSpace: 'nowrap' }}>
-            <img src="/vts-logo.png" alt="VISITORPASS" style={{ height: '30px', width: 'auto', objectFit: 'contain', filter: 'brightness(0) invert(1)', display: 'block' }}/>
+            <img src="/vts-logo.png" alt="VISITORPASS" style={{ height: '46px', width: 'auto', objectFit: 'contain', filter: 'brightness(0) invert(1)', display: 'block' }}/>
             <p style={{ fontSize: '0.45rem', fontWeight: 800, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', marginTop: '6px' }}>Management Portal</p>
           </div>
         )}

@@ -11,7 +11,7 @@ function FloatingCard({ icon, label, rotate, top, left, right, bottom, delay, g1
     <div style={{
       position: 'absolute',
       top, left, right, bottom,
-      width: '120px', height: '142px',
+      width: '150px', height: '178px',
       borderRadius: '22px',
       background: `linear-gradient(145deg, ${g1}, ${g2})`,
       boxShadow: `0 28px 64px rgba(10,31,68,0.35), 0 8px 20px rgba(10,31,68,0.2), inset 0 1px 0 rgba(255,255,255,0.08)`,
@@ -72,7 +72,7 @@ export default function LoginPage() {
       {/* ── LEFT PANEL ── */}
       <div className="login-left" style={{
         width: '50%', background: '#0A1F44', position: 'relative',
-        display: 'none', flexDirection: 'column',
+        display: 'flex', flexDirection: 'column',
         alignItems: 'flex-start', justifyContent: 'center',
         padding: '72px 64px', flexShrink: 0, overflow: 'hidden',
       }}>
@@ -280,9 +280,8 @@ export default function LoginPage() {
       </div>
 
       <style>{`
-        .login-left { display: none; }
-        @media (min-width: 1024px) { .login-left { display: flex !important; } }
         @keyframes spin { to { transform: rotate(360deg); } }
+        @media (max-width: 767px) { .login-left { display: none !important; } }
       `}</style>
     </main>
   );
