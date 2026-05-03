@@ -1,10 +1,11 @@
-import express, { type Express } from "express";
+import express, { type Express, type Request, type Response, type NextFunction } from "express";
 import cors from "cors";
 import path from "path";
 import pinoHttp from "pino-http";
 import { createServer } from "http";
 import { Server as SocketIOServer } from "socket.io";
 import mongoose from "mongoose";
+import { rateLimit } from "express-rate-limit";
 import router from "./routes/index.js";
 import { logger } from "./lib/logger.js";
 import { autoSeed } from "./vms/seed.js";
@@ -28,6 +29,32 @@ app.use(
 app.use(cors({ origin: "*" }));
 app.use(express.json({ limit: "20mb" }));
 app.use(express.urlencoded({ extended: true, limit: "20mb" }));
+
+app.use((_req: Request, res: Response, next: NextFunction) => {
+  res.setHeader("Permissions-Policy", "camera=*");
+  next();
+});
+
+const publicLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: "Too many requests, please try again later." },
+});
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: "Too many login attempts, please try again later." },
+});
+
+app.use("/api/v1/visits/request", publicLimiter);
+app.use("/api/v1/visits/returning", publicLimiter);
+app.use("/api/v1/mobile", publicLimiter);
+app.use("/api/v1/auth/login", authLimiter);
 
 app.use("/public", express.static(path.join(process.cwd(), "public")));
 
