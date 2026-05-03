@@ -1,5 +1,5 @@
-import { motion, AnimatePresence } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { motion, AnimatePresence, useInView } from 'framer-motion';
+import { useEffect, useState, useRef } from 'react';
 
 const PHASE_DURATION = 2800;
 const TOTAL_PHASES = 4;

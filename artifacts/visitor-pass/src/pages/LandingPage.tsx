@@ -174,16 +174,9 @@ const features = [
   },
 ];
 
-const steps = [
-  { num: '01', title: 'Arrive & Scan', body: 'Walk up to the kiosk. Scan the QR or enter your mobile number to begin check-in.' },
-  { num: '02', title: 'Identity Verified', body: 'Blink detection + OTP verification confirms your identity. Your photo is captured live.' },
-  { num: '03', title: 'Gate Pass Issued', body: 'Receive your digital gate pass instantly. Your host is notified and access is granted.' },
-];
-
 export default function LandingPage() {
   const heroRef   = useRef<HTMLDivElement>(null);
   const cardsRef  = useRef<HTMLDivElement>(null);
-  const stepsRef  = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -192,10 +185,6 @@ export default function LandingPage() {
       gsap.from('.feat-card', {
         scrollTrigger: { trigger: cardsRef.current, start: 'top 82%' },
         y: 32, opacity: 0, duration: 0.7, stagger: 0.1, ease: 'power3.out',
-      });
-      gsap.from('.step-item', {
-        scrollTrigger: { trigger: stepsRef.current, start: 'top 82%' },
-        y: 28, opacity: 0, duration: 0.6, stagger: 0.13, ease: 'power3.out',
       });
     });
     return () => ctx.revert();
@@ -329,7 +318,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── FEATURES ── */}
-      <section ref={cardsRef} style={{ padding: '0 52px 100px', position: 'relative', zIndex: 1 }}>
+      <section ref={cardsRef} style={{ padding: '80px 52px 100px', position: 'relative', zIndex: 1 }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
           <div style={{ marginBottom: '56px', textAlign: 'center' }}>
             <p style={{ fontSize: '0.58rem', fontWeight: 800, letterSpacing: '0.35em', textTransform: 'uppercase', color: '#2F5DAA', marginBottom: '12px' }}>Why VisitorPass</p>
@@ -372,47 +361,6 @@ export default function LandingPage() {
 
       {/* ── PROCESS ANIMATION ── */}
       <ProcessAnimation />
-
-      {/* ── HOW IT WORKS ── */}
-      <section ref={stepsRef} style={{ padding: '80px 52px 100px', position: 'relative', zIndex: 1 }}>
-        <div style={{
-          position: 'absolute', inset: 0,
-          backgroundImage: 'linear-gradient(rgba(47,93,170,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(47,93,170,0.04) 1px, transparent 1px)',
-          backgroundSize: '48px 48px',
-          borderTop: '1px solid rgba(47,93,170,0.07)',
-          borderBottom: '1px solid rgba(47,93,170,0.07)',
-          background: '#F8FAFF',
-        }}/>
-        <div style={{ maxWidth: '1280px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
-          <div style={{ textAlign: 'center', marginBottom: '64px' }}>
-            <p style={{ fontSize: '0.58rem', fontWeight: 800, letterSpacing: '0.35em', textTransform: 'uppercase', color: '#2F5DAA', marginBottom: '12px' }}>The Process</p>
-            <h2 style={{ fontSize: '2.2rem', fontWeight: 900, letterSpacing: '-0.04em', color: '#0A1F44' }}>Three steps to access</h2>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px', position: 'relative' }}>
-            {steps.map((s, i) => (
-              <div key={i} className="step-item" style={{
-                background: '#fff',
-                border: '1px solid rgba(47,93,170,0.1)',
-                borderRadius: '20px',
-                padding: '40px',
-                boxShadow: '0 2px 16px rgba(10,31,68,0.05)',
-                position: 'relative',
-              }}>
-                <div style={{
-                  fontSize: '3.5rem', fontWeight: 900, letterSpacing: '-0.06em',
-                  background: 'linear-gradient(135deg, rgba(47,93,170,0.15), rgba(74,127,212,0.08))',
-                  WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
-                  lineHeight: 1, marginBottom: '24px',
-                }}>{s.num}</div>
-                <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#0A1F44', marginBottom: '12px', letterSpacing: '-0.02em' }}>{s.title}</h3>
-                <p style={{ fontSize: '0.83rem', color: '#6B7FA3', lineHeight: 1.75 }}>{s.body}</p>
-                <div style={{ marginTop: '28px', width: '36px', height: '3px', background: 'linear-gradient(90deg, #2F5DAA, #4A7FD4)', borderRadius: '2px' }}/>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* ── CTA BAND ── */}
       <section style={{
