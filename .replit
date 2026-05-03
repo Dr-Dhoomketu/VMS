@@ -34,4 +34,3 @@ externalPort = 3000
 [userenv]
 
 [userenv.shared]
-JWT_SECRET = "visitorpass-jwt-secret-2024-secure-key"
