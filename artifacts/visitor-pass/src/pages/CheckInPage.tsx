@@ -28,6 +28,172 @@ const COUNTRIES = [
   {code:'+852',flag:'🇭🇰',name:'Hong Kong'},
 ];
 
+// Generate time slots every 15 min from 7:00 AM to 9:00 PM
+function generateTimeSlots() {
+  const slots: string[] = [];
+  for (let h = 7; h <= 21; h++) {
+    for (const m of [0, 15, 30, 45]) {
+      if (h === 21 && m > 0) break;
+      const hh = String(h).padStart(2, '0');
+      const mm = String(m).padStart(2, '0');
+      slots.push(`${hh}:${mm}`);
+    }
+  }
+  return slots;
+}
+const TIME_SLOTS = generateTimeSlots();
+
+function formatTimeSlot(val: string) {
+  if (!val) return '';
+  const [h, m] = val.split(':').map(Number);
+  const ap = h >= 12 ? 'PM' : 'AM';
+  const h12 = h % 12 || 12;
+  return `${h12}:${String(m).padStart(2, '0')} ${ap}`;
+}
+
+function QuickTimePicker({ value, onChange, placeholder = 'Select time' }: { value: string; onChange: (v: string) => void; placeholder?: string }) {
+  const [open, setOpen] = useState(false);
+  const [customMode, setCustomMode] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false); setCustomMode(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  return (
+    <div ref={ref} style={{ position: 'relative' }}>
+      <div
+        onClick={() => { setOpen(!open); setCustomMode(false); }}
+        style={{
+          display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer',
+          padding: '11px 14px', border: '1.5px solid #E2E8F0', borderRadius: '10px',
+          background: '#fff', fontSize: '0.875rem', color: value ? '#0A1F44' : '#A0AEC0',
+          userSelect: 'none', transition: 'border-color 0.2s',
+        }}
+      >
+        <svg style={{ width: '14px', height: '14px', color: '#6B7FA3', flexShrink: 0 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <span style={{ flex: 1 }}>{value ? formatTimeSlot(value) : placeholder}</span>
+        <svg style={{ width: '12px', height: '12px', color: '#A0AEC0', transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"/>
+        </svg>
+      </div>
+
+      {open && (
+        <div style={{
+          position: 'absolute', top: 'calc(100% + 6px)', left: 0, zIndex: 300, minWidth: '280px',
+          background: '#fff', borderRadius: '16px', border: '1px solid #E2E8F0',
+          boxShadow: '0 20px 60px rgba(10,31,68,0.14)', overflow: 'hidden',
+        }}>
+          {/* Quick grid */}
+          {!customMode && (
+            <>
+              <div style={{ padding: '10px 12px 6px', borderBottom: '1px solid #F1F5F9' }}>
+                <span style={{ fontSize: '0.52rem', fontWeight: 800, color: '#6B7FA3', letterSpacing: '0.25em', textTransform: 'uppercase' }}>Quick Select</span>
+              </div>
+              <div style={{ padding: '8px', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px', maxHeight: '220px', overflowY: 'auto' }}>
+                {TIME_SLOTS.map(slot => (
+                  <button
+                    key={slot}
+                    type="button"
+                    onClick={() => { onChange(slot); setOpen(false); }}
+                    style={{
+                      padding: '7px 4px', borderRadius: '8px', border: 'none', cursor: 'pointer',
+                      fontSize: '0.75rem', fontWeight: value === slot ? 800 : 500,
+                      background: value === slot ? '#0A1F44' : 'transparent',
+                      color: value === slot ? '#fff' : '#0A1F44',
+                      transition: 'all 0.15s',
+                      whiteSpace: 'nowrap',
+                    }}
+                    onMouseEnter={e => { if (value !== slot) (e.currentTarget as HTMLElement).style.background = '#F4F7FC'; }}
+                    onMouseLeave={e => { if (value !== slot) (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+                  >
+                    {formatTimeSlot(slot)}
+                  </button>
+                ))}
+              </div>
+              <div style={{ padding: '8px 8px 10px', borderTop: '1px solid #F1F5F9' }}>
+                <button
+                  type="button"
+                  onClick={() => setCustomMode(true)}
+                  style={{
+                    width: '100%', padding: '8px', borderRadius: '8px', border: '1px dashed #E2E8F0',
+                    background: 'transparent', cursor: 'pointer', fontSize: '0.72rem', fontWeight: 600, color: '#2F5DAA',
+                  }}
+                >
+                  + Enter custom time
+                </button>
+              </div>
+            </>
+          )}
+
+          {/* Custom time input */}
+          {customMode && (
+            <div style={{ padding: '16px' }}>
+              <div style={{ fontSize: '0.52rem', fontWeight: 800, color: '#6B7FA3', letterSpacing: '0.25em', textTransform: 'uppercase', marginBottom: '10px' }}>Custom Time</div>
+              <input
+                type="time"
+                value={value}
+                autoFocus
+                onChange={e => onChange(e.target.value)}
+                style={{ width: '100%', fontSize: '1rem', fontWeight: 700 }}
+              />
+              <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
+                <button type="button" onClick={() => setCustomMode(false)} style={{ flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid #E2E8F0', background: '#F8FAFC', cursor: 'pointer', fontSize: '0.72rem', fontWeight: 600, color: '#6B7FA3' }}>← Back</button>
+                <button type="button" onClick={() => { setOpen(false); setCustomMode(false); }} style={{ flex: 1, padding: '8px', borderRadius: '8px', border: 'none', background: '#0A1F44', cursor: 'pointer', fontSize: '0.72rem', fontWeight: 700, color: '#fff' }}>Done</button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Duration quick-select
+const DURATION_OPTIONS = [
+  { label: '30 min', value: '30 min' },
+  { label: '45 min', value: '45 min' },
+  { label: '1 hr',   value: '1 hr' },
+  { label: '1.5 hr', value: '1.5 hr' },
+  { label: '2 hr',   value: '2 hr' },
+  { label: '3 hr',   value: '3 hr' },
+  { label: 'Half day', value: 'Half day' },
+  { label: 'Full day', value: 'Full day' },
+  { label: 'Open-ended', value: 'Open-ended' },
+];
+
+function DurationPicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  return (
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '7px', marginTop: '6px' }}>
+      {DURATION_OPTIONS.map(opt => (
+        <button
+          key={opt.value}
+          type="button"
+          onClick={() => onChange(value === opt.value ? '' : opt.value)}
+          style={{
+            padding: '7px 13px', borderRadius: '20px', border: '1.5px solid',
+            borderColor: value === opt.value ? '#0A1F44' : '#E2E8F0',
+            background: value === opt.value ? '#0A1F44' : '#fff',
+            color: value === opt.value ? '#fff' : '#6B7FA3',
+            fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer',
+            transition: 'all 0.18s',
+          }}
+        >
+          {opt.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function getCroppedImg(imageSrc: string, croppedAreaPixels: CropArea): Promise<File> {
   return new Promise((resolve) => {
     const image = new Image();
@@ -48,112 +214,55 @@ function isLight(hex: string) {
   return (r*299+g*587+b*114)/1000 > 128;
 }
 
-function TimePicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-  const [open, setOpen] = useState(false);
-  const hours   = Array.from({length:12},(_,i)=>String(i+1).padStart(2,'0'));
-  const minutes = Array.from({length:60},(_,i)=>String(i).padStart(2,'0'));
-  const parsed  = value ? value.split(':') : null;
-  const dispH   = parsed ? (parseInt(parsed[0])%12||12).toString() : '--';
-  const dispM   = parsed ? parsed[1] : '--';
-  const dispAP  = parsed ? (parseInt(parsed[0])>=12?'PM':'AM') : '--';
-  const setTime = (h:string,m:string,ap:string) => {
-    let hh = parseInt(h); if(ap==='PM'&&hh!==12) hh+=12; if(ap==='AM'&&hh===12) hh=0;
-    onChange(`${String(hh).padStart(2,'0')}:${m}`);
-  };
-  const curH = parsed?(parseInt(parsed[0])%12||12).toString():'1';
-  const curM = parsed?parsed[1]:'00';
-  const curAP= parsed?(parseInt(parsed[0])>=12?'PM':'AM'):'AM';
-  return (
-    <div style={{ position:'relative' }}>
-      <div onClick={()=>setOpen(!open)} style={{
-        display:'flex',alignItems:'center',gap:'6px',cursor:'pointer',padding:'12px 14px',
-        border:'1.5px solid #E2E8F0',borderRadius:'10px',background:'#fff',
-        fontSize:'0.875rem',color:'#0A1F44',userSelect:'none',
-      }}>
-        <svg style={{width:'14px',height:'14px',color:'#6B7FA3',flexShrink:0}} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-        </svg>
-        {value ? `${dispH}:${dispM} ${dispAP}` : 'Select time'}
-      </div>
-      {open && (
-        <div style={{
-          position:'absolute',top:'calc(100% + 6px)',left:0,zIndex:200,
-          background:'#fff',borderRadius:'14px',border:'1px solid #E2E8F0',
-          boxShadow:'0 16px 48px rgba(10,31,68,0.14)',padding:'16px',
-          display:'flex',gap:'8px',
-        }}>
-          <div style={{display:'flex',flexDirection:'column',gap:'2px',maxHeight:'180px',overflowY:'auto'}}>
-            <div style={{fontSize:'0.5rem',fontWeight:800,letterSpacing:'0.2em',color:'#6B7FA3',textTransform:'uppercase',padding:'0 6px',marginBottom:'4px'}}>HR</div>
-            {hours.map(h=>(
-              <button key={h} onClick={()=>setTime(h,curM,curAP)} style={{
-                padding:'5px 12px',borderRadius:'7px',border:'none',cursor:'pointer',fontSize:'0.82rem',fontWeight:600,
-                background:curH===h?'#0A1F44':'transparent',color:curH===h?'#fff':'#0A1F44',
-              }}>{h}</button>
-            ))}
-          </div>
-          <div style={{display:'flex',flexDirection:'column',gap:'2px',maxHeight:'180px',overflowY:'auto'}}>
-            <div style={{fontSize:'0.5rem',fontWeight:800,letterSpacing:'0.2em',color:'#6B7FA3',textTransform:'uppercase',padding:'0 6px',marginBottom:'4px'}}>MIN</div>
-            {minutes.map(m=>(
-              <button key={m} onClick={()=>setTime(curH,m,curAP)} style={{
-                padding:'5px 12px',borderRadius:'7px',border:'none',cursor:'pointer',fontSize:'0.82rem',fontWeight:600,
-                background:curM===m?'#0A1F44':'transparent',color:curM===m?'#fff':'#0A1F44',
-              }}>{m}</button>
-            ))}
-          </div>
-          <div style={{display:'flex',flexDirection:'column',gap:'2px'}}>
-            <div style={{fontSize:'0.5rem',fontWeight:800,letterSpacing:'0.2em',color:'#6B7FA3',textTransform:'uppercase',padding:'0 6px',marginBottom:'4px'}}>AM/PM</div>
-            {['AM','PM'].map(ap=>(
-              <button key={ap} onClick={()=>setTime(curH,curM,ap)} style={{
-                padding:'5px 12px',borderRadius:'7px',border:'none',cursor:'pointer',fontSize:'0.82rem',fontWeight:700,
-                background:curAP===ap?'#0A1F44':'transparent',color:curAP===ap?'#fff':'#0A1F44',
-              }}>{ap}</button>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
 function CountryCodePicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
-  const selected = COUNTRIES.find(c=>c.code===value&&c.name===COUNTRIES.find(x=>x.code===value)?.name) || COUNTRIES[0];
-  const filtered = COUNTRIES.filter(c=>c.name.toLowerCase().includes(search.toLowerCase())||c.code.includes(search));
+  const selected = COUNTRIES.find(c => c.code === value) || COUNTRIES[0];
+  const filtered = COUNTRIES.filter(c => c.name.toLowerCase().includes(search.toLowerCase()) || c.code.includes(search));
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
   return (
-    <div style={{position:'relative',flexShrink:0}}>
-      <button type="button" onClick={()=>setOpen(!open)} style={{
-        display:'flex',alignItems:'center',gap:'4px',padding:'12px 10px',
-        border:'1.5px solid #E2E8F0',borderRadius:'10px 0 0 10px',borderRight:'none',
-        background:'#F8FAFC',cursor:'pointer',fontSize:'0.82rem',fontWeight:600,color:'#0A1F44',whiteSpace:'nowrap',
+    <div ref={ref} style={{ position: 'relative', flexShrink: 0 }}>
+      <button type="button" onClick={() => setOpen(!open)} style={{
+        display: 'flex', alignItems: 'center', gap: '4px', padding: '12px 10px',
+        border: '1.5px solid #E2E8F0', borderRadius: '10px 0 0 10px', borderRight: 'none',
+        background: '#F8FAFC', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600, color: '#0A1F44', whiteSpace: 'nowrap',
       }}>
         {selected.flag} {value}
-        <svg style={{width:'10px',height:'10px',color:'#6B7FA3',marginLeft:'2px'}} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg style={{ width: '10px', height: '10px', color: '#6B7FA3', marginLeft: '2px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"/>
         </svg>
       </button>
       {open && (
         <div style={{
-          position:'absolute',top:'calc(100% + 6px)',left:0,zIndex:200,
-          background:'#fff',borderRadius:'14px',border:'1px solid #E2E8F0',
-          boxShadow:'0 16px 48px rgba(10,31,68,0.14)',width:'240px',overflow:'hidden',
+          position: 'absolute', top: 'calc(100% + 6px)', left: 0, zIndex: 300,
+          background: '#fff', borderRadius: '14px', border: '1px solid #E2E8F0',
+          boxShadow: '0 16px 48px rgba(10,31,68,0.14)', width: '240px', overflow: 'hidden',
         }}>
-          <div style={{padding:'10px'}}>
-            <input placeholder="Search country..." value={search} onChange={e=>setSearch(e.target.value)}
-              style={{fontSize:'0.8rem',padding:'8px 12px',borderRadius:'8px'}}/>
+          <div style={{ padding: '10px' }}>
+            <input placeholder="Search country..." value={search} onChange={e => setSearch(e.target.value)}
+              style={{ fontSize: '0.8rem', padding: '8px 12px', borderRadius: '8px' }} autoFocus/>
           </div>
-          <div style={{maxHeight:'220px',overflowY:'auto'}}>
-            {filtered.map((c,i)=>(
-              <button key={i} type="button" onClick={()=>{onChange(c.code);setOpen(false);setSearch('');}} style={{
-                width:'100%',display:'flex',alignItems:'center',gap:'10px',padding:'8px 14px',
-                border:'none',background:'transparent',cursor:'pointer',textAlign:'left',
+          <div style={{ maxHeight: '220px', overflowY: 'auto' }}>
+            {filtered.map((c, i) => (
+              <button key={i} type="button" onClick={() => { onChange(c.code); setOpen(false); setSearch(''); }} style={{
+                width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 14px',
+                border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left',
               }}
-              onMouseEnter={e=>(e.currentTarget as HTMLElement).style.background='#F8FAFC'}
-              onMouseLeave={e=>(e.currentTarget as HTMLElement).style.background='transparent'}
+              onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = '#F8FAFC'}
+              onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
               >
-                <span style={{fontSize:'1rem'}}>{c.flag}</span>
-                <span style={{fontSize:'0.8rem',fontWeight:600,color:'#0A1F44',flex:1}}>{c.name}</span>
-                <span style={{fontSize:'0.75rem',color:'#6B7FA3'}}>{c.code}</span>
+                <span style={{ fontSize: '1rem' }}>{c.flag}</span>
+                <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#0A1F44', flex: 1 }}>{c.name}</span>
+                <span style={{ fontSize: '0.75rem', color: '#6B7FA3' }}>{c.code}</span>
               </button>
             ))}
           </div>
@@ -169,51 +278,64 @@ export default function CheckInPage() {
   const [countryCode, setCountryCode] = useState('+91');
   const [badgeColor, setBadgeColor] = useState('#2F5DAA');
   const [formData, setFormData] = useState({
-    name:'',email:'',phone:'',gender:'',address:'',nationality:'',
-    aadhar:'',meetWith:'',purpose:'',fromTime:'',duration:'',
+    name: '', email: '', phone: '', gender: '', address: '', nationality: '',
+    aadhar: '', meetWith: '', purpose: '', fromTime: '', duration: '',
   });
-  const [photo, setPhoto] = useState<string|null>(null);
-  const [croppedPhoto, setCroppedPhoto] = useState<File|null>(null);
-  const [crop, setCrop] = useState({x:0,y:0});
+  const [photo, setPhoto] = useState<string | null>(null);
+  const [croppedPhoto, setCroppedPhoto] = useState<File | null>(null);
+  const [croppedPhotoUrl, setCroppedPhotoUrl] = useState<string | null>(null);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
-  const [croppedArea, setCroppedArea] = useState<CropArea|null>(null);
+  const [croppedArea, setCroppedArea] = useState<CropArea | null>(null);
   const [showCamera, setShowCamera] = useState(false);
+  const [cameraError, setCameraError] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const webcamRef = useRef<Webcam>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(()=>{
-    fetch(`${API_URL}/api/v1/users/employees`).then(r=>r.json()).then(d=>setEmployees(d)).catch(console.error);
-  },[]);
+  useEffect(() => {
+    fetch(`${API_URL}/api/v1/users/employees`).then(r => r.json()).then(d => setEmployees(d)).catch(console.error);
+  }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement>) =>
-    setFormData({...formData,[e.target.name]:e.target.value});
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
+    setFormData({ ...formData, [e.target.name]: e.target.value });
 
-  const capturePhoto = useCallback(()=>{
+  const capturePhoto = useCallback(() => {
     const img = webcamRef.current?.getScreenshot();
-    if(img){setPhoto(img);setShowCamera(false);}
-  },[]);
+    if (img) { setPhoto(img); setShowCamera(false); setCameraError(''); }
+  }, []);
 
-  const onCropComplete = useCallback((_:unknown,area:CropArea)=>setCroppedArea(area),[]);
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => { if (ev.target?.result) setPhoto(ev.target.result as string); };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
 
-  const confirmCrop = async ()=>{
-    if(!photo||!croppedArea) return;
-    const file = await getCroppedImg(photo,croppedArea);
+  const onCropComplete = useCallback((_: unknown, area: CropArea) => setCroppedArea(area), []);
+
+  const confirmCrop = async () => {
+    if (!photo || !croppedArea) return;
+    const file = await getCroppedImg(photo, croppedArea);
     setCroppedPhoto(file);
+    setCroppedPhotoUrl(URL.createObjectURL(file));
     setPhoto(null);
   };
 
-  const handleSubmit = async(e:React.FormEvent)=>{
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); setError(''); setIsSubmitting(true);
     try {
       const payload = new FormData();
-      Object.entries({...formData,phone:`${countryCode}${formData.phone}`,badgeColor}).forEach(([k,v])=>payload.append(k,v));
-      if(croppedPhoto) payload.append('photo',croppedPhoto);
-      const res = await fetch(`${API_URL}/api/v1/visits/request`,{method:'POST',body:payload});
-      if(res.ok) setStep(3);
-      else {const d=await res.json();setError(d.message||'Submission failed');}
-    } catch {setError('Connection failed');}
-    finally{setIsSubmitting(false);}
+      Object.entries({ ...formData, phone: `${countryCode}${formData.phone}`, badgeColor }).forEach(([k, v]) => payload.append(k, v));
+      if (croppedPhoto) payload.append('photo', croppedPhoto);
+      const res = await fetch(`${API_URL}/api/v1/visits/request`, { method: 'POST', body: payload });
+      if (res.ok) setStep(3);
+      else { const d = await res.json(); setError(d.message || 'Submission failed'); }
+    } catch { setError('Connection failed'); }
+    finally { setIsSubmitting(false); }
   };
 
   const STEPS = [
@@ -225,6 +347,15 @@ export default function CheckInPage() {
   return (
     <main style={{ minHeight: '100vh', background: '#ffffff', color: '#0A1F44', position: 'relative' }}>
       <GeoBackground />
+
+      {/* Hidden file input for photo upload fallback */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        style={{ display: 'none' }}
+        onChange={handleFileUpload}
+      />
 
       <nav style={{
         position: 'sticky', top: 0, zIndex: 50,
@@ -239,10 +370,7 @@ export default function CheckInPage() {
           fontSize: '0.65rem', fontWeight: 700, color: '#6B7FA3', textDecoration: 'none',
           letterSpacing: '0.1em', textTransform: 'uppercase',
         }}>
-          <span style={{
-            width: '28px', height: '28px', borderRadius: '50%',
-            border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
+          <span style={{ width: '28px', height: '28px', borderRadius: '50%', border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg style={{ width: '12px', height: '12px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/>
             </svg>
@@ -253,9 +381,10 @@ export default function CheckInPage() {
 
       <div style={{ position: 'relative', zIndex: 1, maxWidth: '720px', margin: '0 auto', padding: '40px 24px 80px' }}>
 
+        {/* Step indicator */}
         {step < 3 && (
           <div style={{ marginBottom: '40px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0' }}>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
               {STEPS.map((s, i) => (
                 <div key={s.n} style={{ display: 'flex', alignItems: 'center', flex: i < STEPS.length - 1 ? 1 : 'none' }}>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
@@ -281,28 +410,88 @@ export default function CheckInPage() {
           </div>
         )}
 
+        {/* Photo crop overlay */}
         {photo && (
-          <div style={{ position: 'fixed', inset: 0, zIndex: 300, background: '#0A1F44', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ position: 'fixed', inset: 0, zIndex: 400, background: '#0A1F44', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ color: '#fff', fontSize: '0.7rem', fontWeight: 800, letterSpacing: '0.2em', textTransform: 'uppercase' }}>Crop Photo</span>
+              <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.7rem' }}>Pinch or scroll to zoom</span>
+            </div>
             <div style={{ flex: 1, position: 'relative' }}>
               <Cropper image={photo} crop={crop} zoom={zoom} aspect={1} onCropChange={setCrop} onZoomChange={setZoom} onCropComplete={onCropComplete} cropShape="round"/>
             </div>
             <div style={{ padding: '20px', display: 'flex', gap: '12px', justifyContent: 'center', background: '#0A1F44' }}>
-              <button onClick={()=>setPhoto(null)} className="btn-vp-secondary" style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)' }}>Retake</button>
-              <button onClick={confirmCrop} className="btn-vp-primary">Use Photo</button>
+              <button onClick={() => setPhoto(null)} style={{ padding: '12px 28px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.08)', color: '#fff', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 700 }}>Cancel</button>
+              <button onClick={confirmCrop} className="btn-vp-primary">Use This Photo</button>
             </div>
           </div>
         )}
 
+        {/* Camera overlay */}
         {showCamera && (
-          <div style={{ position: 'fixed', inset: 0, zIndex: 300, background: '#0A1F44', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '20px' }}>
-            <Webcam ref={webcamRef} screenshotFormat="image/jpeg" videoConstraints={{ facingMode: 'user' }} style={{ borderRadius: '16px', maxWidth: '400px', width: '100%' }}/>
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <button onClick={()=>setShowCamera(false)} className="btn-vp-secondary" style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)' }}>Cancel</button>
-              <button onClick={capturePhoto} className="btn-vp-primary">Capture</button>
+          <div style={{ position: 'fixed', inset: 0, zIndex: 400, background: '#0A1F44', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '20px', padding: '24px' }}>
+            <div style={{ width: '100%', maxWidth: '440px' }}>
+              {cameraError ? (
+                <div style={{ textAlign: 'center', padding: '40px 24px' }}>
+                  <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+                    <svg style={{ width: '28px', height: '28px', color: '#ef4444' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                    </svg>
+                  </div>
+                  <p style={{ color: '#fff', fontWeight: 700, fontSize: '0.95rem', marginBottom: '8px' }}>Camera access denied</p>
+                  <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem', lineHeight: 1.6, marginBottom: '28px' }}>
+                    Your browser blocked camera access. Please allow camera permission or upload a photo instead.
+                  </p>
+                  <button
+                    onClick={() => { setCameraError(''); setShowCamera(false); fileInputRef.current?.click(); }}
+                    className="btn-vp-primary"
+                    style={{ width: '100%', justifyContent: 'center', marginBottom: '10px' }}
+                  >
+                    Upload Photo Instead
+                  </button>
+                  <button onClick={() => { setShowCamera(false); setCameraError(''); }} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'transparent', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', fontSize: '0.75rem' }}>
+                    Cancel
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div style={{ borderRadius: '16px', overflow: 'hidden', border: '2px solid rgba(255,255,255,0.1)', position: 'relative' }}>
+                    <Webcam
+                      ref={webcamRef}
+                      audio={false}
+                      screenshotFormat="image/jpeg"
+                      videoConstraints={{ facingMode: 'user', width: 440, height: 440 }}
+                      style={{ width: '100%', display: 'block' }}
+                      onUserMediaError={(err) => {
+                        console.error('Camera error:', err);
+                        setCameraError(String(err));
+                      }}
+                    />
+                    {/* Overlay guide circle */}
+                    <div style={{
+                      position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none',
+                    }}>
+                      <div style={{ width: '200px', height: '200px', borderRadius: '50%', border: '2px solid rgba(255,255,255,0.5)' }}/>
+                    </div>
+                  </div>
+                  <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.4)', fontSize: '0.72rem', marginTop: '10px' }}>Position your face within the circle</p>
+                  <div style={{ display: 'flex', gap: '10px', marginTop: '16px' }}>
+                    <button onClick={() => { setShowCamera(false); setCameraError(''); }} style={{ flex: 1, padding: '13px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'transparent', color: '#fff', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600 }}>Cancel</button>
+                    <button onClick={capturePhoto} className="btn-vp-primary" style={{ flex: 2, justifyContent: 'center' }}>
+                      <svg style={{ width: '16px', height: '16px', marginRight: '6px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="4" strokeWidth="2"/>
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                      </svg>
+                      Take Photo
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         )}
 
+        {/* STEP 1 */}
         {step === 1 && (
           <div className="fade-up">
             <div style={{ textAlign: 'center', marginBottom: '36px' }}>
@@ -315,29 +504,60 @@ export default function CheckInPage() {
             <div className="lux-card" style={{ padding: '32px', marginBottom: '20px' }}>
               <h3 style={{ fontSize: '0.55rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.25em', color: '#6B7FA3', marginBottom: '24px' }}>Personal Information</h3>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '18px' }}>
-                <div className="col-span-2" style={{ gridColumn: '1/-1' }}>
-                  <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '4px' }}>
-                    <button type="button" onClick={()=>setShowCamera(true)} style={{
-                      width: '88px', height: '88px', borderRadius: '50%',
-                      border: '2px dashed rgba(47,93,170,0.25)',
-                      background: croppedPhoto ? 'none' : 'rgba(47,93,170,0.04)',
-                      cursor: 'pointer', overflow: 'hidden', position: 'relative',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    }}>
-                      {croppedPhoto ? (
-                        <img src={URL.createObjectURL(croppedPhoto)} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }}/>
-                      ) : (
-                        <div style={{ textAlign: 'center' }}>
-                          <svg style={{ width: '24px', height: '24px', color: '#6B7FA3', display: 'block', margin: '0 auto 4px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
-                          </svg>
-                          <span style={{ fontSize: '0.45rem', fontWeight: 700, color: '#6B7FA3', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Photo</span>
-                        </div>
-                      )}
+
+                {/* Photo capture */}
+                <div style={{ gridColumn: '1/-1', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+                  <div style={{
+                    width: '90px', height: '90px', borderRadius: '50%', overflow: 'hidden',
+                    border: '2px dashed rgba(47,93,170,0.25)', background: 'rgba(47,93,170,0.04)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    {croppedPhotoUrl ? (
+                      <img src={croppedPhotoUrl} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }}/>
+                    ) : (
+                      <svg style={{ width: '28px', height: '28px', color: '#A0AEC0' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                      </svg>
+                    )}
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      type="button"
+                      onClick={() => { setCameraError(''); setShowCamera(true); }}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: '6px',
+                        padding: '8px 16px', borderRadius: '8px', border: '1.5px solid rgba(47,93,170,0.2)',
+                        background: 'rgba(47,93,170,0.04)', cursor: 'pointer', fontSize: '0.72rem', fontWeight: 700, color: '#2F5DAA',
+                      }}
+                    >
+                      <svg style={{ width: '13px', height: '13px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                      </svg>
+                      Use Camera
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: '6px',
+                        padding: '8px 16px', borderRadius: '8px', border: '1.5px solid #E2E8F0',
+                        background: '#F8FAFC', cursor: 'pointer', fontSize: '0.72rem', fontWeight: 700, color: '#6B7FA3',
+                      }}
+                    >
+                      <svg style={{ width: '13px', height: '13px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                      </svg>
+                      Upload Photo
                     </button>
                   </div>
+                  {croppedPhotoUrl && (
+                    <button type="button" onClick={() => { setCroppedPhoto(null); setCroppedPhotoUrl(null); }} style={{ fontSize: '0.62rem', color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>
+                      Remove photo
+                    </button>
+                  )}
                 </div>
+
                 <div>
                   <label className="vp-label">Full Name *</label>
                   <input required name="name" value={formData.name} onChange={handleChange} type="text" placeholder="John Doe"/>
@@ -375,25 +595,26 @@ export default function CheckInPage() {
                 <div style={{ gridColumn: '1/-1' }}>
                   <label className="vp-label">Badge Color</label>
                   <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginTop: '6px' }}>
-                    {['#2F5DAA','#0A1F44','#1e7e34','#c0392b','#7d3c98','#b7950b','#1a5276','#117a65'].map(c=>(
-                      <button key={c} type="button" onClick={()=>setBadgeColor(c)} style={{
+                    {['#2F5DAA','#0A1F44','#1e7e34','#c0392b','#7d3c98','#b7950b','#1a5276','#117a65'].map(c => (
+                      <button key={c} type="button" onClick={() => setBadgeColor(c)} style={{
                         width: '28px', height: '28px', borderRadius: '50%', background: c,
-                        border: badgeColor===c ? `3px solid ${isLight(c)?'#333':'#fff'}` : '2px solid transparent',
-                        cursor: 'pointer', outline: badgeColor===c ? `2px solid ${c}` : 'none', outlineOffset: '2px',
+                        border: badgeColor === c ? `3px solid ${isLight(c) ? '#333' : '#fff'}` : '2px solid transparent',
+                        cursor: 'pointer', outline: badgeColor === c ? `2px solid ${c}` : 'none', outlineOffset: '2px',
                       }}/>
                     ))}
-                    <input type="color" value={badgeColor} onChange={e=>setBadgeColor(e.target.value)} style={{ width:'28px',height:'28px',padding:0,border:'1px solid #E2E8F0',borderRadius:'50%',cursor:'pointer',overflow:'hidden' }}/>
+                    <input type="color" value={badgeColor} onChange={e => setBadgeColor(e.target.value)} style={{ width: '28px', height: '28px', padding: 0, border: '1px solid #E2E8F0', borderRadius: '50%', cursor: 'pointer', overflow: 'hidden' }}/>
                   </div>
                 </div>
               </div>
             </div>
 
-            <button type="button" onClick={()=>setStep(2)} className="btn-vp-primary" style={{ width: '100%', padding: '15px', justifyContent: 'center', fontSize: '0.7rem' }}>
+            <button type="button" onClick={() => setStep(2)} className="btn-vp-primary" style={{ width: '100%', padding: '15px', justifyContent: 'center', fontSize: '0.7rem' }}>
               Continue to Visit Details →
             </button>
           </div>
         )}
 
+        {/* STEP 2 */}
         {step === 2 && (
           <form onSubmit={handleSubmit} className="fade-up">
             <div style={{ textAlign: 'center', marginBottom: '36px' }}>
@@ -410,7 +631,7 @@ export default function CheckInPage() {
                   <label className="vp-label">Who are you meeting? *</label>
                   <select required name="meetWith" value={formData.meetWith} onChange={handleChange}>
                     <option value="">Select Employee</option>
-                    {employees.map(e=><option key={e._id} value={e._id}>{e.name}</option>)}
+                    {employees.map(e => <option key={e._id} value={e._id}>{e.name}</option>)}
                   </select>
                 </div>
                 <div style={{ gridColumn: '1/-1' }}>
@@ -419,17 +640,17 @@ export default function CheckInPage() {
                 </div>
                 <div>
                   <label className="vp-label">Check-In Time</label>
-                  <TimePicker value={formData.fromTime} onChange={v=>setFormData(f=>({...f,fromTime:v}))}/>
+                  <QuickTimePicker value={formData.fromTime} onChange={v => setFormData(f => ({ ...f, fromTime: v }))} placeholder="Select time"/>
                 </div>
                 <div>
-                  <label className="vp-label">Duration</label>
-                  <input name="duration" value={formData.duration} onChange={handleChange} type="text" placeholder="e.g. 1 hr"/>
+                  <label className="vp-label">Expected Duration</label>
+                  <DurationPicker value={formData.duration} onChange={v => setFormData(f => ({ ...f, duration: v }))}/>
                 </div>
               </div>
             </div>
 
             <div style={{ display: 'flex', gap: '12px' }}>
-              <button type="button" onClick={()=>setStep(1)} className="btn-vp-secondary" style={{ padding: '14px 24px', fontSize: '0.7rem' }}>← Back</button>
+              <button type="button" onClick={() => setStep(1)} className="btn-vp-secondary" style={{ padding: '14px 24px', fontSize: '0.7rem' }}>← Back</button>
               <button type="submit" disabled={isSubmitting} className="btn-vp-primary" style={{ flex: 1, padding: '15px', justifyContent: 'center', fontSize: '0.7rem' }}>
                 {isSubmitting ? 'Submitting...' : 'Submit Request →'}
               </button>
@@ -437,6 +658,7 @@ export default function CheckInPage() {
           </form>
         )}
 
+        {/* STEP 3 — Success */}
         {step === 3 && (
           <div style={{ textAlign: 'center', paddingTop: '60px' }} className="fade-up">
             <div style={{
