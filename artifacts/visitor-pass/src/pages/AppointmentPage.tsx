@@ -156,7 +156,6 @@ export default function AppointmentPage() {
   const [cameraError, setCameraError] = useState('');
   const [blinkDetected, setBlinkDetected] = useState(false);
   const webcamRef = useRef<Webcam>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const blinkCanvasRef = useRef<HTMLCanvasElement>(null);
   const blinkIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const lastBrightnessRef = useRef<number[]>([]);
@@ -223,21 +222,6 @@ export default function AppointmentPage() {
     if (img) { setRawPhoto(img); setShowCamera(false); setCameraError(''); setBlinkDetected(false); lastBrightnessRef.current = []; }
   }, []);
 
-  const handleFileUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      if (ev.target?.result) {
-        setRawPhoto(ev.target.result as string);
-        setShowCamera(false);
-        setCameraError('');
-      }
-    };
-    reader.readAsDataURL(file);
-    e.target.value = '';
-  }, []);
-
   const openCamera = useCallback(async () => {
     setCameraError('');
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -290,8 +274,6 @@ export default function AppointmentPage() {
 
       {/* Hidden canvas for blink detection */}
       <canvas ref={blinkCanvasRef} style={{ display: 'none' }}/>
-      {/* Hidden file input for photo upload fallback */}
-      <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFileUpload} />
 
       {/* Camera overlay with blink detection */}
       {showCamera && (
@@ -312,28 +294,16 @@ export default function AppointmentPage() {
                 </p>
                 <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem', lineHeight: 1.6, marginBottom: '8px' }}>
                   {cameraError.includes('NotFoundError') || cameraError.includes('DevicesNotFound')
-                    ? 'No camera was detected on this device. You can upload a photo from your computer instead, or skip and continue without one.'
+                    ? 'No camera was detected. Make sure your camera is connected and not in use by another app.'
                     : cameraError.includes('NotReadableError') || cameraError.includes('TrackStartError')
                     ? 'Your camera is being used by another app. Close it and try again.'
                     : cameraError.includes('not supported')
                     ? 'This browser does not support camera access. Please use Chrome or Firefox.'
                     : 'Please allow camera access in your browser settings and try again.'}
                 </p>
-                <p style={{ color: 'rgba(255,255,255,0.25)', fontSize: '0.65rem', marginBottom: '20px', fontFamily: 'monospace', wordBreak: 'break-all' }}>{cameraError}</p>
-                {(cameraError.includes('NotFoundError') || cameraError.includes('DevicesNotFound')) ? (
-                  <>
-                    <button onClick={() => fileInputRef.current?.click()} className="btn-vp-primary" style={{ width: '100%', justifyContent: 'center', marginBottom: '10px' }}>
-                      <svg style={{ width: '14px', height: '14px', marginRight: '6px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-                      Upload Photo from Device
-                    </button>
-                    <button onClick={() => { setShowCamera(false); setCameraError(''); }} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'transparent', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', fontSize: '0.75rem' }}>Continue without photo</button>
-                  </>
-                ) : (
-                  <>
-                    <button onClick={openCamera} className="btn-vp-primary" style={{ width: '100%', justifyContent: 'center', marginBottom: '10px' }}>Try Again</button>
-                    <button onClick={() => { setShowCamera(false); setCameraError(''); }} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'transparent', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', fontSize: '0.75rem' }}>Cancel</button>
-                  </>
-                )}
+                <p style={{ color: 'rgba(255,255,255,0.25)', fontSize: '0.65rem', marginBottom: '24px', fontFamily: 'monospace', wordBreak: 'break-all' }}>{cameraError}</p>
+                <button onClick={openCamera} className="btn-vp-primary" style={{ width: '100%', justifyContent: 'center', marginBottom: '10px' }}>Try Again</button>
+                <button onClick={() => { setShowCamera(false); setCameraError(''); }} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'transparent', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', fontSize: '0.75rem' }}>Cancel</button>
               </div>
             ) : (
               <>
