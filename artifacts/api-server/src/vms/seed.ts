@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
 import { VmsUser, Department, Designation } from './models.js';
 
 const MONGO_URI = process.env['MONGODB_URI'] || process.env['MONGO_URI'] || '';
@@ -8,22 +9,31 @@ async function seed() {
   await mongoose.connect(MONGO_URI);
   console.log('Connected to MongoDB');
 
-  const existingAdmin = await VmsUser.findOne({ email: 'admin@visitorpass.com' });
+  const adminEmail = 'admin@visitorpass.com';
+  const existingAdmin = await VmsUser.findOne({ email: adminEmail });
   if (!existingAdmin) {
-    const admin = await VmsUser.create({
-      name: 'Admin User', email: 'admin@visitorpass.com',
-      password: 'admin123', role: 'Admin', isActive: true,
+    const hashed = await bcrypt.hash('admin123', 10);
+    await VmsUser.create({
+      name: 'Admin User', email: adminEmail,
+      password: hashed, role: 'Admin', isActive: true,
     });
-    console.log('Created admin:', admin.email);
+    console.log('Created admin:', adminEmail);
   } else {
-    console.log('Admin already exists:', existingAdmin.email);
+    const isHashed = existingAdmin.password.startsWith('$2');
+    if (!isHashed) {
+      existingAdmin.password = await bcrypt.hash(existingAdmin.password, 10);
+      await existingAdmin.save();
+      console.log('Migrated admin password to hash');
+    } else {
+      console.log('Admin already exists:', adminEmail);
+    }
   }
 
   const deptNames = ['Engineering', 'Human Resources', 'Finance', 'Operations', 'Marketing'];
   for (const name of deptNames) {
     const exists = await Department.findOne({ name });
     if (!exists) {
-      await Department.create({ name, code: name.slice(0,3).toUpperCase() });
+      await Department.create({ name, code: name.replace(/\s+/g, '').slice(0, 3).toUpperCase() });
       console.log('Created dept:', name);
     }
   }
@@ -45,19 +55,28 @@ async function seed() {
 
   const eng = await Department.findOne({ name: 'Engineering' });
   const mgr = await Designation.findOne({ name: 'Manager' });
-  const emp = await VmsUser.findOne({ email: 'employee@visitorpass.com' });
+  const empEmail = 'employee@visitorpass.com';
+  const emp = await VmsUser.findOne({ email: empEmail });
   if (!emp && eng && mgr) {
+    const hashed = await bcrypt.hash('employee123', 10);
     await VmsUser.create({
-      name: 'John Smith', email: 'employee@visitorpass.com',
-      password: 'employee123', role: 'Employee', isActive: true,
+      name: 'John Smith', email: empEmail,
+      password: hashed, role: 'Employee', isActive: true,
       department: eng._id, designation: mgr._id,
     });
-    console.log('Created employee: employee@visitorpass.com');
+    console.log('Created employee:', empEmail);
+  } else if (emp) {
+    const isHashed = emp.password.startsWith('$2');
+    if (!isHashed) {
+      emp.password = await bcrypt.hash(emp.password, 10);
+      await emp.save();
+      console.log('Migrated employee password to hash');
+    } else {
+      console.log('Employee already exists:', empEmail);
+    }
   }
 
   console.log('\nSeed complete!');
-  console.log('  Admin login:    admin@visitorpass.com / admin123');
-  console.log('  Employee login: employee@visitorpass.com / employee123');
   await mongoose.disconnect();
 }
 

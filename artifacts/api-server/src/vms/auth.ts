@@ -1,19 +1,25 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
 import { VmsUser } from './models.js';
 
 const router = Router();
-const JWT_SECRET = process.env['JWT_SECRET'] || 'vms_secret_fallback_2024';
 
-const generateToken = (id: string) => jwt.sign({ id }, JWT_SECRET, { expiresIn: '30d' });
+function getJwtSecret(): string {
+  const secret = process.env['JWT_SECRET'];
+  if (!secret) throw new Error('JWT_SECRET environment variable is required');
+  return secret;
+}
+
+const generateToken = (id: string) => jwt.sign({ id }, getJwtSecret(), { expiresIn: '30d' });
 
 router.post('/login', async (req: Request, res: Response) => {
   const { email, password } = req.body;
   try {
     const user = await VmsUser.findOne({ email }).populate('department designation');
-    if (!user || user.password !== password) {
-      return res.status(401).json({ message: 'Invalid email or password' });
-    }
+    if (!user) return res.status(401).json({ message: 'Invalid email or password' });
+    const valid = await bcrypt.compare(password, user.password);
+    if (!valid) return res.status(401).json({ message: 'Invalid email or password' });
     if (!user.isActive) return res.status(401).json({ message: 'Account deactivated' });
     res.json({
       _id: user._id, name: user.name, email: user.email, role: user.role,
@@ -38,7 +44,7 @@ export async function protect(req: any, res: Response, next: NextFunction) {
   const auth = req.headers['authorization'];
   if (!auth?.startsWith('Bearer ')) return res.status(401).json({ message: 'Not authorized' });
   try {
-    const decoded: any = jwt.verify(auth.split(' ')[1], JWT_SECRET);
+    const decoded: any = jwt.verify(auth.split(' ')[1], getJwtSecret());
     req.user = await VmsUser.findById(decoded.id).select('-password');
     if (!req.user) return res.status(401).json({ message: 'User not found' });
     next();

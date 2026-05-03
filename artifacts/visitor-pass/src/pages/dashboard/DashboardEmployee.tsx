@@ -70,7 +70,7 @@ export default function DashboardEmployee() {
     <div className="fade-up w-full">
       <div className="flex justify-between items-center mb-12">
         <div>
-          <h1 className="text-4xl font-black tracking-tighter uppercase mb-2 text-[#0A1F44]">Team</h1>
+          <h1 className="text-4xl font-black tracking-tighter uppercase mb-2 text-[#0A1F44]">Employees</h1>
           <p className="text-[#6B7FA3] text-sm">Monitor and manage the active team directory.</p>
         </div>
         <button onClick={() => handleOpenModal()} className="btn-primary px-8 py-4 rounded-2xl font-bold flex items-center gap-2">
