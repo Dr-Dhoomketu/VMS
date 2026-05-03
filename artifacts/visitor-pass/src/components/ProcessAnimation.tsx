@@ -276,6 +276,8 @@ const screenComponents = [PhoneInviteScreen, PhoneQRScreen, PhoneScanScreen, Pho
 
 export default function ProcessAnimation() {
   const [phase, setPhase] = useState(0);
+  const sectionRef = useRef<HTMLElement>(null);
+  const isInView = useInView(sectionRef, { once: true, margin: '-80px' });
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -287,18 +289,8 @@ export default function ProcessAnimation() {
   const ScreenComponent = screenComponents[phase];
 
   return (
-    <section style={{ padding: '0 52px 100px', position: 'relative', zIndex: 1 }}>
+    <section ref={sectionRef} style={{ padding: '0 52px 100px', position: 'relative', zIndex: 1 }}>
       <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
-
-        {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: '56px' }}>
-          <p style={{ fontSize: '0.58rem', fontWeight: 800, letterSpacing: '0.35em', textTransform: 'uppercase', color: '#2F5DAA', marginBottom: '12px' }}>
-            How It Works
-          </p>
-          <h2 style={{ fontSize: '2.2rem', fontWeight: 900, letterSpacing: '-0.04em', color: '#0A1F44', lineHeight: 1.1 }}>
-            The full visitor journey
-          </h2>
-        </div>
 
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -306,7 +298,12 @@ export default function ProcessAnimation() {
         }}>
 
           {/* Phone mockup */}
-          <div style={{ position: 'relative', flexShrink: 0 }}>
+          <motion.div
+            initial={{ opacity: 0, x: -60 }}
+            animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -60 }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            style={{ position: 'relative', flexShrink: 0 }}
+          >
             {/* Glow */}
             <div style={{
               position: 'absolute', inset: '-24px',
@@ -370,10 +367,15 @@ export default function ProcessAnimation() {
                 />
               ))}
             </div>
-          </div>
+          </motion.div>
 
           {/* Steps list */}
-          <div style={{ flex: 1, minWidth: '280px', maxWidth: '440px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <motion.div
+            initial={{ opacity: 0, x: 60 }}
+            animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: 60 }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
+            style={{ flex: 1, minWidth: '280px', maxWidth: '440px', display: 'flex', flexDirection: 'column', gap: '16px' }}
+          >
             {phases.map((p, i) => {
               const active = i === phase;
               return (
@@ -443,7 +445,7 @@ export default function ProcessAnimation() {
                 </motion.div>
               );
             })}
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>
