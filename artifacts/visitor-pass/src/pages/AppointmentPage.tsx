@@ -335,7 +335,7 @@ export default function AppointmentPage() {
             </div>
 
             {/* Appointment Details */}
-            <div className="lux-card" style={{ padding: '36px', marginBottom: '28px' }}>
+            <div className="lux-card" style={{ padding: '36px', marginBottom: '28px', overflow: 'visible' }}>
               <h3 style={{ fontSize: '0.55rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.25em', color: '#6B7FA3', marginBottom: '24px' }}>Appointment Details</h3>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '18px' }}>
                 <div>

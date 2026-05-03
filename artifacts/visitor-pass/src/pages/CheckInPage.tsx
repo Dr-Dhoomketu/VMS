@@ -829,7 +829,7 @@ export default function CheckInPage() {
 
             {error && <div style={{ padding: '14px 18px', background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '12px', color: '#dc2626', fontSize: '0.8rem', marginBottom: '20px' }}>{error}</div>}
 
-            <div className="lux-card" style={{ padding: '32px', marginBottom: '20px' }}>
+            <div className="lux-card" style={{ padding: '32px', marginBottom: '20px', overflow: 'visible' }}>
               <h3 style={{ fontSize: '0.55rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.25em', color: '#6B7FA3', marginBottom: '24px' }}>Appointment Details</h3>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '18px' }}>
                 <div style={{ gridColumn: '1/-1' }}>
