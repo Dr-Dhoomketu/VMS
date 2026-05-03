@@ -7,17 +7,166 @@ import { Link } from 'wouter';
 import ValueTechLogo from '@/components/ValueTechLogo';
 import { API_URL } from '@/lib/api';
 
+function TimePicker({ value, onChange, label, required }: { value: string; onChange: (v: string) => void; label: string; required?: boolean }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [open, setOpen] = useState(false);
+
+  const parsed = value
+    ? (() => {
+        const [h, m] = value.split(':').map(Number);
+        return { hour: h % 12 === 0 ? 12 : h % 12, minute: m, ampm: h >= 12 ? 'PM' : 'AM' };
+      })()
+    : { hour: 12, minute: 0, ampm: 'AM' };
+
+  const [hour, setHour] = useState(parsed.hour);
+  const [minute, setMinute] = useState(parsed.minute);
+  const [ampm, setAmpm] = useState(parsed.ampm);
+
+  const display = value
+    ? `${String(parsed.hour).padStart(2, '0')}:${String(parsed.minute).padStart(2, '0')} ${parsed.ampm}`
+    : 'Select time';
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const emit = (h: number, m: number, ap: string) => {
+    let h24 = h % 12;
+    if (ap === 'PM') h24 += 12;
+    onChange(`${String(h24).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
+  };
+
+  const pickHour   = (h: number)  => { setHour(h);   emit(h, minute, ampm); };
+  const pickMinute = (m: number)  => { setMinute(m); emit(hour, m, ampm); };
+  const pickAmpm   = (ap: string) => { setAmpm(ap);  emit(hour, minute, ap); };
+
+  const trigBdr = (o: boolean) => `1.5px solid ${o ? 'rgba(47,93,170,0.4)' : 'rgba(226,232,240,1)'}`;
+  const trigCol  = value ? '#0A1F44' : '#A0AEC0';
+  const btnBase: React.CSSProperties = { borderRadius: 8, fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s', border: 'none' };
+  const activeStyle: React.CSSProperties   = { background: '#0A1F44', color: '#ffffff' };
+  const inactiveStyle: React.CSSProperties = { background: 'rgba(10,31,68,0.05)', color: '#6B7FA3' };
+  const sectionLabel: React.CSSProperties  = { fontSize: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.2em', color: '#6B7FA3', fontWeight: 800, marginBottom: 8 };
+
+  return (
+    <div style={{ position: 'relative' }} ref={ref}>
+      <label className="vp-label">
+        {label}{required && <span className="text-red-500 ml-1">*</span>}
+      </label>
+      <button
+        type="button" onClick={() => setOpen(!open)}
+        className="w-full text-left flex items-center justify-between"
+        style={{ background: '#ffffff', border: trigBdr(open), borderRadius: 10, padding: '12px 16px', color: trigCol, transition: 'all 0.2s ease', fontSize: '0.875rem' }}
+      >
+        <span>{display}</span>
+        <svg className="w-4 h-4" style={{ color: '#6B7FA3' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </button>
+
+      {open && (
+        <div style={{ position: 'absolute', top: 'calc(100% + 8px)', left: 0, zIndex: 200, background: '#ffffff', border: '1px solid rgba(10,31,68,0.1)', borderRadius: 14, padding: 16, width: '100%', boxShadow: '0 24px 64px rgba(10,31,68,0.12)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+            <div>
+              <p style={sectionLabel}>Hour</p>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}>
+                {Array.from({ length: 12 }, (_, i) => i + 1).map(h => (
+                  <button key={h} type="button" onClick={() => pickHour(h)}
+                    style={{ ...btnBase, padding: '7px 4px', fontSize: '0.8rem', ...(hour === h && value ? activeStyle : inactiveStyle) }}>
+                    {String(h).padStart(2, '0')}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p style={sectionLabel}>Min</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                {[0, 15, 30, 45].map(m => (
+                  <button key={m} type="button" onClick={() => pickMinute(m)}
+                    style={{ ...btnBase, padding: '9px 4px', fontSize: '0.8rem', ...(minute === m && value ? activeStyle : inactiveStyle) }}>
+                    {String(m).padStart(2, '0')}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p style={sectionLabel}>Period</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                {['AM', 'PM'].map(ap => (
+                  <button key={ap} type="button" onClick={() => pickAmpm(ap)}
+                    style={{ ...btnBase, padding: '12px 4px', fontSize: '0.85rem', ...(ampm === ap && value ? activeStyle : inactiveStyle) }}>
+                    {ap}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              emit(hour, minute, ampm);
+              if (!value) onChange(`${String(ampm === 'PM' ? hour % 12 + 12 : hour % 12).padStart(2, '0')}:${String(minute).padStart(2, '0')}`);
+              setOpen(false);
+            }}
+            style={{ marginTop: 14, width: '100%', padding: '10px', borderRadius: 8, background: '#0A1F44', color: '#ffffff', fontWeight: 700, fontSize: '0.7rem', letterSpacing: '0.2em', textTransform: 'uppercase', cursor: 'pointer', border: 'none' }}>
+            Confirm
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 const COUNTRIES = [
-  { code: 'IN', name: 'India', dial: '+91', flag: '🇮🇳', len: [10,10], indiaRules: true },
-  { code: 'US', name: 'United States', dial: '+1', flag: '🇺🇸', len: [10,10] },
-  { code: 'GB', name: 'United Kingdom', dial: '+44', flag: '🇬🇧', len: [10,10] },
-  { code: 'AE', name: 'UAE', dial: '+971', flag: '🇦🇪', len: [9,9] },
-  { code: 'SA', name: 'Saudi Arabia', dial: '+966', flag: '🇸🇦', len: [9,9] },
-  { code: 'AU', name: 'Australia', dial: '+61', flag: '🇦🇺', len: [9,9] },
-  { code: 'CA', name: 'Canada', dial: '+1', flag: '🇨🇦', len: [10,10] },
-  { code: 'SG', name: 'Singapore', dial: '+65', flag: '🇸🇬', len: [8,8] },
-  { code: 'DE', name: 'Germany', dial: '+49', flag: '🇩🇪', len: [10,11] },
-  { code: 'FR', name: 'France', dial: '+33', flag: '🇫🇷', len: [9,9] },
+  { code: 'IN', name: 'India',          dial: '+91',  flag: '🇮🇳', len: [10, 10], indiaRules: true },
+  { code: 'US', name: 'United States',  dial: '+1',   flag: '🇺🇸', len: [10, 10] },
+  { code: 'GB', name: 'United Kingdom', dial: '+44',  flag: '🇬🇧', len: [10, 10] },
+  { code: 'AE', name: 'UAE',            dial: '+971', flag: '🇦🇪', len: [9, 9]   },
+  { code: 'SA', name: 'Saudi Arabia',   dial: '+966', flag: '🇸🇦', len: [9, 9]   },
+  { code: 'AU', name: 'Australia',      dial: '+61',  flag: '🇦🇺', len: [9, 9]   },
+  { code: 'CA', name: 'Canada',         dial: '+1',   flag: '🇨🇦', len: [10, 10] },
+  { code: 'SG', name: 'Singapore',      dial: '+65',  flag: '🇸🇬', len: [8, 8]   },
+  { code: 'DE', name: 'Germany',        dial: '+49',  flag: '🇩🇪', len: [10, 11] },
+  { code: 'FR', name: 'France',         dial: '+33',  flag: '🇫🇷', len: [9, 9]   },
+  { code: 'JP', name: 'Japan',          dial: '+81',  flag: '🇯🇵', len: [10, 11] },
+  { code: 'CN', name: 'China',          dial: '+86',  flag: '🇨🇳', len: [11, 11] },
+  { code: 'BR', name: 'Brazil',         dial: '+55',  flag: '🇧🇷', len: [10, 11] },
+  { code: 'ZA', name: 'South Africa',   dial: '+27',  flag: '🇿🇦', len: [9, 9]   },
+  { code: 'NG', name: 'Nigeria',        dial: '+234', flag: '🇳🇬', len: [10, 10] },
+  { code: 'PK', name: 'Pakistan',       dial: '+92',  flag: '🇵🇰', len: [10, 10] },
+  { code: 'BD', name: 'Bangladesh',     dial: '+880', flag: '🇧🇩', len: [10, 10] },
+  { code: 'LK', name: 'Sri Lanka',      dial: '+94',  flag: '🇱🇰', len: [9, 9]   },
+  { code: 'NP', name: 'Nepal',          dial: '+977', flag: '🇳🇵', len: [10, 10] },
+  { code: 'MY', name: 'Malaysia',       dial: '+60',  flag: '🇲🇾', len: [9, 10]  },
+  { code: 'ID', name: 'Indonesia',      dial: '+62',  flag: '🇮🇩', len: [9, 12]  },
+  { code: 'PH', name: 'Philippines',    dial: '+63',  flag: '🇵🇭', len: [10, 10] },
+  { code: 'TH', name: 'Thailand',       dial: '+66',  flag: '🇹🇭', len: [9, 9]   },
+  { code: 'VN', name: 'Vietnam',        dial: '+84',  flag: '🇻🇳', len: [9, 10]  },
+  { code: 'KR', name: 'South Korea',    dial: '+82',  flag: '🇰🇷', len: [9, 10]  },
+  { code: 'IT', name: 'Italy',          dial: '+39',  flag: '🇮🇹', len: [9, 10]  },
+  { code: 'ES', name: 'Spain',          dial: '+34',  flag: '🇪🇸', len: [9, 9]   },
+  { code: 'RU', name: 'Russia',         dial: '+7',   flag: '🇷🇺', len: [10, 10] },
+  { code: 'TR', name: 'Turkey',         dial: '+90',  flag: '🇹🇷', len: [10, 10] },
+  { code: 'MX', name: 'Mexico',         dial: '+52',  flag: '🇲🇽', len: [10, 10] },
+  { code: 'AR', name: 'Argentina',      dial: '+54',  flag: '🇦🇷', len: [10, 10] },
+  { code: 'EG', name: 'Egypt',          dial: '+20',  flag: '🇪🇬', len: [10, 10] },
+  { code: 'KE', name: 'Kenya',          dial: '+254', flag: '🇰🇪', len: [9, 9]   },
+  { code: 'GH', name: 'Ghana',          dial: '+233', flag: '🇬🇭', len: [9, 9]   },
+  { code: 'QA', name: 'Qatar',          dial: '+974', flag: '🇶🇦', len: [8, 8]   },
+  { code: 'KW', name: 'Kuwait',         dial: '+965', flag: '🇰🇼', len: [8, 8]   },
+  { code: 'BH', name: 'Bahrain',        dial: '+973', flag: '🇧🇭', len: [8, 8]   },
+  { code: 'OM', name: 'Oman',           dial: '+968', flag: '🇴🇲', len: [8, 8]   },
+  { code: 'NZ', name: 'New Zealand',    dial: '+64',  flag: '🇳🇿', len: [8, 9]   },
+  { code: 'CH', name: 'Switzerland',    dial: '+41',  flag: '🇨🇭', len: [9, 9]   },
+  { code: 'NL', name: 'Netherlands',    dial: '+31',  flag: '🇳🇱', len: [9, 9]   },
+  { code: 'SE', name: 'Sweden',         dial: '+46',  flag: '🇸🇪', len: [7, 10]  },
+  { code: 'NO', name: 'Norway',         dial: '+47',  flag: '🇳🇴', len: [8, 8]   },
+  { code: 'DK', name: 'Denmark',        dial: '+45',  flag: '🇩🇰', len: [8, 8]   },
+  { code: 'FI', name: 'Finland',        dial: '+358', flag: '🇫🇮', len: [9, 11]  },
+  { code: 'PL', name: 'Poland',         dial: '+48',  flag: '🇵🇱', len: [9, 9]   },
+  { code: 'PT', name: 'Portugal',       dial: '+351', flag: '🇵🇹', len: [9, 9]   },
+  { code: 'IL', name: 'Israel',         dial: '+972', flag: '🇮🇱', len: [9, 9]   },
 ] as const;
 
 type Country = (typeof COUNTRIES)[number];
@@ -26,39 +175,66 @@ function CountryCodePicker({ selected, onSelect }: { selected: Country; onSelect
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const ref = useRef<HTMLDivElement>(null);
-  const filtered = COUNTRIES.filter(c =>
-    c.name.toLowerCase().includes(search.toLowerCase()) || c.dial.includes(search) || c.code.toLowerCase().includes(search.toLowerCase())
-  );
+  const searchRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => {
     const handler = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
+
+  useEffect(() => { if (open && searchRef.current) searchRef.current.focus(); }, [open]);
+
+  const filtered = COUNTRIES.filter(c =>
+    c.name.toLowerCase().includes(search.toLowerCase()) ||
+    c.dial.includes(search) ||
+    c.code.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const hoverBg  = 'rgba(47,93,170,0.05)';
+  const selectedBg = 'rgba(0,0,0,0.06)';
+
   return (
     <div style={{ position: 'relative', flexShrink: 0 }} ref={ref}>
-      <button type="button" onClick={() => { setOpen(!open); setSearch(''); }}
-        style={{ display:'flex', alignItems:'center', gap:6, background:'#fff', border:'1.5px solid #E2E8F0', borderRadius:12, padding:'14px 12px', color:'#0A1F44', fontSize:'0.875rem', fontWeight:700, cursor:'pointer', whiteSpace:'nowrap' }}>
-        <span style={{ fontSize:'1.1rem' }}>{selected.flag}</span>
+      <button
+        type="button"
+        onClick={() => { setOpen(!open); setSearch(''); }}
+        style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#fff', border: '1.5px solid rgba(226,232,240,1)', borderRadius: 12, padding: '14px 12px', color: '#0A1F44', fontSize: '0.875rem', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.2s' }}
+      >
+        <span style={{ fontSize: '1.1rem' }}>{selected.flag}</span>
         <span>{selected.dial}</span>
-        <svg width="10" height="6" viewBox="0 0 10 6" fill="none" style={{ opacity:0.4 }}>
+        <svg width="10" height="6" viewBox="0 0 10 6" fill="none" style={{ opacity: 0.4 }}>
           <path d="M1 1l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
       </button>
+
       {open && (
-        <div style={{ position:'absolute', top:'calc(100% + 8px)', left:0, zIndex:300, background:'#fff', border:'1px solid rgba(10,31,68,0.1)', borderRadius:16, boxShadow:'0 20px 50px rgba(10,31,68,0.12)', width:280, overflow:'hidden' }}>
-          <div style={{ padding:'12px 12px 8px' }}>
-            <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search country or code…"
-              style={{ width:'100%', background:'rgba(10,31,68,0.03)', border:'1px solid rgba(10,31,68,0.1)', borderRadius:8, padding:'8px 12px', fontSize:'0.75rem', color:'#0A1F44', outline:'none', boxSizing:'border-box' }}/>
+        <div style={{ position: 'absolute', top: 'calc(100% + 8px)', left: 0, zIndex: 300, background: '#fff', border: '1px solid rgba(10,31,68,0.1)', borderRadius: 16, boxShadow: '0 20px 50px rgba(10,31,68,0.12)', width: 280, overflow: 'hidden' }}>
+          <div style={{ padding: '12px 12px 8px' }}>
+            <input
+              ref={searchRef}
+              type="text" value={search} onChange={e => setSearch(e.target.value)}
+              placeholder="Search country or code…"
+              style={{ width: '100%', background: 'rgba(10,31,68,0.03)', border: '1px solid rgba(10,31,68,0.1)', borderRadius: 8, padding: '8px 12px', fontSize: '0.75rem', color: '#0A1F44', outline: 'none', boxSizing: 'border-box' }}
+            />
           </div>
-          <div style={{ maxHeight:260, overflowY:'auto' }}>
+          <div style={{ maxHeight: 260, overflowY: 'auto' }}>
             {filtered.map(c => (
-              <button key={c.code} type="button" onClick={() => { onSelect(c); setOpen(false); setSearch(''); }}
-                style={{ display:'flex', alignItems:'center', gap:10, width:'100%', padding:'10px 14px', border:'none', background:'transparent', cursor:'pointer', textAlign:'left' }}>
-                <span style={{ fontSize:'1.1rem' }}>{c.flag}</span>
-                <span style={{ flex:1, fontSize:'0.8rem', fontWeight:600, color:'#0A1F44' }}>{c.name}</span>
-                <span style={{ fontSize:'0.75rem', color:'#6B7FA3', fontWeight:700 }}>{c.dial}</span>
+              <button
+                key={c.code} type="button"
+                onClick={() => { onSelect(c); setOpen(false); setSearch(''); }}
+                style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '10px 14px', border: 'none', background: selected.code === c.code ? selectedBg : 'transparent', cursor: 'pointer', textAlign: 'left', transition: 'background 0.1s' }}
+                onMouseEnter={e => (e.currentTarget.style.background = hoverBg)}
+                onMouseLeave={e => (e.currentTarget.style.background = selected.code === c.code ? selectedBg : 'transparent')}
+              >
+                <span style={{ fontSize: '1.1rem' }}>{c.flag}</span>
+                <span style={{ flex: 1, fontSize: '0.8rem', fontWeight: 600, color: '#0A1F44' }}>{c.name}</span>
+                <span style={{ fontSize: '0.75rem', color: '#6B7FA3', fontWeight: 700 }}>{c.dial}</span>
               </button>
             ))}
+            {filtered.length === 0 && (
+              <p style={{ padding: '16px', textAlign: 'center', color: '#6B7FA3', fontSize: '0.75rem' }}>No results</p>
+            )}
           </div>
         </div>
       )}
@@ -220,7 +396,7 @@ export default function CheckInPage() {
                   <div className="space-y-2">
                     <label className="vp-label">Mobile Number <span className="text-red-500">*</span></label>
                     <div className="flex gap-2">
-                      <CountryCodePicker selected={country} onSelect={setCountry}/>
+                      <CountryCodePicker selected={country} onSelect={c => { setCountry(c as Country); if (phoneError) validatePhone(formData.phone, c as Country); }}/>
                       <input required type="tel" value={formData.phone} onChange={e=>{setFormData({...formData,phone:e.target.value}); if(phoneError) validatePhone(e.target.value);}} placeholder="Enter number"/>
                     </div>
                     {phoneError && <p className="text-red-500 text-[10px] font-bold mt-1">{phoneError}</p>}
@@ -257,13 +433,11 @@ export default function CheckInPage() {
                     <label className="vp-label">Purpose of Visit <span className="text-red-500">*</span></label>
                     <input required type="text" value={formData.purpose} onChange={e=>setFormData({...formData,purpose:e.target.value})} placeholder="Meeting, Interview..."/>
                   </div>
-                  <div className="space-y-2">
-                    <label className="vp-label">From Time</label>
-                    <input type="time" value={formData.fromTime} onChange={e=>updateTime('fromTime',e.target.value)}/>
+                  <div className="space-y-2" style={{ overflow: 'visible' }}>
+                    <TimePicker label="From Time" value={formData.fromTime} onChange={v => updateTime('fromTime', v)}/>
                   </div>
-                  <div className="space-y-2">
-                    <label className="vp-label">To Time</label>
-                    <input type="time" value={formData.toTime} onChange={e=>updateTime('toTime',e.target.value)}/>
+                  <div className="space-y-2" style={{ overflow: 'visible' }}>
+                    <TimePicker label="To Time" value={formData.toTime} onChange={v => updateTime('toTime', v)}/>
                   </div>
                   {formData.duration && (
                     <div className="space-y-1">
