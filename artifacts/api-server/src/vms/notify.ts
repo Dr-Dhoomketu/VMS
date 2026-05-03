@@ -15,6 +15,45 @@ function createTransport() {
   });
 }
 
+export async function sendOtpEmail(to: string, otp: string): Promise<boolean> {
+  const transport = createTransport();
+  if (!transport) {
+    logger.warn('SMTP not configured — cannot send email OTP');
+    return false;
+  }
+  const from = `"VISITORPASS" <${process.env['SMTP_FROM'] || process.env['SMTP_USER']}>`;
+  try {
+    await transport.sendMail({
+      from,
+      to,
+      subject: 'Your VISITORPASS Email OTP',
+      html: `
+        <div style="font-family:'Segoe UI',Arial,sans-serif;max-width:480px;margin:0 auto;padding:40px 24px;background:#F0F4FA;">
+          <div style="background:#fff;border-radius:16px;padding:36px;box-shadow:0 4px 24px rgba(10,31,68,0.08);">
+            <div style="text-align:center;margin-bottom:28px;">
+              <div style="display:inline-block;background:#0A1F44;border-radius:12px;padding:10px 20px;">
+                <span style="color:#fff;font-size:13px;font-weight:700;letter-spacing:0.15em;">VISITORPASS</span>
+              </div>
+            </div>
+            <h2 style="color:#0A1F44;font-size:20px;font-weight:800;margin:0 0 8px;">Email Verification</h2>
+            <p style="color:#6B7FA3;font-size:14px;margin:0 0 28px;">Use the code below to verify your identity. Valid for 10 minutes.</p>
+            <div style="background:#F0F4FA;border-radius:12px;padding:24px;text-align:center;margin-bottom:28px;">
+              <span style="font-size:36px;font-weight:900;letter-spacing:0.3em;color:#0A1F44;">${otp}</span>
+            </div>
+            <p style="color:#A0AEC0;font-size:12px;margin:0;">Do not share this code with anyone. If you did not request this, please ignore this email.</p>
+          </div>
+        </div>
+      `,
+      text: `Your VISITORPASS email OTP is: ${otp}. Valid for 10 minutes. Do not share with anyone.`,
+    });
+    logger.info({ to }, 'OTP email sent');
+    return true;
+  } catch (err) {
+    logger.warn({ err, to }, 'Failed to send OTP email');
+    return false;
+  }
+}
+
 function visitorApprovedHtml(name: string, qrToken: string, visitId: string): string {
   const year = new Date().getFullYear();
   const steps = [

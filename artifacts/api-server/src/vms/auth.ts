@@ -2,6 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { VmsUser } from './models.js';
+import { sendOtpEmail } from './notify.js';
 
 const router = Router();
 
@@ -76,7 +77,7 @@ router.post('/send-otp', async (req: Request, res: Response): Promise<void> => {
   if (email) {
     const otp = generateOTP();
     otpStore.set(`email:${email}`, { otp, expires: Date.now() + 10 * 60 * 1000 });
-    // OTP is stored server-side only; never returned in the response
+    await sendOtpEmail(email, otp);
   }
 
   if (phone) {
