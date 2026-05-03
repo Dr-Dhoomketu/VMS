@@ -347,6 +347,7 @@ export default function CheckInPage() {
   const [otpVerified, setOtpVerified] = useState(false);
   const confirmationResultRef = useRef<ConfirmationResult | null>(null);
   const recaptchaVerifierRef = useRef<RecaptchaVerifier | null>(null);
+  const [recaptchaKey, setRecaptchaKey] = useState(0);
 
   // Blink detection state
   const [blinkDetected, setBlinkDetected] = useState(false);
@@ -424,9 +425,8 @@ export default function CheckInPage() {
   const resetRecaptcha = () => {
     try { recaptchaVerifierRef.current?.clear(); } catch {}
     recaptchaVerifierRef.current = null;
-    // Wipe the DOM node so Firebase can render fresh
-    const el = document.getElementById('recaptcha-container');
-    if (el) el.innerHTML = '';
+    // Bump key → React unmounts + remounts the div → Firebase gets a truly fresh element
+    setRecaptchaKey(k => k + 1);
   };
 
   const sendOtp = async () => {
@@ -435,21 +435,23 @@ export default function CheckInPage() {
     try {
       const fullPhone = `${countryCode}${formData.phone}`;
 
-      // Always reset before creating a fresh verifier to avoid "already rendered" error
-      resetRecaptcha();
-      recaptchaVerifierRef.current = new RecaptchaVerifier(auth, 'recaptcha-container', {
-        size: 'invisible',
-        callback: () => {},
-      });
+      // Create verifier only if one doesn't already exist — avoids "already rendered" error
+      if (!recaptchaVerifierRef.current) {
+        recaptchaVerifierRef.current = new RecaptchaVerifier(auth, 'recaptcha-container', {
+          size: 'invisible',
+          callback: () => {},
+        });
+      }
 
       const confirmation = await signInWithPhoneNumber(auth, fullPhone, recaptchaVerifierRef.current);
       confirmationResultRef.current = confirmation;
       setOtpSent(true);
     } catch (err: any) {
       console.error('Firebase OTP error:', err);
+      // Reset on error so the next attempt gets a completely fresh verifier + DOM node
       resetRecaptcha();
       if (err.code === 'auth/billing-not-enabled') {
-        setOtpError('Firebase billing not enabled. Go to Firebase Console → Authentication → Sign-in method → Phone → "Phone numbers for testing" and add your number with a test code (e.g. 123456). No billing needed for test numbers.');
+        setOtpError('Firebase billing not enabled. Add your number as a test number in Firebase Console → Authentication → Sign-in method → Phone → "Phone numbers for testing".');
       } else if (err.code === 'auth/invalid-phone-number') {
         setOtpError('Invalid phone number. Make sure the country code is correct (e.g. +91XXXXXXXXXX).');
       } else if (err.code === 'auth/too-many-requests') {
@@ -589,7 +591,7 @@ export default function CheckInPage() {
         {/* Hidden canvas for blink detection */}
         <canvas ref={blinkCanvasRef} style={{ display: 'none' }}/>
         {/* Invisible reCAPTCHA container required by Firebase Phone Auth */}
-        <div id="recaptcha-container"/>
+        <div key={recaptchaKey} id="recaptcha-container" />
 
         {/* Camera overlay */}
         {showCamera && (
