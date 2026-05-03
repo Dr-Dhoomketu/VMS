@@ -8,45 +8,48 @@ import { signInWithPhoneNumber, RecaptchaVerifier, ConfirmationResult } from 'fi
 import { auth } from '@/lib/firebase';
 
 function OtpInput({ value, onChange, label, hint }: { value: string; onChange: (v: string) => void; label: string; hint?: string }) {
+  const inputRef = useRef<HTMLInputElement>(null);
   return (
     <div>
-      <label style={{ display: 'block', fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#6B7FA3', marginBottom: '10px' }}>{label}</label>
-      <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
-        {Array.from({ length: 6 }).map((_, i) => (
-          <input
-            key={i}
-            type="text"
-            maxLength={1}
-            inputMode="numeric"
-            value={value[i] || ''}
-            onChange={e => {
-              const v = e.target.value.replace(/\D/g, '');
-              const arr = value.split('');
-              arr[i] = v;
-              onChange(arr.join('').slice(0, 6));
-              if (v && i < 5) {
-                const next = document.getElementById(`otp-${label}-${i + 1}`);
-                if (next) (next as HTMLInputElement).focus();
-              }
-            }}
-            onKeyDown={e => {
-              if (e.key === 'Backspace' && !value[i] && i > 0) {
-                const prev = document.getElementById(`otp-${label}-${i - 1}`);
-                if (prev) (prev as HTMLInputElement).focus();
-              }
-            }}
-            id={`otp-${label}-${i}`}
-            style={{
-              width: '44px', height: '52px', textAlign: 'center', fontSize: '1.2rem', fontWeight: 800,
-              border: value[i] ? '2px solid #2F5DAA' : '2px solid rgba(10,31,68,0.12)',
-              borderRadius: '10px', outline: 'none', color: '#0A1F44',
-              background: value[i] ? 'rgba(47,93,170,0.05)' : '#fff',
-              transition: 'all 0.15s',
-            }}
-          />
-        ))}
+      <label style={{ display: 'block', fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#6B7FA3', marginBottom: '12px' }}>{label}</label>
+      {/* Single hidden input captures all keystrokes */}
+      <div style={{ position: 'relative', display: 'flex', gap: '8px', justifyContent: 'center' }} onClick={() => inputRef.current?.focus()}>
+        <input
+          ref={inputRef}
+          type="tel"
+          inputMode="numeric"
+          maxLength={6}
+          value={value}
+          autoFocus
+          onChange={e => onChange(e.target.value.replace(/\D/g, '').slice(0, 6))}
+          style={{
+            position: 'absolute', opacity: 0, pointerEvents: 'none',
+            width: '1px', height: '1px', top: 0, left: 0,
+          }}
+        />
+        {Array.from({ length: 6 }).map((_, i) => {
+          const filled = i < value.length;
+          const active = i === value.length || (i === 5 && value.length === 6);
+          return (
+            <div
+              key={i}
+              style={{
+                width: '46px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '1.4rem', fontWeight: 800, color: '#0A1F44',
+                border: active ? '2px solid #2F5DAA' : filled ? '2px solid rgba(47,93,170,0.4)' : '2px solid rgba(10,31,68,0.12)',
+                borderRadius: '12px',
+                background: filled ? 'rgba(47,93,170,0.06)' : '#fff',
+                boxShadow: active ? '0 0 0 3px rgba(47,93,170,0.12)' : 'none',
+                transition: 'all 0.15s', cursor: 'text', userSelect: 'none',
+              }}
+            >
+              {filled ? value[i] : (active ? <span style={{ width: 2, height: 22, background: '#2F5DAA', display: 'inline-block', animation: 'blink 1s step-end infinite' }} /> : null)}
+            </div>
+          );
+        })}
       </div>
-      {hint && <p style={{ fontSize: '0.65rem', color: '#A0AEC0', textAlign: 'center', marginTop: '8px' }}>{hint}</p>}
+      {hint && <p style={{ fontSize: '0.65rem', color: '#A0AEC0', textAlign: 'center', marginTop: '10px' }}>{hint}</p>}
+      <style>{`@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }`}</style>
     </div>
   );
 }
