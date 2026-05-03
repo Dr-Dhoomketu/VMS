@@ -104,7 +104,7 @@ router.get('/', protect, authorize('Admin'), async (req: Request, res: Response)
   } catch { res.status(500).json({ message: 'Server error' }); }
 });
 
-router.put('/:id/status', protect, async (req: any, res: Response) => {
+router.put('/:id/status', protect, authorize('Admin', 'Employee'), async (req: any, res: Response) => {
   const { status } = req.body;
   if (!['Approved','Rejected'].includes(status)) return res.status(400).json({ message: 'Invalid status' });
   try {
@@ -126,7 +126,7 @@ router.put('/:id/status', protect, async (req: any, res: Response) => {
   }
 });
 
-router.post('/:id/checkout', protect, authorize('Admin','Employee','Security'), async (req: any, res: Response) => {
+router.post('/:id/checkout', protect, authorize('Admin'), async (req: any, res: Response) => {
   try {
     const visit = await Visit.findById(req.params.id);
     if (!visit) return res.status(404).json({ message: 'Visit not found' });

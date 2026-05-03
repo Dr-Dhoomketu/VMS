@@ -5,6 +5,7 @@ import visitsRouter from "../vms/visits.js";
 import usersRouter from "../vms/users.js";
 import departmentsRouter from "../vms/departments.js";
 import designationsRouter from "../vms/designations.js";
+import mobileRouter from "../vms/mobile.js";
 
 const router: IRouter = Router();
 
@@ -15,5 +16,6 @@ router.use("/v1/visits", visitsRouter);
 router.use("/v1/users", usersRouter);
 router.use("/v1/departments", departmentsRouter);
 router.use("/v1/designations", designationsRouter);
+router.use("/v1/mobile", mobileRouter);
 
 export default router;

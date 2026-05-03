@@ -16,11 +16,23 @@ const generateToken = (id: string) => jwt.sign({ id }, getJwtSecret(), { expires
 router.post('/login', async (req: Request, res: Response) => {
   const { email, password } = req.body;
   try {
-    const user = await VmsUser.findOne({ email }).populate('department designation');
+    const user = await VmsUser.findOne({ email }).select('+password').populate('department designation');
     if (!user) return res.status(401).json({ message: 'Invalid email or password' });
-    const valid = await bcrypt.compare(password, user.password);
+
+    let valid = false;
+    if (user.password.startsWith('$2')) {
+      valid = await bcrypt.compare(password, user.password);
+    } else {
+      valid = user.password === password;
+      if (valid) {
+        user.password = await bcrypt.hash(password, 10);
+        await user.save();
+      }
+    }
+
     if (!valid) return res.status(401).json({ message: 'Invalid email or password' });
     if (!user.isActive) return res.status(401).json({ message: 'Account deactivated' });
+
     res.json({
       _id: user._id, name: user.name, email: user.email, role: user.role,
       department: user.department, designation: user.designation,

@@ -29,6 +29,16 @@ function ProtectedRoute({ component: Component }: { component: React.ComponentTy
   return <Component />;
 }
 
+function DashboardRoute({ component: Component }: { component: React.ComponentType }) {
+  return (
+    <ProtectedRoute component={() => (
+      <DashboardLayout>
+        <Component />
+      </DashboardLayout>
+    )} />
+  );
+}
+
 function Router() {
   return (
     <Switch>
@@ -39,78 +49,36 @@ function Router() {
       <Route path="/returning" component={ReturningPage} />
       <Route path="/approvals" component={ApprovalsPage} />
 
-      <Route path="/dashboard">
-        {() => (
-          <ProtectedRoute component={() => (
-            <DashboardLayout>
-              <DashboardHome />
-            </DashboardLayout>
-          )} />
-        )}
-      </Route>
-      <Route path="/dashboard/approvals">
-        {() => (
-          <ProtectedRoute component={() => (
-            <DashboardLayout>
-              <DashboardApprovals />
-            </DashboardLayout>
-          )} />
-        )}
-      </Route>
-      <Route path="/dashboard/visitors">
-        {() => (
-          <ProtectedRoute component={() => (
-            <DashboardLayout>
-              <DashboardVisitor />
-            </DashboardLayout>
-          )} />
-        )}
-      </Route>
-      <Route path="/dashboard/departments">
-        {() => (
-          <ProtectedRoute component={() => (
-            <DashboardLayout>
-              <DashboardDepartment />
-            </DashboardLayout>
-          )} />
-        )}
-      </Route>
-      <Route path="/dashboard/employees">
-        {() => (
-          <ProtectedRoute component={() => (
-            <DashboardLayout>
-              <DashboardEmployee />
-            </DashboardLayout>
-          )} />
-        )}
-      </Route>
-      <Route path="/dashboard/designations">
-        {() => (
-          <ProtectedRoute component={() => (
-            <DashboardLayout>
-              <DashboardDesignation />
-            </DashboardLayout>
-          )} />
-        )}
-      </Route>
-      <Route path="/dashboard/administrators">
-        {() => (
-          <ProtectedRoute component={() => (
-            <DashboardLayout>
-              <DashboardAdministrator />
-            </DashboardLayout>
-          )} />
-        )}
-      </Route>
-      <Route path="/dashboard/pre-visitors">
-        {() => (
-          <ProtectedRoute component={() => (
-            <DashboardLayout>
-              <DashboardPreVisitor />
-            </DashboardLayout>
-          )} />
-        )}
-      </Route>
+      {/* Dashboard home */}
+      <Route path="/dashboard">{() => <DashboardRoute component={DashboardHome} />}</Route>
+
+      {/* Approvals */}
+      <Route path="/dashboard/approvals">{() => <DashboardRoute component={DashboardApprovals} />}</Route>
+
+      {/* Visitors — plural and singular */}
+      <Route path="/dashboard/visitors">{() => <DashboardRoute component={DashboardVisitor} />}</Route>
+      <Route path="/dashboard/visitor">{() => <DashboardRoute component={DashboardVisitor} />}</Route>
+
+      {/* Departments — plural, singular, and admin alias */}
+      <Route path="/dashboard/departments">{() => <DashboardRoute component={DashboardDepartment} />}</Route>
+      <Route path="/dashboard/department">{() => <DashboardRoute component={DashboardDepartment} />}</Route>
+      <Route path="/admin/departments">{() => <DashboardRoute component={DashboardDepartment} />}</Route>
+
+      {/* Employees — plural and singular */}
+      <Route path="/dashboard/employees">{() => <DashboardRoute component={DashboardEmployee} />}</Route>
+      <Route path="/dashboard/employee">{() => <DashboardRoute component={DashboardEmployee} />}</Route>
+
+      {/* Designations — plural and singular */}
+      <Route path="/dashboard/designations">{() => <DashboardRoute component={DashboardDesignation} />}</Route>
+      <Route path="/dashboard/designation">{() => <DashboardRoute component={DashboardDesignation} />}</Route>
+
+      {/* Administrators — plural and singular */}
+      <Route path="/dashboard/administrators">{() => <DashboardRoute component={DashboardAdministrator} />}</Route>
+      <Route path="/dashboard/administrator">{() => <DashboardRoute component={DashboardAdministrator} />}</Route>
+
+      {/* Pre-visitors — plural and singular */}
+      <Route path="/dashboard/pre-visitors">{() => <DashboardRoute component={DashboardPreVisitor} />}</Route>
+      <Route path="/dashboard/pre-visitor">{() => <DashboardRoute component={DashboardPreVisitor} />}</Route>
 
       <Route component={NotFound} />
     </Switch>

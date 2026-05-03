@@ -16,15 +16,15 @@ export interface IVisit extends Document {
   meetWith: mongoose.Types.ObjectId;
   purpose: string; status: string;
   scheduledTime?: Date; fromTime?: string; toTime?: string;
-  duration?: string; qrToken?: string; checkoutTime?: Date;
+  duration?: string; qrToken?: string; checkinTime?: Date; checkoutTime?: Date;
 }
 const VisitSchema = new Schema<IVisit>({
   visitor: { type: Schema.Types.ObjectId, ref: 'Visitor', required: true },
   meetWith: { type: Schema.Types.ObjectId, ref: 'VmsUser', required: true },
   purpose: { type: String, required: true },
-  status: { type: String, default: 'Pending', enum: ['Pending','Approved','Rejected','CheckedOut'] },
+  status: { type: String, default: 'Pending', enum: ['Pending','Approved','Rejected','CheckedIn','CheckedOut'] },
   scheduledTime: Date, fromTime: String, toTime: String,
-  duration: String, qrToken: String, checkoutTime: Date,
+  duration: String, qrToken: String, checkinTime: Date, checkoutTime: Date,
 }, { timestamps: true });
 export const Visit = mongoose.model<IVisit>('Visit', VisitSchema);
 
