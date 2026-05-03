@@ -7,7 +7,21 @@ function createTransport() {
   const user = process.env['SMTP_USER'];
   const pass = process.env['SMTP_PASS'];
 
-  if (!host || !user || !pass) return null;
+  if (!user || !pass) return null;
+
+  // If no explicit host, auto-detect service from email domain
+  if (!host) {
+    const domain = user.split('@')[1]?.toLowerCase() ?? '';
+    let service: string | undefined;
+    if (domain === 'gmail.com') service = 'gmail';
+    else if (domain === 'outlook.com' || domain === 'hotmail.com' || domain === 'live.com') service = 'hotmail';
+    else if (domain === 'yahoo.com') service = 'yahoo';
+
+    if (service) {
+      return nodemailer.createTransport({ service, auth: { user, pass } });
+    }
+    return null;
+  }
 
   return nodemailer.createTransport({
     host, port, secure: port === 465,
