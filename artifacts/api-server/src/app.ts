@@ -52,14 +52,19 @@ const MONGO_URI = process.env["MONGODB_URI"] || process.env["MONGO_URI"] || "";
 
 async function connectDB() {
   if (!MONGO_URI) {
-    logger.warn("No MONGODB_URI set — VMS routes require MongoDB. Set MONGODB_URI env var.");
-    return;
+    logger.error("MONGODB_URI is required but not set. Set it as a Replit Secret.");
+    process.exit(1);
+  }
+  if (!process.env["JWT_SECRET"]) {
+    logger.error("JWT_SECRET is required but not set. Set it as a Replit Secret.");
+    process.exit(1);
   }
   try {
     await mongoose.connect(MONGO_URI);
     logger.info("MongoDB connected");
   } catch (err) {
-    logger.error({ err }, "MongoDB connection failed");
+    logger.error({ err }, "MongoDB connection failed — exiting");
+    process.exit(1);
   }
 }
 
