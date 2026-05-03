@@ -183,8 +183,8 @@ export default function LandingPage() {
       gsap.from('.hero-line', { y: 36, opacity: 0, duration: 0.9, stagger: 0.1, ease: 'power3.out', delay: 0.05 });
       gsap.from('.hero-cards-wrap', { x: 48, opacity: 0, duration: 1.1, ease: 'power3.out', delay: 0.2 });
       gsap.from('.feat-card', {
-        scrollTrigger: { trigger: cardsRef.current, start: 'top 82%' },
-        y: 32, opacity: 0, duration: 0.7, stagger: 0.1, ease: 'power3.out',
+        scrollTrigger: { trigger: cardsRef.current, start: 'top 95%' },
+        y: 24, opacity: 0, duration: 0.6, stagger: 0.08, ease: 'power3.out',
       });
     });
     return () => ctx.revert();
@@ -318,9 +318,9 @@ export default function LandingPage() {
       </section>
 
       {/* ── FEATURES ── */}
-      <section ref={cardsRef} style={{ padding: '80px 52px 100px', position: 'relative', zIndex: 1 }}>
+      <section ref={cardsRef} style={{ padding: '40px 52px 80px', position: 'relative', zIndex: 1 }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
-          <div style={{ marginBottom: '56px', textAlign: 'center' }}>
+          <div style={{ marginBottom: '36px', textAlign: 'center' }}>
             <p style={{ fontSize: '0.58rem', fontWeight: 800, letterSpacing: '0.35em', textTransform: 'uppercase', color: '#2F5DAA', marginBottom: '12px' }}>Why VisitorPass</p>
             <h2 style={{ fontSize: '2.2rem', fontWeight: 900, letterSpacing: '-0.04em', color: '#0A1F44', lineHeight: 1.1 }}>Built for enterprise security</h2>
           </div>
