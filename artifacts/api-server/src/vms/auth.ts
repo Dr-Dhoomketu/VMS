@@ -110,30 +110,15 @@ router.post('/verify-otp', async (req: Request, res: Response): Promise<void> =>
 
 router.get('/test-email', async (req: Request, res: Response): Promise<void> => {
   const to = req.query['to'] as string || process.env['SMTP_USER'] || '';
-  if (!to) { res.status(400).json({ error: 'Provide ?to=email or set SMTP_USER' }); return; }
-  const host = process.env['SMTP_HOST'];
-  const user = process.env['SMTP_USER'];
-  const pass = process.env['SMTP_PASS'];
-  if (!user || !pass) { res.json({ error: 'SMTP_USER or SMTP_PASS not set', host, user: !!user, pass: !!pass }); return; }
-
-  try {
-    const nodemailer = await import('nodemailer');
-    const domain = user.split('@')[1]?.toLowerCase() ?? '';
-    const transport = domain === 'gmail.com'
-      ? nodemailer.createTransport({ service: 'gmail', auth: { user, pass } })
-      : nodemailer.createTransport({ host: host || 'smtp.gmail.com', port: 587, auth: { user, pass } });
-
-    await transport.verify();
-    await transport.sendMail({
-      from: `"VISITORPASS Test" <${user}>`,
-      to,
-      subject: 'VISITORPASS Email Test',
-      text: 'This is a test email from VISITORPASS. If you received this, email OTP will work.',
-    });
-    res.json({ success: true, message: 'Email sent successfully!', smtp: { host: host || '(gmail service)', user, to } });
-  } catch (err: any) {
-    res.json({ success: false, error: err?.message, code: err?.code, smtp: { host: host || '(gmail service)', user, to } });
-  }
+  if (!to) { res.status(400).json({ error: 'Provide ?to=your@email.com as query param' }); return; }
+  const resendKey = process.env['RESEND_API_KEY'];
+  const ok = await sendOtpEmail(to, '123456');
+  res.json({
+    success: ok,
+    method: resendKey ? 'resend' : 'smtp',
+    to,
+    tip: ok ? 'Check your inbox (and spam folder)' : 'Check Render logs for the error',
+  });
 });
 
 router.get('/me', protect, async (req: any, res: Response): Promise<void> => {

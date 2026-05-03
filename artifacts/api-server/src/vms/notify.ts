@@ -1,74 +1,83 @@
 import nodemailer from 'nodemailer';
 import { logger } from '../lib/logger.js';
 
-function createTransport() {
+// ── Resend HTTP API (preferred — works on Render free tier, no SMTP port blocking) ──
+async function sendViaResend(to: string, subject: string, html: string, text: string): Promise<boolean> {
+  const apiKey = process.env['RESEND_API_KEY'];
+  if (!apiKey) return false;
+  const from = process.env['RESEND_FROM'] || `VISITORPASS <${process.env['SMTP_USER'] || 'onboarding@resend.dev'}>`;
+  try {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ from, to, subject, html, text }),
+    });
+    const data: any = await res.json();
+    if (!res.ok) { logger.error({ data, to }, 'Resend API error'); return false; }
+    logger.info({ id: data.id, to }, 'Email sent via Resend');
+    return true;
+  } catch (err: any) {
+    logger.error({ err: err?.message, to }, 'Resend fetch failed');
+    return false;
+  }
+}
+
+// ── SMTP fallback (nodemailer) ──
+function createSmtpTransport() {
   const host = process.env['SMTP_HOST'];
   const port = Number(process.env['SMTP_PORT'] || '587');
   const user = process.env['SMTP_USER'];
   const pass = process.env['SMTP_PASS'];
-
   if (!user || !pass) return null;
-
-  // If no explicit host, auto-detect service from email domain
   if (!host) {
     const domain = user.split('@')[1]?.toLowerCase() ?? '';
-    let service: string | undefined;
-    if (domain === 'gmail.com') service = 'gmail';
-    else if (domain === 'outlook.com' || domain === 'hotmail.com' || domain === 'live.com') service = 'hotmail';
-    else if (domain === 'yahoo.com') service = 'yahoo';
-
-    if (service) {
-      return nodemailer.createTransport({ service, auth: { user, pass } });
-    }
+    if (domain === 'gmail.com') return nodemailer.createTransport({ service: 'gmail', auth: { user, pass } });
+    if (domain === 'outlook.com' || domain === 'hotmail.com' || domain === 'live.com') return nodemailer.createTransport({ service: 'hotmail', auth: { user, pass } });
     return null;
   }
+  return nodemailer.createTransport({ host, port, secure: port === 465, auth: { user, pass } });
+}
 
-  return nodemailer.createTransport({
-    host, port, secure: port === 465,
-    auth: { user, pass },
-  });
+async function sendViaSmtp(to: string, subject: string, html: string, text: string): Promise<boolean> {
+  const transport = createSmtpTransport();
+  if (!transport) return false;
+  const from = `"VISITORPASS" <${process.env['SMTP_FROM'] || process.env['SMTP_USER']}>`;
+  try {
+    const timeout = new Promise<never>((_, reject) => setTimeout(() => reject(new Error('SMTP timeout')), 10000));
+    await Promise.race([timeout, transport.sendMail({ from, to, subject, html, text })]);
+    logger.info({ to }, 'Email sent via SMTP');
+    return true;
+  } catch (err: any) {
+    logger.error({ err: { message: err?.message, code: err?.code }, to }, 'SMTP send failed');
+    return false;
+  }
+}
+
+// ── Unified send: Resend first, SMTP fallback ──
+async function sendEmail(to: string, subject: string, html: string, text: string): Promise<boolean> {
+  if (await sendViaResend(to, subject, html, text)) return true;
+  return sendViaSmtp(to, subject, html, text);
 }
 
 export async function sendOtpEmail(to: string, otp: string): Promise<boolean> {
-  const transport = createTransport();
-  if (!transport) {
-    logger.warn('SMTP not configured — cannot send email OTP');
-    return false;
-  }
-  const from = `"VISITORPASS" <${process.env['SMTP_FROM'] || process.env['SMTP_USER']}>`;
-  try {
-    const timeout = new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error('Email send timeout')), 10000)
-    );
-    await Promise.race([timeout, transport.sendMail({
-      from,
-      to,
-      subject: 'Your VISITORPASS Email OTP',
-      html: `
-        <div style="font-family:'Segoe UI',Arial,sans-serif;max-width:480px;margin:0 auto;padding:40px 24px;background:#F0F4FA;">
-          <div style="background:#fff;border-radius:16px;padding:36px;box-shadow:0 4px 24px rgba(10,31,68,0.08);">
-            <div style="text-align:center;margin-bottom:28px;">
-              <div style="display:inline-block;background:#0A1F44;border-radius:12px;padding:10px 20px;">
-                <span style="color:#fff;font-size:13px;font-weight:700;letter-spacing:0.15em;">VISITORPASS</span>
-              </div>
-            </div>
-            <h2 style="color:#0A1F44;font-size:20px;font-weight:800;margin:0 0 8px;">Email Verification</h2>
-            <p style="color:#6B7FA3;font-size:14px;margin:0 0 28px;">Use the code below to verify your identity. Valid for 10 minutes.</p>
-            <div style="background:#F0F4FA;border-radius:12px;padding:24px;text-align:center;margin-bottom:28px;">
-              <span style="font-size:36px;font-weight:900;letter-spacing:0.3em;color:#0A1F44;">${otp}</span>
-            </div>
-            <p style="color:#A0AEC0;font-size:12px;margin:0;">Do not share this code with anyone. If you did not request this, please ignore this email.</p>
+  const html = `
+    <div style="font-family:'Segoe UI',Arial,sans-serif;max-width:480px;margin:0 auto;padding:40px 24px;background:#F0F4FA;">
+      <div style="background:#fff;border-radius:16px;padding:36px;box-shadow:0 4px 24px rgba(10,31,68,0.08);">
+        <div style="text-align:center;margin-bottom:28px;">
+          <div style="display:inline-block;background:#0A1F44;border-radius:12px;padding:10px 20px;">
+            <span style="color:#fff;font-size:13px;font-weight:700;letter-spacing:0.15em;">VISITORPASS</span>
           </div>
         </div>
-      `,
-      text: `Your VISITORPASS email OTP is: ${otp}. Valid for 10 minutes. Do not share with anyone.`,
-    })]);;
-    logger.info({ to }, 'OTP email sent');
-    return true;
-  } catch (err: any) {
-    logger.error({ err: { message: err?.message, code: err?.code, command: err?.command }, to }, 'Failed to send OTP email');
-    return false;
-  }
+        <h2 style="color:#0A1F44;font-size:20px;font-weight:800;margin:0 0 8px;">Email Verification</h2>
+        <p style="color:#6B7FA3;font-size:14px;margin:0 0 28px;">Use the code below to verify your identity. Valid for 10 minutes.</p>
+        <div style="background:#F0F4FA;border-radius:12px;padding:24px;text-align:center;margin-bottom:28px;">
+          <span style="font-size:36px;font-weight:900;letter-spacing:0.3em;color:#0A1F44;">${otp}</span>
+        </div>
+        <p style="color:#A0AEC0;font-size:12px;margin:0;">Do not share this code with anyone. If you did not request this, please ignore this email.</p>
+      </div>
+    </div>
+  `;
+  return sendEmail(to, 'Your VISITORPASS Email OTP', html, `Your VISITORPASS OTP is: ${otp}. Valid for 10 minutes.`);
 }
 
 function visitorApprovedHtml(name: string, qrToken: string, visitId: string): string {
