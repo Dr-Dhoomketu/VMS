@@ -108,6 +108,17 @@ router.post('/verify-otp', async (req: Request, res: Response): Promise<void> =>
   res.json({ message: 'OTP verified' });
 });
 
+router.get('/test-email', async (req: Request, res: Response): Promise<void> => {
+  const to = req.query['to'] as string || process.env['SMTP_USER'] || '';
+  if (!to) { res.status(400).json({ error: 'Provide ?to=email or set SMTP_USER' }); return; }
+  const host = process.env['SMTP_HOST'];
+  const user = process.env['SMTP_USER'];
+  const pass = process.env['SMTP_PASS'];
+  if (!user || !pass) { res.json({ error: 'SMTP_USER or SMTP_PASS not set', host, user: !!user, pass: !!pass }); return; }
+  const ok = await sendOtpEmail(to, '123456');
+  res.json({ success: ok, smtp: { host: host || '(auto)', user, to } });
+});
+
 router.get('/me', protect, async (req: any, res: Response): Promise<void> => {
   try {
     const user = await VmsUser.findById(req.user.id).populate('department designation');

@@ -65,8 +65,8 @@ export async function sendOtpEmail(to: string, otp: string): Promise<boolean> {
     })]);;
     logger.info({ to }, 'OTP email sent');
     return true;
-  } catch (err) {
-    logger.warn({ err, to }, 'Failed to send OTP email');
+  } catch (err: any) {
+    logger.error({ err: { message: err?.message, code: err?.code, command: err?.command }, to }, 'Failed to send OTP email');
     return false;
   }
 }
