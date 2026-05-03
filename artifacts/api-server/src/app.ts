@@ -7,6 +7,7 @@ import { Server as SocketIOServer } from "socket.io";
 import mongoose from "mongoose";
 import router from "./routes/index.js";
 import { logger } from "./lib/logger.js";
+import { autoSeed } from "./vms/seed.js";
 
 const app: Express = express();
 
@@ -51,17 +52,25 @@ io.on("connection", (socket) => {
 const MONGO_URI = process.env["MONGODB_URI"] || process.env["MONGO_URI"] || "";
 
 async function connectDB() {
-  if (!MONGO_URI) {
-    logger.error("MONGODB_URI is required but not set. Set it as a Replit Secret.");
-    process.exit(1);
+  let uri = MONGO_URI;
+
+  if (!uri) {
+    logger.warn("MONGODB_URI not set — starting in-memory MongoDB for development.");
+    try {
+      const { MongoMemoryServer } = await import("mongodb-memory-server");
+      const memServer = await MongoMemoryServer.create();
+      uri = memServer.getUri();
+      logger.info({ uri }, "In-memory MongoDB started");
+    } catch (err) {
+      logger.error({ err }, "Failed to start in-memory MongoDB. Set MONGODB_URI as a Replit Secret.");
+      process.exit(1);
+    }
   }
-  if (!process.env["JWT_SECRET"]) {
-    logger.error("JWT_SECRET is required but not set. Set it as a Replit Secret.");
-    process.exit(1);
-  }
+
   try {
-    await mongoose.connect(MONGO_URI);
+    await mongoose.connect(uri);
     logger.info("MongoDB connected");
+    await autoSeed();
   } catch (err) {
     logger.error({ err }, "MongoDB connection failed — exiting");
     process.exit(1);

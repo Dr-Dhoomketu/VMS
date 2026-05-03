@@ -5,6 +5,7 @@ import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import { Visit, Visitor, VmsUser } from './models.js';
 import { protect, authorize } from './auth.js';
+import { notifyVisitStatus } from './notify.js';
 
 const router = Router();
 
@@ -17,27 +18,27 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-router.post('/request', upload.single('webcamImage'), async (req: any, res: Response) => {
+router.post('/request', upload.single('webcamImage'), async (req: any, res: Response): Promise<void> => {
   const { name, aadhar, phone, email, address, gender, meetWith, purpose, scheduledTime, fromTime, toTime, duration } = req.body;
   try {
-    let visitor = aadhar ? await Visitor.findOne({ aadhar }) : null;
+    let visitor: any = aadhar ? await Visitor.findOne({ aadhar }) : null;
     if (!visitor) {
       visitor = await Visitor.create({
         name, phone, email, address, gender,
         aadhar: aadhar || undefined,
-        imageUrl: req.file ? `/public/uploads/${req.file.filename}` : null,
+        imageUrl: req.file ? `/public/uploads/${req.file.filename}` : undefined,
       });
     }
-    const visit = await Visit.create({
+    const visit: any = await Visit.create({
       visitor: visitor._id, meetWith, purpose,
-      scheduledTime: scheduledTime ? new Date(scheduledTime) : null,
+      scheduledTime: scheduledTime ? new Date(scheduledTime) : undefined,
       fromTime, toTime, duration, status: 'Pending',
     });
     const io = req.app.get('io');
     if (io) {
       io.to('admin_channel').emit('new_visit', { visitId: visit._id, visitorName: visitor.name });
       const employee = await VmsUser.findById(meetWith);
-      if (employee) io.to(`employee_${employee._id}`).emit('new_visit_request', { visitId: visit._id, visitorName: visitor.name });
+      if (employee) io.to(`employee_${(employee as any)._id}`).emit('new_visit_request', { visitId: visit._id, visitorName: visitor.name });
     }
     res.status(201).json({ message: 'Visit request submitted', visitId: visit._id });
   } catch (err: any) {
@@ -45,7 +46,7 @@ router.post('/request', upload.single('webcamImage'), async (req: any, res: Resp
   }
 });
 
-router.get('/pending', protect, async (req: any, res: Response) => {
+router.get('/pending', protect, async (req: any, res: Response): Promise<void> => {
   try {
     const query: any = { status: 'Pending' };
     if (req.user.role === 'Employee') query.meetWith = req.user._id;
@@ -54,7 +55,7 @@ router.get('/pending', protect, async (req: any, res: Response) => {
   } catch { res.status(500).json({ message: 'Server error' }); }
 });
 
-router.get('/approved', protect, async (req: any, res: Response) => {
+router.get('/approved', protect, async (req: any, res: Response): Promise<void> => {
   try {
     const query: any = { status: 'Approved' };
     if (req.user.role === 'Employee') query.meetWith = req.user._id;
@@ -66,21 +67,23 @@ router.get('/approved', protect, async (req: any, res: Response) => {
   } catch { res.status(500).json({ message: 'Server error' }); }
 });
 
-router.get('/history', async (req: Request, res: Response) => {
+router.get('/history', async (req: Request, res: Response): Promise<void> => {
   const { phone } = req.query;
-  if (!phone) return res.status(400).json({ message: 'Phone required' });
+  if (!phone) { res.status(400).json({ message: 'Phone required' }); return; }
   try {
-    const visitor = await Visitor.findOne({ phone });
-    if (!visitor) return res.status(404).json({ message: 'Visitor not found' });
-    const lastVisit = await Visit.findOne({ visitor: visitor._id }).sort({ createdAt: -1 }).populate('meetWith', 'name');
+    const visitor = await Visitor.findOne({ phone: String(phone) });
+    if (!visitor) { res.status(404).json({ message: 'Visitor not found' }); return; }
+    const lastVisit = await Visit.findOne({ visitor: (visitor as any)._id })
+      .sort({ createdAt: -1 })
+      .populate('meetWith', 'name');
     res.json({ visitor, lastVisit });
   } catch { res.status(500).json({ message: 'Server error' }); }
 });
 
-router.get('/stats', protect, authorize('Admin'), async (_req: any, res: Response) => {
+router.get('/stats', protect, authorize('Admin'), async (_req: any, res: Response): Promise<void> => {
   try {
     const total = await Visit.countDocuments();
-    const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+    const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0);
     const today = await Visit.countDocuments({ createdAt: { $gte: todayStart } });
     const checkedIn = await Visit.countDocuments({ status: 'Approved' });
     const checkedOut = await Visit.countDocuments({ status: 'CheckedOut' });
@@ -89,7 +92,7 @@ router.get('/stats', protect, authorize('Admin'), async (_req: any, res: Respons
   } catch { res.status(500).json({ message: 'Server error' }); }
 });
 
-router.get('/', protect, authorize('Admin'), async (req: Request, res: Response) => {
+router.get('/', protect, authorize('Admin'), async (req: Request, res: Response): Promise<void> => {
   try {
     const { status, startDate, endDate } = req.query;
     const query: any = {};
@@ -104,32 +107,47 @@ router.get('/', protect, authorize('Admin'), async (req: Request, res: Response)
   } catch { res.status(500).json({ message: 'Server error' }); }
 });
 
-router.put('/:id/status', protect, authorize('Admin', 'Employee'), async (req: any, res: Response) => {
+router.put('/:id/status', protect, authorize('Admin', 'Employee'), async (req: any, res: Response): Promise<void> => {
   const { status } = req.body;
-  if (!['Approved','Rejected'].includes(status)) return res.status(400).json({ message: 'Invalid status' });
+  if (!['Approved', 'Rejected'].includes(status)) { res.status(400).json({ message: 'Invalid status' }); return; }
   try {
     const visit = await Visit.findById(req.params.id).populate('visitor').populate('meetWith');
-    if (!visit) return res.status(404).json({ message: 'Visit not found' });
-    visit.status = status;
-    if (status === 'Approved') {
-      visit.qrToken = uuidv4();
+    if (!visit) { res.status(404).json({ message: 'Visit not found' }); return; }
+    if (req.user.role === 'Employee') {
+      const meetWithId = String((visit.meetWith as any)?._id ?? visit.meetWith);
+      if (meetWithId !== String(req.user._id)) {
+        res.status(403).json({ message: 'Not authorized to update this visit' }); return;
+      }
     }
+    visit.status = status;
+    if (status === 'Approved') visit.qrToken = uuidv4();
     await visit.save();
     const io = req.app.get('io');
     if (io) {
       io.emit('approval_updates', { visitId: visit._id, status });
       io.to('admin_channel').emit('visit_updated', { visitId: visit._id, status });
     }
+    const visitor = visit.visitor as any;
+    const host = visit.meetWith as any;
+    notifyVisitStatus({
+      visitorEmail: visitor?.email,
+      visitorName: visitor?.name || 'Visitor',
+      hostEmail: host?.email,
+      hostName: host?.name,
+      status,
+      visitId: String(visit._id),
+      qrToken: visit.qrToken,
+    }).catch(() => {});
     res.json({ message: `Visit ${status.toLowerCase()}`, visit });
   } catch (err: any) {
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 });
 
-router.post('/:id/checkout', protect, authorize('Admin'), async (req: any, res: Response) => {
+router.post('/:id/checkout', protect, authorize('Admin'), async (req: any, res: Response): Promise<void> => {
   try {
     const visit = await Visit.findById(req.params.id);
-    if (!visit) return res.status(404).json({ message: 'Visit not found' });
+    if (!visit) { res.status(404).json({ message: 'Visit not found' }); return; }
     visit.status = 'CheckedOut';
     visit.checkoutTime = new Date();
     await visit.save();
