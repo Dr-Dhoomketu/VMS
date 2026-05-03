@@ -286,8 +286,22 @@ export default function AppointmentPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
                   </svg>
                 </div>
-                <p style={{ color: '#fff', fontWeight: 700, fontSize: '0.95rem', marginBottom: '8px' }}>Camera access denied</p>
-                <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem', lineHeight: 1.6, marginBottom: '28px' }}>Please allow camera access in your browser settings.</p>
+                <p style={{ color: '#fff', fontWeight: 700, fontSize: '0.95rem', marginBottom: '8px' }}>
+                  {cameraError.includes('NotFoundError') || cameraError.includes('DevicesNotFound') ? 'No camera found' :
+                   cameraError.includes('NotReadableError') || cameraError.includes('TrackStartError') ? 'Camera in use' :
+                   cameraError.includes('not supported') ? 'Camera not supported' :
+                   'Camera access denied'}
+                </p>
+                <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem', lineHeight: 1.6, marginBottom: '8px' }}>
+                  {cameraError.includes('NotFoundError') || cameraError.includes('DevicesNotFound')
+                    ? 'No camera device was detected. Please connect a camera and try again.'
+                    : cameraError.includes('NotReadableError') || cameraError.includes('TrackStartError')
+                    ? 'Your camera is being used by another app. Close it and try again.'
+                    : cameraError.includes('not supported')
+                    ? 'This browser does not support camera access. Please use Chrome or Firefox.'
+                    : 'Please allow camera access in your browser settings and try again.'}
+                </p>
+                <p style={{ color: 'rgba(255,255,255,0.25)', fontSize: '0.65rem', marginBottom: '24px', fontFamily: 'monospace', wordBreak: 'break-all' }}>{cameraError}</p>
                 <button onClick={openCamera} className="btn-vp-primary" style={{ width: '100%', justifyContent: 'center', marginBottom: '10px' }}>Try Again</button>
                 <button onClick={() => { setShowCamera(false); setCameraError(''); }} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'transparent', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', fontSize: '0.75rem' }}>Cancel</button>
               </div>
