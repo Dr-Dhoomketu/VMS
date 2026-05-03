@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import ValueTechLogo from '@/components/ValueTechLogo';
+import Image from 'next/image';
 
 export default function AppointmentPage() {
   const [step, setStep] = useState(1);
@@ -60,22 +60,23 @@ export default function AppointmentPage() {
     }
   };
 
-  const sectionCard = "relative overflow-hidden rounded-3xl bg-white/[0.03] theme-coffee:bg-white border border-white/[0.07] theme-coffee:border-black/[0.07] p-8 shadow-[0_4px_40px_rgba(0,0,0,0.4)] theme-coffee:shadow-[0_4px_40px_rgba(0,0,0,0.04)]";
-  const labelCls = "block text-[10px] uppercase tracking-widest text-gray-500 font-black mb-2";
+  const sectionCard = "vp-section-card";
+  const labelCls = "vp-label";
 
   return (
-    <main className="min-h-screen flex flex-col bg-[#050505] theme-coffee:bg-[#fbfbfd] text-white theme-coffee:text-[#1d1d1f] relative dot-bg">
-      {/* Navbar - matches check-in page */}
-      <nav className="relative z-50 flex justify-between items-center px-10 py-8 border-b border-white/5 theme-coffee:border-black/5 backdrop-blur-sm">
-        <ValueTechLogo className="h-[60px] w-auto" />
+    <main className="min-h-screen flex flex-col bg-white text-[#0A1F44] relative dot-bg">
+      {/* Navbar */}
+      <nav className="relative z-50 flex justify-between items-center px-10 py-6 border-b border-[#E2E8F0] bg-white">
+        <Image src="/vts-logo.png" alt="VISITORPASS" width={140} height={40}
+          className="h-9 w-auto object-contain" style={{ width: 'auto' }} priority/>
       </nav>
 
       {/* Content */}
       <div className="flex-1 flex items-start justify-center py-16 px-6">
         <div className="w-full max-w-4xl">
           {/* Close button */}
-          <Link href="/" className="inline-flex items-center gap-2 mb-8 text-gray-500 hover:text-white theme-coffee:hover:text-black text-[10px] uppercase tracking-[0.2em] font-bold transition-colors group">
-            <span className="w-8 h-8 rounded-full border border-white/10 theme-coffee:border-black/10 flex items-center justify-center group-hover:bg-white/10 theme-coffee:group-hover:bg-black/5 transition-all">
+          <Link href="/" className="inline-flex items-center gap-2 mb-8 text-[#6B7FA3] hover:text-[#0A1F44] text-[10px] uppercase tracking-[0.2em] font-bold transition-colors group">
+            <span className="w-8 h-8 rounded-full border border-[#E2E8F0] flex items-center justify-center group-hover:bg-[#F8FAFC] transition-all">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
             </span>
             Close
@@ -84,17 +85,16 @@ export default function AppointmentPage() {
           {step === 1 ? (
             <form onSubmit={handleSubmit} className="space-y-10 fade-up">
               <div className="text-center mb-12">
-                <p className="caption mb-4 text-gray-600">Schedule Your Visit</p>
-                <h1 className="text-[clamp(2.5rem,6vw,5rem)] font-black tracking-tighter uppercase leading-none">Book<br />Appointment</h1>
+                <p className="vp-caption mb-4">Schedule Your Visit</p>
+                <h1 className="text-[clamp(2.5rem,6vw,5rem)] font-black tracking-tighter uppercase leading-none text-[#0A1F44]">Book<br />Appointment</h1>
               </div>
 
-              {error && <p className="text-red-500 text-[10px] uppercase font-bold text-center tracking-widest p-4 bg-red-500/10 border border-red-500/20 rounded-xl">{error}</p>}
+              {error && <p className="text-red-500 text-[10px] uppercase font-bold text-center tracking-widest p-4 bg-red-50 border border-red-200 rounded-xl">{error}</p>}
 
               <div className="space-y-10">
                 {/* Personal Information Section */}
                 <div className={sectionCard}>
-                  <div className="absolute top-0 left-0 w-[2px] h-full bg-gradient-to-b from-white/40 theme-coffee:from-black/20 to-transparent" />
-                  <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 mb-8">
+                  <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#6B7FA3] mb-8">
                     Personal Information
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -128,8 +128,7 @@ export default function AppointmentPage() {
 
                 {/* Appointment Details Section */}
                 <div className={sectionCard} style={{ overflow: 'visible' }}>
-                  <div className="absolute top-0 left-0 w-[2px] h-full bg-gradient-to-b from-white/20 theme-coffee:from-black/10 to-transparent" />
-                  <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 mb-8">
+                  <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#6B7FA3] mb-8">
                     Appointment Details
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -175,28 +174,27 @@ export default function AppointmentPage() {
               </div>
 
               <div className="flex gap-4">
-                <button type="submit" disabled={isSubmitting} className="flex-1 btn-primary py-5 text-[10px] font-black uppercase tracking-[0.4em] rounded-2xl shadow-2xl shadow-white/5 theme-coffee:shadow-black/5">
+                <button type="submit" disabled={isSubmitting} className="flex-1 btn-primary py-4 text-[10px] font-black uppercase tracking-[0.4em] rounded-2xl">
                   {isSubmitting ? 'Requesting...' : 'Confirm Appointment →'}
                 </button>
-                <button type="button" onClick={handleClear} className="px-8 py-5 rounded-2xl border border-white/10 theme-coffee:border-black/10 bg-white/5 theme-coffee:bg-black/5 hover:bg-white/10 theme-coffee:hover:bg-black/10 text-[10px] font-black uppercase tracking-[0.4em] text-gray-400 theme-coffee:text-gray-500 hover:text-white theme-coffee:hover:text-black transition-all">
+                <button type="button" onClick={handleClear} className="px-8 py-4 rounded-2xl border border-[#E2E8F0] bg-[#F8FAFC] hover:bg-[#EEF3FB] text-[10px] font-black uppercase tracking-[0.4em] text-[#6B7FA3] hover:text-[#0A1F44] transition-all">
                   Clear
                 </button>
               </div>
             </form>
           ) : (
             <div className="text-center py-20 fade-up flex flex-col items-center gap-10">
-              <div className="w-28 h-28 rounded-full bg-white/5 theme-coffee:bg-black/5 border border-white/10 theme-coffee:border-black/10 flex items-center justify-center shadow-[0_0_60px_rgba(255,255,255,0.05)] theme-coffee:shadow-lg">
-                <svg className="w-14 h-14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+              <div className="w-24 h-24 rounded-full bg-green-50 border border-green-200 flex items-center justify-center">
+                <svg className="w-12 h-12 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
               </div>
               <div>
-                <p className="caption mb-4 text-gray-600">Request dispatched</p>
-                <h2 className="text-[clamp(2.5rem,6vw,5rem)] font-black tracking-tighter uppercase leading-none">Request Sent</h2>
+                <p className="vp-caption mb-4">Request dispatched</p>
+                <h2 className="text-[clamp(2.5rem,6vw,5rem)] font-black tracking-tighter uppercase leading-none text-[#0A1F44]">Request Sent</h2>
               </div>
-              <p className="text-gray-500 font-light text-sm leading-relaxed max-w-sm mx-auto">
-                Your request has been sent for approval. <br /><br />
-                You will receive an email once confirmed.
+              <p className="text-[#6B7FA3] font-light text-sm leading-relaxed max-w-sm mx-auto">
+                Your request has been sent for approval.<br/>You will receive an email once confirmed.
               </p>
-              <Link href="/" className="btn-primary py-5 px-16 rounded-2xl font-black uppercase tracking-[0.4em] text-[10px] shadow-2xl shadow-white/5 theme-coffee:shadow-black/5">
+              <Link href="/" className="btn-primary py-4 px-14 rounded-2xl font-black uppercase tracking-[0.4em] text-[10px]">
                 Return to Home
               </Link>
             </div>

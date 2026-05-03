@@ -53,14 +53,14 @@ export default function AppointmentLog() {
     <div className="fade-up w-full">
       <div className="flex justify-between items-center mb-12">
         <div>
-          <h1 className="text-4xl font-black tracking-tighter uppercase mb-2">Appointments</h1>
-          <p className="text-gray-500 text-sm">Manage pre-scheduled visits and upcoming appointments.</p>
+          <h1 className="text-4xl font-black tracking-tighter uppercase mb-2 text-[#0A1F44]">Appointments</h1>
+          <p className="text-[#6B7FA3] text-sm">Manage pre-scheduled visits and upcoming appointments.</p>
         </div>
         <div className="flex items-center gap-4">
-           <span className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Filter:</span>
+           <span className="text-[10px] uppercase tracking-widest text-[#6B7FA3] font-bold">Filter:</span>
            <input 
              type="date" 
-             className="text-xs p-3 bg-white/5 border border-white/10 rounded-xl" 
+             className="text-xs p-3 bg-white border border-[#E2E8F0] rounded-xl text-[#0A1F44]" 
              onChange={e => setSearchDate(e.target.value)}
            />
         </div>
@@ -87,19 +87,19 @@ export default function AppointmentLog() {
               visitors.map((v) => (
                 <tr key={v._id} className="group hover:bg-white/5 transition-colors">
                   <td className="px-6 py-4">
-                    <span className="text-white font-bold uppercase tracking-wide">{v.visitor?.name}</span>
-                    <p className="text-[10px] text-gray-500">{v.visitor?.email}</p>
+                    <span className="text-[#0A1F44] font-bold uppercase tracking-wide">{v.visitor?.name}</span>
+                    <p className="text-[10px] text-[#6B7FA3]">{v.visitor?.email}</p>
                   </td>
-                  <td className="px-6 py-4 text-gray-500 text-sm">{v.meetWith?.name}</td>
-                  <td className="px-6 py-4 text-gray-400 text-xs uppercase tracking-widest">{v.purpose}</td>
-                  <td className="px-6 py-4 text-blue-500 text-[10px] font-mono">
+                  <td className="px-6 py-4 text-[#6B7FA3] text-sm">{v.meetWith?.name}</td>
+                  <td className="px-6 py-4 text-[#6B7FA3] text-xs uppercase tracking-widest">{v.purpose}</td>
+                  <td className="px-6 py-4 text-[#2F5DAA] text-[10px] font-mono">
                     {new Date(v.scheduledTime).toLocaleString()}
                   </td>
                   <td className="px-6 py-4">
-                    <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest ${
-                      v.status === 'Approved' ? 'text-green-500' :
-                      v.status === 'Rejected' ? 'text-red-500' :
-                      'text-yellow-500'
+                    <span className={`badge ${
+                      v.status === 'Approved' ? 'badge-approved' :
+                      v.status === 'Rejected' ? 'badge-rejected' :
+                      'badge-pending'
                     }`}>
                       {v.status}
                     </span>

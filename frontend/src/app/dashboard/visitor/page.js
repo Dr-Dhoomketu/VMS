@@ -48,17 +48,17 @@ export default function VisitorLog() {
     <div className="fade-up w-full">
       <div className="flex justify-between items-center mb-12">
         <div>
-          <h1 className="text-4xl font-black tracking-tighter uppercase mb-2">Visitor Log</h1>
-          <p className="text-gray-500 text-sm">Comprehensive logs of all entry and exit events.</p>
+          <h1 className="text-4xl font-black tracking-tighter uppercase mb-2 text-[#0A1F44]">Visitor Log</h1>
+          <p className="text-[#6B7FA3] text-sm">Comprehensive logs of all entry and exit events.</p>
         </div>
         <div className="flex gap-4">
            <div className="flex flex-col gap-1">
-             <label className="text-[10px] uppercase font-bold text-gray-500">From</label>
-             <input type="date" className="text-xs p-3 bg-white/5 border border-white/10 rounded-xl" onChange={e => setFilters({...filters, startDate: e.target.value})} />
+             <label className="text-[10px] uppercase font-bold text-[#6B7FA3]">From</label>
+             <input type="date" className="text-xs p-3 bg-white border border-[#E2E8F0] rounded-xl text-[#0A1F44]" onChange={e => setFilters({...filters, startDate: e.target.value})} />
            </div>
            <div className="flex flex-col gap-1">
-             <label className="text-[10px] uppercase font-bold text-gray-500">To</label>
-             <input type="date" className="text-xs p-3 bg-white/5 border border-white/10 rounded-xl" onChange={e => setFilters({...filters, endDate: e.target.value})} />
+             <label className="text-[10px] uppercase font-bold text-[#6B7FA3]">To</label>
+             <input type="date" className="text-xs p-3 bg-white border border-[#E2E8F0] rounded-xl text-[#0A1F44]" onChange={e => setFilters({...filters, endDate: e.target.value})} />
            </div>
         </div>
       </div>
@@ -85,18 +85,18 @@ export default function VisitorLog() {
               visitors.map((v) => (
                 <tr key={v._id} className="group hover:bg-white/5 transition-colors">
                   <td className="px-6 py-4">
-                    <span className="text-white font-bold uppercase tracking-wide">{v.visitor?.name}</span>
+                    <span className="text-[#0A1F44] font-bold uppercase tracking-wide">{v.visitor?.name}</span>
                   </td>
-                  <td className="px-6 py-4 text-gray-500 text-[10px] font-mono">{v.visitor?.aadhar}</td>
-                  <td className="px-6 py-4 text-gray-400 text-sm">{v.meetWith?.name}</td>
-                  <td className="px-6 py-4 text-gray-400 text-xs uppercase tracking-widest">{v.purpose}</td>
-                  <td className="px-6 py-4 text-gray-500 text-[10px]">{new Date(v.createdAt).toLocaleString()}</td>
+                  <td className="px-6 py-4 text-[#6B7FA3] text-[10px] font-mono">{v.visitor?.aadhar}</td>
+                  <td className="px-6 py-4 text-[#6B7FA3] text-sm">{v.meetWith?.name}</td>
+                  <td className="px-6 py-4 text-[#6B7FA3] text-xs uppercase tracking-widest">{v.purpose}</td>
+                  <td className="px-6 py-4 text-[#6B7FA3] text-[10px]">{new Date(v.createdAt).toLocaleString()}</td>
                   <td className="px-6 py-4">
-                    <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest ${
-                      v.status === 'CheckedOut' ? 'text-gray-500' :
-                      v.status === 'Approved' ? 'text-green-500' :
-                      v.status === 'Rejected' ? 'text-red-500' :
-                      'text-yellow-500'
+                    <span className={`badge ${
+                      v.status === 'CheckedOut' ? 'badge-checkedout' :
+                      v.status === 'Approved' ? 'badge-approved' :
+                      v.status === 'Rejected' ? 'badge-rejected' :
+                      'badge-pending'
                     }`}>
                       {v.status === 'Approved' ? 'Active' : v.status}
                     </span>

@@ -95,8 +95,8 @@ export default function UserManagement() {
     <div className="fade-up w-full">
       <div className="flex justify-between items-center mb-12">
         <div>
-          <h1 className="text-4xl font-black tracking-tighter uppercase mb-2">Admins</h1>
-          <p className="text-gray-500 text-sm">Manage privileged accounts and access controls.</p>
+          <h1 className="text-4xl font-black tracking-tighter uppercase mb-2 text-[#0A1F44]">Admins</h1>
+          <p className="text-[#6B7FA3] text-sm">Manage privileged accounts and access controls.</p>
         </div>
         <button 
           onClick={() => handleOpenModal()}
@@ -126,20 +126,20 @@ export default function UserManagement() {
               users.map((user) => (
                 <tr key={user._id} className="group hover:bg-white/5 transition-colors">
                   <td className="px-6 py-4">
-                    <span className="text-white font-bold uppercase tracking-wide">{user.name}</span>
+                    <span className="text-[#0A1F44] font-bold uppercase tracking-wide">{user.name}</span>
                   </td>
-                  <td className="px-6 py-4 text-gray-500 text-sm">{user.email}</td>
+                  <td className="px-6 py-4 text-[#6B7FA3] text-sm">{user.email}</td>
                   <td className="px-6 py-4">
-                    <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest ${!user.isActive ? 'text-red-500' : 'text-green-500'}`}>
+                    <span className={`badge ${!user.isActive ? 'badge-rejected' : 'badge-approved'}`}>
                       {user.isActive ? 'Active' : 'Suspended'}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-center">
                     <div className="flex justify-center gap-3">
-                      <button onClick={() => handleOpenModal(user)} className="text-gray-600 hover:text-white transition-colors">
+                      <button onClick={() => handleOpenModal(user)} className="text-[#6B7FA3] hover:text-[#0A1F44] transition-colors">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                       </button>
-                      <button onClick={() => handleDelete(user._id)} className="text-gray-600 hover:text-red-500 transition-colors">
+                      <button onClick={() => handleDelete(user._id)} className="text-[#6B7FA3] hover:text-red-500 transition-colors">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                       </button>
                     </div>

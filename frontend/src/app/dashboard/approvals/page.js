@@ -28,37 +28,37 @@ function VisitorPass({ visit }) {
       {/* Premium Visitor Pass */}
       <div
         style={{
-          background: 'linear-gradient(135deg, #0a0a0a 0%, #111 50%, #0a0a0a 100%)',
-          border: '1px solid rgba(255,255,255,0.08)',
+          background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #ffffff 100%)',
+          border: '1px solid #E2E8F0',
           borderRadius: 24,
           overflow: 'hidden',
-          boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
+          boxShadow: '0 4px 24px rgba(10,31,68,0.08)',
           position: 'relative',
         }}
       >
         {/* Top accent bar */}
-        <div style={{ height: 3, background: 'linear-gradient(90deg, #fff 0%, rgba(255,255,255,0.2) 100%)' }} />
+        <div style={{ height: 3, background: 'linear-gradient(90deg, #0A1F44 0%, rgba(47,93,170,0.3) 100%)' }} />
 
         {/* Header strip */}
-        <div style={{ background: '#fff', padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ background: '#0A1F44', padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <div style={{ fontSize: '0.55rem', letterSpacing: '0.35em', textTransform: 'uppercase', color: '#888', fontWeight: 800 }}>Visitor Management System</div>
-            <div style={{ fontSize: '1.1rem', fontWeight: 900, letterSpacing: '-0.02em', color: '#000', textTransform: 'uppercase' }}>Digital Gate Pass</div>
+            <div style={{ fontSize: '0.55rem', letterSpacing: '0.35em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', fontWeight: 800 }}>Visitor Management System</div>
+            <div style={{ fontSize: '1.1rem', fontWeight: 900, letterSpacing: '-0.02em', color: '#fff', textTransform: 'uppercase' }}>Digital Gate Pass</div>
           </div>
           <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: '0.5rem', letterSpacing: '0.3em', textTransform: 'uppercase', color: '#888', fontWeight: 800 }}>Pass ID</div>
-            <div style={{ fontSize: '0.85rem', fontWeight: 900, fontFamily: 'monospace', color: '#000' }}>{visitorId}</div>
+            <div style={{ fontSize: '0.5rem', letterSpacing: '0.3em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', fontWeight: 800 }}>Pass ID</div>
+            <div style={{ fontSize: '0.85rem', fontWeight: 900, fontFamily: 'monospace', color: '#fff' }}>{visitorId}</div>
           </div>
         </div>
 
         {/* Body */}
-        <div style={{ padding: 24, display: 'flex', gap: 20 }}>
+        <div style={{ padding: 24, display: 'flex', gap: 20, background: '#ffffff' }}>
           {/* Photo */}
           <div style={{ flexShrink: 0 }}>
             <div style={{
               width: 90, height: 110, borderRadius: 12,
-              border: '2px solid rgba(255,255,255,0.1)',
-              overflow: 'hidden', background: 'rgba(255,255,255,0.04)',
+              border: '1px solid #E2E8F0',
+              overflow: 'hidden', background: '#F8FAFC',
               display: 'flex', alignItems: 'center', justifyContent: 'center'
             }}>
               {visit.visitor?.imageUrl ? (
@@ -72,10 +72,10 @@ function VisitorPass({ visit }) {
             </div>
             {/* Status badge */}
             <div style={{
-              marginTop: 8, textAlign: 'center', background: 'rgba(34,197,94,0.15)',
+              marginTop: 8, textAlign: 'center', background: 'rgba(34,197,94,0.1)',
               border: '1px solid rgba(34,197,94,0.3)', borderRadius: 6,
               padding: '3px 0', fontSize: '0.5rem', fontWeight: 900,
-              letterSpacing: '0.2em', textTransform: 'uppercase', color: '#22c55e'
+              letterSpacing: '0.2em', textTransform: 'uppercase', color: '#16a34a'
             }}>
               ✓ APPROVED
             </div>
@@ -83,10 +83,10 @@ function VisitorPass({ visit }) {
 
           {/* Info */}
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: '1.3rem', fontWeight: 900, letterSpacing: '-0.02em', color: '#fff', textTransform: 'uppercase', lineHeight: 1.1, marginBottom: 4 }}>
+            <div style={{ fontSize: '1.3rem', fontWeight: 900, letterSpacing: '-0.02em', color: '#0A1F44', textTransform: 'uppercase', lineHeight: 1.1, marginBottom: 4 }}>
               {visit.visitor?.name || '—'}
             </div>
-            <div style={{ fontSize: '0.6rem', letterSpacing: '0.2em', color: '#555', textTransform: 'uppercase', fontWeight: 800, marginBottom: 16 }}>
+            <div style={{ fontSize: '0.6rem', letterSpacing: '0.2em', color: '#6B7FA3', textTransform: 'uppercase', fontWeight: 800, marginBottom: 16 }}>
               Visitor
             </div>
 
@@ -98,9 +98,9 @@ function VisitorPass({ visit }) {
                 { label: 'Date',      value: approvedDate },
               ].map(({ label, value, sub }) => (
                 <div key={label}>
-                  <div style={{ fontSize: '0.5rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#555', fontWeight: 800, marginBottom: 2 }}>{label}</div>
-                  <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#ccc', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{value}</div>
-                  {sub && <div style={{ fontSize: '0.55rem', color: '#444', marginTop: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sub}</div>}
+                  <div style={{ fontSize: '0.5rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#6B7FA3', fontWeight: 800, marginBottom: 2 }}>{label}</div>
+                  <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#0A1F44', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{value}</div>
+                  {sub && <div style={{ fontSize: '0.55rem', color: '#6B7FA3', marginTop: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sub}</div>}
                 </div>
               ))}
             </div>
@@ -109,21 +109,21 @@ function VisitorPass({ visit }) {
             {(visit.fromTime || visit.toTime) && (
               <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
                 {visit.fromTime && (
-                  <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 8, padding: '5px 10px', flex: 1 }}>
-                    <div style={{ fontSize: '0.45rem', letterSpacing: '0.2em', color: '#555', textTransform: 'uppercase', fontWeight: 800 }}>From</div>
-                    <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#fff' }}>{fmt12(visit.fromTime)}</div>
+                  <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 8, padding: '5px 10px', flex: 1 }}>
+                    <div style={{ fontSize: '0.45rem', letterSpacing: '0.2em', color: '#6B7FA3', textTransform: 'uppercase', fontWeight: 800 }}>From</div>
+                    <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#0A1F44' }}>{fmt12(visit.fromTime)}</div>
                   </div>
                 )}
                 {visit.toTime && (
-                  <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 8, padding: '5px 10px', flex: 1 }}>
-                    <div style={{ fontSize: '0.45rem', letterSpacing: '0.2em', color: '#555', textTransform: 'uppercase', fontWeight: 800 }}>To</div>
-                    <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#fff' }}>{fmt12(visit.toTime)}</div>
+                  <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 8, padding: '5px 10px', flex: 1 }}>
+                    <div style={{ fontSize: '0.45rem', letterSpacing: '0.2em', color: '#6B7FA3', textTransform: 'uppercase', fontWeight: 800 }}>To</div>
+                    <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#0A1F44' }}>{fmt12(visit.toTime)}</div>
                   </div>
                 )}
                 {visit.duration && (
-                  <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 8, padding: '5px 10px', flex: 1 }}>
-                    <div style={{ fontSize: '0.45rem', letterSpacing: '0.2em', color: '#555', textTransform: 'uppercase', fontWeight: 800 }}>Duration</div>
-                    <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#fff' }}>{visit.duration}</div>
+                  <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 8, padding: '5px 10px', flex: 1 }}>
+                    <div style={{ fontSize: '0.45rem', letterSpacing: '0.2em', color: '#6B7FA3', textTransform: 'uppercase', fontWeight: 800 }}>Duration</div>
+                    <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#0A1F44' }}>{visit.duration}</div>
                   </div>
                 )}
               </div>
@@ -135,8 +135,8 @@ function VisitorPass({ visit }) {
             <div style={{
               width: 100, height: 100, background: '#fff', borderRadius: 12, padding: 6,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              border: '2px solid rgba(255,255,255,0.1)',
-              boxShadow: '0 0 30px rgba(255,255,255,0.05)'
+              border: '1px solid #E2E8F0',
+              boxShadow: '0 2px 12px rgba(10,31,68,0.08)'
             }}>
               {visit.qrToken ? (
                 // Use a public QR API to render the token as QR
@@ -157,15 +157,15 @@ function VisitorPass({ visit }) {
         </div>
 
         {/* Footer strip */}
-        <div style={{ background: 'rgba(255,255,255,0.03)', borderTop: '1px solid rgba(255,255,255,0.05)', padding: '10px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ fontSize: '0.5rem', color: '#444', letterSpacing: '0.2em', textTransform: 'uppercase', fontWeight: 800 }}>
+        <div style={{ background: '#F8FAFC', borderTop: '1px solid #E2E8F0', padding: '10px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ fontSize: '0.5rem', color: '#6B7FA3', letterSpacing: '0.2em', textTransform: 'uppercase', fontWeight: 800 }}>
             Approved {approvedDate} at {approvedTime}
           </div>
           <div style={{ display: 'flex', gap: 4 }}>
             {[...Array(8)].map((_, i) => (
-              <div key={i} style={{ width: 4, height: 16, background: i % 2 === 0 ? '#333' : '#222', borderRadius: 1 }} />
+              <div key={i} style={{ width: 4, height: 16, background: i % 2 === 0 ? '#0A1F44' : '#E2E8F0', borderRadius: 1 }} />
             ))}
-            <div style={{ marginLeft: 8, fontSize: '0.5rem', fontFamily: 'monospace', color: '#444', alignSelf: 'center' }}>{visitorId}</div>
+            <div style={{ marginLeft: 8, fontSize: '0.5rem', fontFamily: 'monospace', color: '#6B7FA3', alignSelf: 'center' }}>{visitorId}</div>
           </div>
         </div>
 
@@ -260,7 +260,7 @@ export default function ApprovalsPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 mb-8 bg-white/[0.03] border border-white/[0.06] rounded-2xl p-1 w-fit">
+      <div className="flex gap-1 mb-8 bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl p-1 w-fit">
         {[
           { key: 'pending',  label: 'Pending',  count: pendingVisits.length },
           { key: 'approved', label: 'Approved', count: approvedVisits.length },
@@ -270,15 +270,15 @@ export default function ApprovalsPage() {
             onClick={() => setTab(t.key)}
             className="relative px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-200"
             style={{
-              background: tab === t.key ? '#fff' : 'transparent',
-              color: tab === t.key ? '#000' : '#555',
+              background: tab === t.key ? '#0A1F44' : 'transparent',
+              color: tab === t.key ? '#fff' : '#6B7FA3',
             }}
           >
             {t.label}
             {t.count > 0 && (
               <span style={{
-                marginLeft: 6, background: tab === t.key ? '#000' : 'rgba(255,255,255,0.1)',
-                color: tab === t.key ? '#fff' : '#666',
+                marginLeft: 6, background: tab === t.key ? 'rgba(255,255,255,0.2)' : '#E2E8F0',
+                color: tab === t.key ? '#fff' : '#6B7FA3',
                 borderRadius: 9999, padding: '1px 7px', fontSize: '0.6rem', fontWeight: 900
               }}>
                 {t.count}
@@ -292,56 +292,54 @@ export default function ApprovalsPage() {
       {tab === 'pending' && (
         loading ? (
           <div className="py-20 text-center">
-            <div className="w-8 h-8 rounded-full border-2 border-white/10 border-t-white/60 animate-spin mx-auto mb-4" />
-            <p className="text-gray-600 text-xs uppercase tracking-widest">Syncing live feed…</p>
+            <div className="w-8 h-8 rounded-full border-2 border-[#E2E8F0] border-t-[#2F5DAA] animate-spin mx-auto mb-4" />
+            <p className="text-[#6B7FA3] text-xs uppercase tracking-widest">Syncing live feed…</p>
           </div>
         ) : pendingVisits.length === 0 ? (
-          <div className="py-20 text-center border border-white/5 bg-white/[0.02] rounded-3xl">
+          <div className="py-20 text-center border border-[#E2E8F0] bg-[#F8FAFC] rounded-3xl">
             <div className="text-4xl mb-4">✓</div>
-            <p className="text-gray-500 text-sm">No pending visitor requests.</p>
-            <p className="text-gray-600 text-xs mt-1">All clear — nothing to approve right now.</p>
+            <p className="text-[#6B7FA3] text-sm">No pending visitor requests.</p>
+            <p className="text-[#6B7FA3] text-xs mt-1">All clear — nothing to approve right now.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {pendingVisits.map((visit) => (
-              <div key={visit._id} className="holographic-glass p-8 border border-white/5 theme-coffee:border-black/5 bg-white/[0.03] theme-coffee:bg-white rounded-3xl shadow-2xl relative overflow-hidden group">
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-
+              <div key={visit._id} className="vp-card p-8 relative overflow-hidden group">
                 {/* Pending request header */}
-                <div className="flex items-center gap-2 mb-6 relative z-10">
+                <div className="flex items-center gap-2 mb-6">
                   <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse" />
-                  <span className="text-[9px] font-black text-amber-400 uppercase tracking-[0.3em]">Awaiting Decision</span>
+                  <span className="text-[9px] font-black text-amber-500 uppercase tracking-[0.3em]">Awaiting Decision</span>
                 </div>
 
-                <div className="flex gap-6 relative z-10">
-                  <div className="w-20 h-20 rounded-2xl overflow-hidden border border-white/10 shrink-0">
+                <div className="flex gap-5">
+                  <div className="w-16 h-16 rounded-2xl overflow-hidden border border-[#E2E8F0] shrink-0">
                     {visit.visitor?.imageUrl ? (
                       <img src={`${API}${visit.visitor.imageUrl}`} className="w-full h-full object-cover" alt="visitor" />
                     ) : (
-                      <div className="w-full h-full bg-white/5 flex items-center justify-center text-[8px] text-gray-500 uppercase font-black">No Photo</div>
+                      <div className="w-full h-full bg-[#EEF3FB] flex items-center justify-center text-[#2F5DAA] text-sm font-black">
+                        {visit.visitor?.name?.charAt(0)}
+                      </div>
                     )}
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-xl font-black text-white theme-coffee:text-[#1d1d1f] uppercase tracking-tighter">{visit.visitor?.name}</h3>
-                    <p className="text-blue-500 theme-coffee:text-blue-600 text-[10px] uppercase tracking-widest font-black mt-1">Host: {visit.meetWith?.name}</p>
-                    <div className="mt-4 space-y-1">
-                      <p className="text-xs text-gray-500">Purpose: <span className="text-gray-200 theme-coffee:text-gray-800 font-semibold">{visit.purpose}</span></p>
-                      <p className="text-xs text-gray-500">Phone: <span className="text-gray-200 theme-coffee:text-gray-800 font-mono">{visit.visitor?.phone}</span></p>
+                    <h3 className="text-lg font-black text-[#0A1F44] uppercase tracking-tight">{visit.visitor?.name}</h3>
+                    <p className="text-[#2F5DAA] text-[10px] uppercase tracking-widest font-black mt-1">Host: {visit.meetWith?.name}</p>
+                    <div className="mt-3 space-y-1">
+                      <p className="text-xs text-[#6B7FA3]">Purpose: <span className="text-[#0A1F44] font-semibold">{visit.purpose}</span></p>
+                      <p className="text-xs text-[#6B7FA3]">Phone: <span className="text-[#0A1F44] font-mono">{visit.visitor?.phone}</span></p>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex gap-4 mt-8 relative z-10">
+                <div className="flex gap-3 mt-6">
                   <button
                     onClick={() => handleUpdate(visit._id, 'Approved')}
-                    className="flex-1 btn-primary py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all hover:scale-[1.02]"
-                  >
+                    className="flex-1 btn-primary py-3 rounded-xl text-[10px] font-black uppercase tracking-widest">
                     ✓ Approve Access
                   </button>
                   <button
                     onClick={() => handleUpdate(visit._id, 'Rejected')}
-                    className="flex-1 bg-white/5 hover:bg-red-500/10 text-gray-500 hover:text-red-400 border border-white/5 hover:border-red-500/20 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all"
-                  >
+                    className="flex-1 bg-[#F8FAFC] hover:bg-red-50 text-[#6B7FA3] hover:text-red-500 border border-[#E2E8F0] hover:border-red-200 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
                     ✕ Deny
                   </button>
                 </div>
@@ -355,18 +353,18 @@ export default function ApprovalsPage() {
       {tab === 'approved' && (
         approvedLoading ? (
           <div className="py-20 text-center">
-            <div className="w-8 h-8 rounded-full border-2 border-white/10 border-t-white/60 animate-spin mx-auto mb-4" />
-            <p className="text-gray-600 text-xs uppercase tracking-widest">Loading passes…</p>
+            <div className="w-8 h-8 rounded-full border-2 border-[#E2E8F0] border-t-[#2F5DAA] animate-spin mx-auto mb-4" />
+            <p className="text-[#6B7FA3] text-xs uppercase tracking-widest">Loading passes…</p>
           </div>
         ) : approvedVisits.length === 0 ? (
-          <div className="py-20 text-center border border-white/5 bg-white/[0.02] rounded-3xl">
+          <div className="py-20 text-center border border-[#E2E8F0] bg-[#F8FAFC] rounded-3xl">
             <div className="text-4xl mb-4">🎫</div>
-            <p className="text-gray-500 text-sm">No approved visits yet.</p>
-            <p className="text-gray-600 text-xs mt-1">Approved visitor passes will appear here.</p>
+            <p className="text-[#6B7FA3] text-sm">No approved visits yet.</p>
+            <p className="text-[#6B7FA3] text-xs mt-1">Approved visitor passes will appear here.</p>
           </div>
         ) : (
           <div>
-            <p className="text-gray-600 text-xs uppercase tracking-widest mb-6 font-black">{approvedVisits.length} Active Pass{approvedVisits.length !== 1 ? 'es' : ''}</p>
+            <p className="text-[#6B7FA3] text-xs uppercase tracking-widest mb-6 font-black">{approvedVisits.length} Active Pass{approvedVisits.length !== 1 ? 'es' : ''}</p>
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
               {approvedVisits.map(visit => (
                 <VisitorPass key={visit._id} visit={visit} />

@@ -86,18 +86,18 @@ export default function DesignationManagement() {
 
   return (
     <div className="fade-up w-full">
-      <div className="flex justify-between items-end mb-16 border-b border-white/5 pb-12">
+      <div className="flex justify-between items-end mb-12 pb-6 border-b border-[#E2E8F0]">
         <div>
-          <p className="caption mb-4">Management Console</p>
-          <h1 className="hero-title text-6xl">Designations</h1>
-          <p className="text-gray-500 text-xs mt-4 tracking-wide">Configure employee hierarchical roles and access levels.</p>
+          <p className="vp-caption mb-2">Management Console</p>
+          <h1 className="text-4xl font-black tracking-tighter uppercase mb-2 text-[#0A1F44]">Designations</h1>
+          <p className="text-[#6B7FA3] text-xs mt-1">Configure employee hierarchical roles and access levels.</p>
         </div>
         <button 
           onClick={() => handleOpenModal()}
-          className="btn-primary px-10 py-5 rounded-xl font-black flex items-center gap-3 transition-all hover:gap-5"
+          className="btn-primary px-8 py-4 rounded-2xl font-bold flex items-center gap-2"
         >
-          <span>ADD ROLE</span>
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 4v16m8-8H4"></path></svg>
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path></svg>
+          ADD ROLE
         </button>
       </div>
 
@@ -119,15 +119,15 @@ export default function DesignationManagement() {
               designations.map((des) => (
                 <tr key={des._id} className="group hover:bg-white/5 transition-colors">
                   <td className="px-6 py-4">
-                    <span className="text-main font-bold uppercase tracking-wide">{des.name}</span>
+                    <span className="text-[#0A1F44] font-bold uppercase tracking-wide">{des.name}</span>
                   </td>
-                  <td className="px-6 py-4 text-gray-500 text-sm">Rank {des.level}</td>
+                  <td className="px-6 py-4 text-[#6B7FA3] text-sm">Rank {des.level}</td>
                   <td className="px-6 py-4 text-center">
                     <div className="flex justify-center gap-3">
-                      <button onClick={() => handleOpenModal(des)} className="text-gray-600 hover:text-white transition-colors">
+                      <button onClick={() => handleOpenModal(des)} className="text-[#6B7FA3] hover:text-[#0A1F44] transition-colors">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                       </button>
-                      <button onClick={() => handleDelete(des._id)} className="text-gray-600 hover:text-red-500 transition-colors">
+                      <button onClick={() => handleDelete(des._id)} className="text-[#6B7FA3] hover:text-red-500 transition-colors">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                       </button>
                     </div>

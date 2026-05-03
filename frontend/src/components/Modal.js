@@ -9,27 +9,10 @@ export default function Modal({ isOpen, onClose, title, children }) {
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
-      // Fade in overlay
-      gsap.fromTo(overlayRef.current, { opacity: 0 }, { opacity: 1, duration: 0.3 });
-
-      // Animate modal with explicit percentage centering to prevent GSAP from overriding Tailwind's transform
+      gsap.fromTo(overlayRef.current, { opacity: 0 }, { opacity: 1, duration: 0.25 });
       gsap.fromTo(modalRef.current,
-        {
-          opacity: 0,
-          scale: 0.9,
-          xPercent: -50,
-          yPercent: -50,
-          y: 20 // Slight offset for the entry animation
-        },
-        {
-          opacity: 1,
-          scale: 1,
-          xPercent: -50,
-          yPercent: -50,
-          y: 0,
-          duration: 0.5,
-          ease: 'power3.out'
-        }
+        { opacity: 0, scale: 0.95, xPercent: -50, yPercent: -50, y: 16 },
+        { opacity: 1, scale: 1, xPercent: -50, yPercent: -50, y: 0, duration: 0.35, ease: 'power3.out' }
       );
     } else {
       document.body.style.overflow = 'auto';
@@ -39,33 +22,26 @@ export default function Modal({ isOpen, onClose, title, children }) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100]">
-      {/* Overlay */}
-      <div
-        ref={overlayRef}
-        onClick={onClose}
-        className="fixed inset-0 bg-black/95 backdrop-blur-xl theme-coffee:bg-white/80"
-      />
+    <div ref={overlayRef} className="fixed inset-0 z-[100] flex items-center justify-center"
+      style={{ background: 'rgba(10, 31, 68, 0.35)', backdropFilter: 'blur(4px)' }}
+      onClick={(e) => { if (e.target === overlayRef.current) onClose(); }}>
 
-      {/* Modal Container - Using explicit absolute positioning */}
-      <div
-        ref={modalRef}
-        style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}
-        className="fixed w-full max-w-lg holographic-glass border border-white/10 rounded-[40px] p-10 shadow-2xl theme-coffee:bg-white theme-coffee:border-black/5 flex flex-col items-center text-center max-h-[90vh] overflow-hidden"
-      >
-        <div className="w-full flex justify-between items-center mb-8">
-          <div className="w-10"></div> {/* Symmetry Spacer */}
-          <h2 className="text-2xl font-black tracking-tighter uppercase text-white theme-coffee:text-black">{title}</h2>
-          <button
-            onClick={onClose}
-            className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors theme-coffee:hover:bg-black/5 text-gray-400 hover:text-white theme-coffee:hover:text-black"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+      <div ref={modalRef} className="vp-modal fixed top-1/2 left-1/2 w-full max-w-lg mx-4 p-8 max-h-[85vh] overflow-y-auto"
+        style={{ transform: 'translate(-50%, -50%)' }}>
+
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-lg font-black text-[#0A1F44] tracking-tight">{title}</h2>
+          <button onClick={onClose}
+            className="w-8 h-8 rounded-full border border-[#E2E8F0] flex items-center justify-center text-[#6B7FA3] hover:text-[#0A1F44] hover:border-[#0A1F44] transition-all">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
           </button>
         </div>
-        <div className="w-full text-left overflow-y-auto px-2 custom-scrollbar">
-          {children}
-        </div>
+
+        <div className="h-px bg-[#E2E8F0] mb-6"/>
+        {children}
       </div>
     </div>
   );

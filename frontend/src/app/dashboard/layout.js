@@ -3,20 +3,28 @@ import Sidebar from '@/components/Sidebar';
 
 export default function DashboardLayout({ children }) {
   return (
-    <div className="flex bg-[#000000] min-h-screen text-white font-sans selection:bg-white/20 dot-bg">
+    <div className="flex min-h-screen bg-[#F8FAFC]">
       <Sidebar />
-
-      {/* Main Content Area */}
       <main className="flex-1 min-h-screen relative overflow-y-auto">
-        {/* Cinematic Background Elements */}
-        <div className="fixed top-0 right-0 w-[50%] h-[50%] bg-blue-500/[0.03] rounded-full blur-[140px] -z-10 pointer-events-none"></div>
-        <div className="fixed bottom-0 left-[320px] w-[50%] h-[50%] bg-purple-500/[0.03] rounded-full blur-[140px] -z-10 pointer-events-none"></div>
-
-        {/* Centered Content Wrapper */}
-        <div className="max-w-7xl mx-auto w-full p-12 lg:p-20">
-          <div className="w-full">
-            {children}
+        {/* Top nav bar */}
+        <header className="sticky top-0 z-40 flex items-center justify-between px-8 py-4 nav-glare">
+          <div className="flex items-center gap-3">
+            <div className="w-2 h-2 rounded-full bg-[#2F5DAA] pulse-blue" />
+            <span className="text-[9px] uppercase tracking-[0.4em] font-bold text-[#6B7FA3]">
+              Live System
+            </span>
           </div>
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+            <span className="text-[9px] uppercase tracking-widest font-bold text-[#6B7FA3]">
+              Connected
+            </span>
+          </div>
+        </header>
+
+        {/* Content */}
+        <div className="max-w-7xl mx-auto w-full p-8 lg:p-10">
+          {children}
         </div>
       </main>
     </div>

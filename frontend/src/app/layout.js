@@ -1,22 +1,17 @@
-import { Outfit } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
-import ThemeToggle from "@/components/ThemeToggle";
 
-const outfit = Outfit({ subsets: ["latin"], weight: ["300", "400", "500", "700", "900"] });
+const inter = Inter({ subsets: ["latin"], weight: ["300", "400", "500", "600", "700", "900"] });
 
 export const metadata = {
-  title: "VMS | Cinematic Visitor Management",
-  description: "Visitor Management System",
+  title: "VISITORPASS | Enterprise Visitor Management",
+  description: "The next generation of visitor management. Intelligent. Secure. Enterprise-grade.",
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className="font-outfit antialiased overflow-x-hidden">
-        {/* Theme Transition Curtain */}
-        <div id="theme-curtain" className="fixed inset-0 bg-[#5c4033] z-[200] translate-x-[-100%] pointer-events-none"></div>
-
-        <ThemeToggle />
+      <body className={`${inter.className} antialiased overflow-x-hidden bg-white text-[#0A1F44]`}>
         {children}
       </body>
     </html>

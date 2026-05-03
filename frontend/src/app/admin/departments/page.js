@@ -1,7 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import GlassCard from '@/components/GlassCard';
 
 export default function AdminDepartments() {
   const router = useRouter();
@@ -13,32 +12,30 @@ export default function AdminDepartments() {
     const userStr = localStorage.getItem('user');
     if (!t || !userStr) return router.push('/login');
     if (JSON.parse(userStr).role !== 'Admin') return router.push('/dashboard');
-    
     setToken(t);
     fetchDepartments(t);
   }, [router]);
 
   const fetchDepartments = async (t) => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/v1/departments`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/v1/departments`, {
         headers: { 'Authorization': `Bearer ${t}` }
       });
       const data = await res.json();
       if (res.ok) setDepartments(data);
-    } catch (err) {
-      console.error(err);
-    }
+    } catch {}
   };
 
   return (
-    <main className="min-h-screen p-8 pt-24">
+    <main className="min-h-screen bg-[#F8FAFC] p-8 pt-24">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-4xl font-bold text-brand-gold mb-8">Manage Departments</h1>
+        <h1 className="text-3xl font-black text-[#0A1F44] mb-8 uppercase tracking-tight">Departments</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {departments.map(dept => (
-            <GlassCard key={dept._id}>
-              <h3 className="text-xl text-white font-bold">{dept.name}</h3>
-            </GlassCard>
+            <div key={dept._id} className="vp-card p-6">
+              <h3 className="text-lg font-black text-[#0A1F44] uppercase">{dept.name}</h3>
+              {dept.code && <p className="text-xs text-[#6B7FA3] mt-1 font-mono">{dept.code}</p>}
+            </div>
           ))}
         </div>
       </div>

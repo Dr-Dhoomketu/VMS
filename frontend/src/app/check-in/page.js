@@ -11,16 +11,6 @@ import ValueTechLogo from '@/components/ValueTechLogo';
 function TimePicker({ value, onChange, label, required }) {
   const ref = useRef(null);
   const [open, setOpen] = useState(false);
-  const [isLight, setIsLight] = useState(false);
-
-  // Detect theme on mount and when open changes
-  useEffect(() => {
-    const check = () => setIsLight(document.documentElement.classList.contains('theme-coffee'));
-    check();
-    const obs = new MutationObserver(check);
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-    return () => obs.disconnect();
-  }, []);
 
   // Parse current value into parts
   const parsed = value
@@ -55,25 +45,23 @@ function TimePicker({ value, onChange, label, required }) {
   const pickMinute = (m)  => { setMinute(m); emit(hour, m, ampm); };
   const pickAmpm   = (ap) => { setAmpm(ap);  emit(hour, minute, ap); };
 
-  // Theme-aware colours
-  const bg       = isLight ? '#ffffff' : '#111111';
-  const border   = isLight ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)';
-  const shadow   = isLight ? '0 24px 64px rgba(0,0,0,0.12)' : '0 24px 64px rgba(0,0,0,0.9)';
-  const labelCol = isLight ? '#86868b' : '#555555';
-  const trigBg   = isLight ? '#ffffff' : 'rgba(255,255,255,0.03)';
-  const trigBdr  = (o) => isLight
-    ? `1px solid ${o ? 'rgba(0,0,0,0.25)' : 'rgba(0,0,0,0.1)'}`
-    : `1px solid ${o ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.05)'}`;
-  const trigCol  = isLight ? (value ? '#1d1d1f' : '#86868b') : (value ? '#fff' : '#555');
+  // Theme-aware colours (always light now)
+  const bg       = '#ffffff';
+  const border   = 'rgba(10,31,68,0.1)';
+  const shadow   = '0 24px 64px rgba(10,31,68,0.12)';
+  const labelCol = '#6B7FA3';
+  const trigBg   = '#ffffff';
+  const trigBdr  = (o) => `1.5px solid ${o ? 'rgba(47,93,170,0.4)' : 'rgba(226,232,240,1)'}`;
+  const trigCol  = value ? '#0A1F44' : '#A0AEC0';
 
-  const btnBase = { borderRadius: 10, fontWeight: 800, cursor: 'pointer', transition: 'all 0.15s', border: 'none' };
-  const activeStyle   = { background: isLight ? '#1d1d1f' : '#ffffff', color: isLight ? '#ffffff' : '#000000' };
-  const inactiveStyle = { background: isLight ? 'rgba(0,0,0,0.04)' : 'rgba(255,255,255,0.05)', color: isLight ? '#555' : '#777' };
+  const btnBase = { borderRadius: 8, fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s', border: 'none' };
+  const activeStyle   = { background: '#0A1F44', color: '#ffffff' };
+  const inactiveStyle = { background: 'rgba(10,31,68,0.05)', color: '#6B7FA3' };
   const sectionLabel  = { fontSize: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.2em', color: labelCol, fontWeight: 800, marginBottom: 8 };
 
   return (
     <div style={{ position: 'relative' }} ref={ref}>
-      <label className="block text-[10px] uppercase tracking-widest text-gray-500 font-black mb-2">
+      <label className="vp-label">
         {label}{required && <span className="text-red-500 ml-1">*</span>}
       </label>
 
@@ -81,7 +69,7 @@ function TimePicker({ value, onChange, label, required }) {
       <button
         type="button" onClick={() => setOpen(!open)}
         className="w-full text-left flex items-center justify-between"
-        style={{ background: trigBg, border: trigBdr(open), borderRadius: 12, padding: '14px 18px', color: trigCol, transition: 'all 0.3s ease', fontSize: '0.875rem' }}
+        style={{ background: trigBg, border: trigBdr(open), borderRadius: 10, padding: '12px 16px', color: trigCol, transition: 'all 0.2s ease', fontSize: '0.875rem' }}
       >
         <span>{display}</span>
         <svg className="w-4 h-4" style={{ color: labelCol }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -91,7 +79,7 @@ function TimePicker({ value, onChange, label, required }) {
 
       {/* Dropdown panel */}
       {open && (
-        <div style={{ position: 'absolute', top: 'calc(100% + 8px)', left: 0, zIndex: 200, background: bg, border: `1px solid ${border}`, borderRadius: 18, padding: 20, width: '100%', boxShadow: shadow }}>
+        <div style={{ position: 'absolute', top: 'calc(100% + 8px)', left: 0, zIndex: 200, background: bg, border: `1px solid ${border}`, borderRadius: 14, padding: 16, width: '100%', boxShadow: shadow }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
 
             {/* Hours */}
@@ -143,7 +131,7 @@ function TimePicker({ value, onChange, label, required }) {
               if (!value) onChange(`${String(ampm === 'PM' ? hour % 12 + 12 : hour % 12).padStart(2, '0')}:${String(minute).padStart(2, '0')}`);
               setOpen(false);
             }}
-            style={{ marginTop: 14, width: '100%', padding: '10px', borderRadius: 10, background: isLight ? '#1d1d1f' : '#ffffff', color: isLight ? '#ffffff' : '#000000', fontWeight: 900, fontSize: '0.7rem', letterSpacing: '0.2em', textTransform: 'uppercase', cursor: 'pointer', border: 'none' }}>
+            style={{ marginTop: 14, width: '100%', padding: '10px', borderRadius: 8, background: '#0A1F44', color: '#ffffff', fontWeight: 700, fontSize: '0.7rem', letterSpacing: '0.2em', textTransform: 'uppercase', cursor: 'pointer', border: 'none' }}>
             Confirm
           </button>
         </div>
@@ -207,17 +195,8 @@ const COUNTRIES = [
 function CountryCodePicker({ selected, onSelect }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
-  const [isLight, setIsLight] = useState(false);
   const ref = useRef(null);
   const searchRef = useRef(null);
-
-  useEffect(() => {
-    const check = () => setIsLight(document.documentElement.classList.contains('theme-coffee'));
-    check();
-    const obs = new MutationObserver(check);
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-    return () => obs.disconnect();
-  }, []);
 
   useEffect(() => {
     const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
@@ -233,15 +212,15 @@ function CountryCodePicker({ selected, onSelect }) {
     c.code.toLowerCase().includes(search.toLowerCase())
   );
 
-  const bg     = isLight ? '#fff'    : '#111';
-  const bdr    = isLight ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)';
-  const shadow = isLight ? '0 20px 50px rgba(0,0,0,0.1)' : '0 20px 50px rgba(0,0,0,0.9)';
-  const hoverBg = isLight ? 'rgba(0,0,0,0.04)' : 'rgba(255,255,255,0.06)';
-  const trigBg  = isLight ? '#fff' : 'rgba(255,255,255,0.03)';
-  const trigBdr = isLight ? '1px solid rgba(0,0,0,0.1)' : '1px solid rgba(255,255,255,0.05)';
-  const trigCol = isLight ? '#1d1d1f' : '#fff';
-  const mutedCol = isLight ? '#86868b' : '#666';
-  const inputBg  = isLight ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.04)';
+  const bg     = '#fff';
+  const bdr    = 'rgba(10,31,68,0.1)';
+  const shadow = '0 20px 50px rgba(10,31,68,0.12)';
+  const hoverBg = 'rgba(47,93,170,0.05)';
+  const trigBg  = '#fff';
+  const trigBdr = '1.5px solid rgba(226,232,240,1)';
+  const trigCol = '#0A1F44';
+  const mutedCol = '#6B7FA3';
+  const inputBg  = 'rgba(10,31,68,0.03)';
 
   return (
     <div style={{ position: 'relative', flexShrink: 0 }} ref={ref}>
@@ -493,29 +472,28 @@ export default function CheckInPage() {
   };
 
   // Shared section card style
-  const sectionCard = "relative overflow-hidden rounded-3xl bg-white/[0.03] theme-coffee:bg-white border border-white/[0.07] theme-coffee:border-black/[0.07] p-8 shadow-[0_4px_40px_rgba(0,0,0,0.4)]";
-  const labelCls = "block text-[10px] uppercase tracking-widest text-gray-500 font-black mb-2";
+  const sectionCard = "vp-section-card";
+  const labelCls = "vp-label";
 
   return (
-    <main ref={containerRef} className="relative min-h-screen flex flex-col bg-[#050505] theme-coffee:bg-[#fbfbfd] text-white theme-coffee:text-[#1d1d1f] overflow-hidden dot-bg">
+    <main ref={containerRef} className="relative min-h-screen flex flex-col bg-white text-[#0A1F44] overflow-hidden dot-bg">
 
-      {/* Ambient orbs */}
-      <div className="absolute inset-0 z-0 pointer-events-none parallax-bg-container overflow-hidden">
-        <div data-speed="0.5" className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] rounded-full opacity-[0.06]" style={{ background: 'radial-gradient(circle,#fff 0%,transparent 70%)' }} />
-        <div data-speed="0.8" className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full opacity-[0.04]" style={{ background: 'radial-gradient(circle,#aaa 0%,transparent 70%)' }} />
-        <div data-speed="1.2" className="absolute top-[40%] right-[20%] w-[300px] h-[300px] rounded-full opacity-[0.03]" style={{ background: 'radial-gradient(circle,#fff 0%,transparent 70%)' }} />
+      {/* Subtle ambient */}
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] rounded-full opacity-[0.04]"
+          style={{ background: 'radial-gradient(circle, #2F5DAA 0%, transparent 70%)' }} />
       </div>
 
       {/* Navbar */}
-      <nav className="relative z-50 flex justify-between items-center px-10 py-8 border-b border-white/5 theme-coffee:border-black/5 backdrop-blur-sm">
-        <ValueTechLogo className="h-[60px] w-auto" />
+      <nav className="relative z-50 flex justify-between items-center px-10 py-6 border-b border-[#E2E8F0] bg-white">
+        <ValueTechLogo className="h-10 w-auto" />
       </nav>
 
       <div className="relative z-10 flex-1 flex items-start justify-center py-16 px-6">
         <div className="w-full max-w-4xl">
           {/* Close button */}
-          <Link href="/" className="inline-flex items-center gap-2 mb-8 text-gray-500 hover:text-white theme-coffee:hover:text-black text-[10px] uppercase tracking-[0.2em] font-bold transition-colors group">
-            <span className="w-8 h-8 rounded-full border border-white/10 theme-coffee:border-black/10 flex items-center justify-center group-hover:bg-white/10 theme-coffee:group-hover:bg-black/5 transition-all">
+          <Link href="/" className="inline-flex items-center gap-2 mb-8 text-[#6B7FA3] hover:text-[#0A1F44] text-[10px] uppercase tracking-[0.2em] font-bold transition-colors group">
+            <span className="w-8 h-8 rounded-full border border-[#E2E8F0] flex items-center justify-center group-hover:bg-[#F8FAFC] transition-all">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
             </span>
             Close
@@ -525,14 +503,14 @@ export default function CheckInPage() {
           {step === 1 && (
             <form onSubmit={handleNext} className="space-y-10 fade-up">
               <div className="text-center mb-12">
-                <p className="caption mb-4 text-gray-600">Phase 01: Identification &amp; Details</p>
-                <h1 className="text-[clamp(2.5rem,6vw,5rem)] font-black tracking-tighter uppercase leading-none">Visitor<br />Registration</h1>
+                <p className="vp-caption mb-4">Phase 01: Identification &amp; Details</p>
+                <h1 className="text-[clamp(2.5rem,6vw,5rem)] font-black tracking-tighter uppercase leading-none text-[#0A1F44]">Visitor<br />Registration</h1>
               </div>
 
               {/* Personal Info */}
               <div className={sectionCard}>
                 <div className="absolute top-0 left-0 w-[2px] h-full bg-gradient-to-b from-white/40 to-transparent" />
-                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 mb-8">Personal Information</h3>
+                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#6B7FA3] mb-8">Personal Information</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className={labelCls}>Full Name <span className="text-red-500">*</span></label>
@@ -585,7 +563,7 @@ export default function CheckInPage() {
               {/* Visit Details */}
               <div className={`${sectionCard} relative`} style={{ overflow: 'visible' }}>
                 <div className="absolute top-0 left-0 w-[2px] h-full bg-gradient-to-b from-white/20 to-transparent rounded-l-3xl" />
-                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 mb-8">Visit Details</h3>
+                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#6B7FA3] mb-8">Visit Details</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className={labelCls}>Meet With <span className="text-red-500">*</span></label>
@@ -624,11 +602,11 @@ export default function CheckInPage() {
                   <div className="md:col-span-2">
                     <label className={labelCls}>Duration (auto-calculated)</label>
                     <div style={{
-                      background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)',
-                      borderRadius: 12, padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 10
+                      background: '#F8FAFC', border: '1.5px solid #E2E8F0',
+                      borderRadius: 10, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10
                     }}>
-                      <svg className="w-4 h-4 text-gray-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                      <span style={{ color: formData.duration ? '#fff' : '#555', fontSize: '0.875rem', fontWeight: formData.duration ? 700 : 400 }}>
+                      <svg className="w-4 h-4 text-[#6B7FA3] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                      <span style={{ color: formData.duration ? '#0A1F44' : '#A0AEC0', fontSize: '0.875rem', fontWeight: formData.duration ? 600 : 400 }}>
                         {formData.duration || 'Will calculate when From & To are set'}
                       </span>
                     </div>
@@ -648,11 +626,11 @@ export default function CheckInPage() {
           {step === 2 && (
             <div className="fade-up flex flex-col items-center gap-12">
               <div className="text-center">
-                <p className="caption mb-4 text-gray-600">Phase 02: Verification Capture</p>
-                <h1 className="text-[clamp(2.5rem,6vw,5rem)] font-black tracking-tighter uppercase leading-none">Photo<br />Identity</h1>
+                <p className="vp-caption mb-4">Phase 02: Verification Capture</p>
+                <h1 className="text-[clamp(2.5rem,6vw,5rem)] font-black tracking-tighter uppercase leading-none text-[#0A1F44]">Photo<br />Identity</h1>
               </div>
 
-              <div className="w-full max-w-2xl rounded-[2.5rem] border border-white/10 bg-black/60 overflow-hidden relative aspect-square md:aspect-video flex items-center justify-center shadow-[0_20px_60px_rgba(0,0,0,0.6)]">
+              <div className="w-full max-w-2xl rounded-3xl border border-[#E2E8F0] bg-[#F8FAFC] overflow-hidden relative aspect-square md:aspect-video flex items-center justify-center shadow-lg">
                 {image && !isFinalized ? (
                   <div className="relative w-full h-full">
                     <Cropper
@@ -682,18 +660,18 @@ export default function CheckInPage() {
                   <img src={image} alt="captured" className="w-full h-full object-cover" />
                 ) : webcamError ? (
                   <div className="flex flex-col items-center gap-4 p-10 text-center">
-                    <div className="w-16 h-16 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center">
+                    <div className="w-16 h-16 rounded-full bg-red-50 border border-red-200 flex items-center justify-center">
                       <svg className="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 10l4.553-2.069A1 1 0 0121 8.882v6.236a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z" /></svg>
                     </div>
-                    <p className="text-red-400 text-xs font-bold uppercase tracking-widest">Camera Unavailable</p>
-                    <p className="text-gray-500 text-[10px] leading-relaxed max-w-xs">{webcamError}</p>
+                    <p className="text-red-500 text-xs font-bold uppercase tracking-widest">Camera Unavailable</p>
+                    <p className="text-[#6B7FA3] text-[10px] leading-relaxed max-w-xs">{webcamError}</p>
                   </div>
                 ) : (
                   <>
                     {webcamLoading && (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 z-10 bg-black/40">
-                        <div className="w-10 h-10 rounded-full border-2 border-gray-500/30 border-t-gray-300 animate-spin" />
-                        <p className="text-gray-400 text-[10px] uppercase tracking-widest font-bold">Starting camera…</p>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 z-10 bg-white/80">
+                        <div className="w-10 h-10 rounded-full border-2 border-[#E2E8F0] border-t-[#2F5DAA] animate-spin" />
+                        <p className="text-[#6B7FA3] text-[10px] uppercase tracking-widest font-bold">Starting camera…</p>
                       </div>
                     )}
                     {videoConstraints !== null && (
@@ -758,11 +736,11 @@ export default function CheckInPage() {
                 ) : !image ? (
                   <div className="flex gap-4 flex-wrap justify-center">
                     <button onClick={capture} disabled={!isWebcamReady || !!webcamError}
-                      className="btn-primary py-5 px-12 rounded-2xl font-black uppercase tracking-[0.4em] text-[10px] disabled:opacity-30 disabled:cursor-not-allowed">
+                      className="btn-primary py-4 px-10 rounded-2xl font-black uppercase tracking-[0.4em] text-[10px] disabled:opacity-30 disabled:cursor-not-allowed">
                       Take Picture
                     </button>
                     <button onClick={() => fileInputRef.current?.click()}
-                      className="bg-white/5 hover:bg-white/10 border border-white/10 py-5 px-12 rounded-2xl font-black uppercase tracking-[0.4em] text-[10px] transition-all">
+                      className="btn-vp-secondary py-4 px-10 rounded-2xl font-black uppercase tracking-[0.4em] text-[10px] transition-all">
                       Upload File
                     </button>
                     <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileUpload} />
@@ -792,15 +770,15 @@ export default function CheckInPage() {
           {/* ── STEP 3 ── */}
           {step === 3 && (
             <div className="text-center py-20 fade-up flex flex-col items-center gap-10">
-              <div className="w-28 h-28 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shadow-[0_0_60px_rgba(255,255,255,0.05)]">
-                <svg className="w-14 h-14 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
+              <div className="w-24 h-24 rounded-full bg-green-50 border border-green-200 flex items-center justify-center">
+                <svg className="w-12 h-12 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
               </div>
               <div>
-                <p className="caption mb-4 text-gray-600">Registration complete</p>
-                <h1 className="text-[clamp(2.5rem,6vw,5rem)] font-black tracking-tighter uppercase leading-none">You're<br />Checked In</h1>
+                <p className="vp-caption mb-4">Registration complete</p>
+                <h1 className="text-[clamp(2.5rem,6vw,5rem)] font-black tracking-tighter uppercase leading-none text-[#0A1F44]">You're<br />Checked In</h1>
               </div>
-              <p className="text-gray-500 text-sm font-light max-w-sm leading-relaxed">Your request has been dispatched. Please wait in the lounge while the host reviews your credentials.</p>
-              <Link href="/" className="btn-primary py-5 px-16 rounded-2xl font-black uppercase tracking-[0.4em] text-[10px] shadow-2xl shadow-white/5">Return to Terminal</Link>
+              <p className="text-[#6B7FA3] text-sm font-light max-w-sm leading-relaxed">Your request has been dispatched. Please wait in the lounge while the host reviews your credentials.</p>
+              <Link href="/" className="btn-primary py-4 px-14 rounded-2xl font-black uppercase tracking-[0.4em] text-[10px]">Return to Home</Link>
             </div>
           )}
 

@@ -1,14 +1,16 @@
 'use client';
 import Image from 'next/image';
 
-export default function ValueTechLogo({ className = "w-auto h-12" }) {
+export default function ValueTechLogo({ className = 'h-10 w-auto', inverted = false }) {
   return (
-    <div className={`flex items-center ${className}`}>
-      <img 
-        src="/logo.png" 
-        alt="Value Tech Services" 
-        className="h-full w-auto object-contain brightness-100 theme-coffee:brightness-0 theme-coffee:opacity-80 dark:brightness-125"
-      />
-    </div>
+    <Image
+      src="/vts-logo.png"
+      alt="VISITORPASS"
+      width={160}
+      height={48}
+      priority
+      className={`object-contain ${className} ${inverted ? 'brightness-0 invert' : ''}`}
+      style={{ width: 'auto' }}
+    />
   );
 }
