@@ -20,6 +20,7 @@ import DashboardEmployee from "@/pages/dashboard/DashboardEmployee";
 import DashboardDesignation from "@/pages/dashboard/DashboardDesignation";
 import DashboardAdministrator from "@/pages/dashboard/DashboardAdministrator";
 import DashboardPreVisitor from "@/pages/dashboard/DashboardPreVisitor";
+import DashboardPermissions from "@/pages/dashboard/DashboardPermissions";
 
 const queryClient = new QueryClient();
 
@@ -79,6 +80,9 @@ function Router() {
       {/* Pre-visitors — plural and singular */}
       <Route path="/dashboard/pre-visitors">{() => <DashboardRoute component={DashboardPreVisitor} />}</Route>
       <Route path="/dashboard/pre-visitor">{() => <DashboardRoute component={DashboardPreVisitor} />}</Route>
+
+      {/* Permissions */}
+      <Route path="/dashboard/permissions">{() => <DashboardRoute component={DashboardPermissions} />}</Route>
 
       <Route component={NotFound} />
     </Switch>

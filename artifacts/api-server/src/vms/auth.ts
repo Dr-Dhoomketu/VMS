@@ -48,6 +48,43 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
   }
 });
 
+const otpStore = new Map<string, { otp: string; expires: number }>();
+function generateOTP() { return Math.floor(100000 + Math.random() * 900000).toString(); }
+
+router.post('/send-otp', async (req: Request, res: Response): Promise<void> => {
+  const { email, phone } = req.body;
+  if (!email && !phone) { res.status(400).json({ message: 'Email or phone required' }); return; }
+  const result: any = { message: 'OTP sent' };
+  if (email) {
+    const otp = generateOTP();
+    otpStore.set(`email:${email}`, { otp, expires: Date.now() + 10 * 60 * 1000 });
+    result.emailOtp = otp;
+  }
+  if (phone) {
+    const otp = generateOTP();
+    otpStore.set(`phone:${phone}`, { otp, expires: Date.now() + 10 * 60 * 1000 });
+    result.phoneOtp = otp;
+  }
+  res.json(result);
+});
+
+router.post('/verify-otp', async (req: Request, res: Response): Promise<void> => {
+  const { email, phone, emailOtp, phoneOtp } = req.body;
+  const errors: string[] = [];
+  if (email && emailOtp) {
+    const s = otpStore.get(`email:${email}`);
+    if (!s || s.otp !== String(emailOtp) || Date.now() > s.expires) errors.push('Invalid or expired email OTP');
+    else otpStore.delete(`email:${email}`);
+  }
+  if (phone && phoneOtp) {
+    const s = otpStore.get(`phone:${phone}`);
+    if (!s || s.otp !== String(phoneOtp) || Date.now() > s.expires) errors.push('Invalid or expired phone OTP');
+    else otpStore.delete(`phone:${phone}`);
+  }
+  if (errors.length > 0) { res.status(400).json({ message: errors.join('. ') }); return; }
+  res.json({ message: 'OTP verified' });
+});
+
 router.get('/me', protect, async (req: any, res: Response): Promise<void> => {
   try {
     const user = await VmsUser.findById(req.user.id).populate('department designation');

@@ -5,6 +5,50 @@ import { Link } from 'wouter';
 import { API_URL } from '@/lib/api';
 import GeoBackground from '@/components/GeoBackground';
 
+function OtpInput({ value, onChange, label, hint }: { value: string; onChange: (v: string) => void; label: string; hint?: string }) {
+  return (
+    <div>
+      <label style={{ display: 'block', fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#6B7FA3', marginBottom: '10px' }}>{label}</label>
+      <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+        {Array.from({ length: 6 }).map((_, i) => (
+          <input
+            key={i}
+            type="text"
+            maxLength={1}
+            inputMode="numeric"
+            value={value[i] || ''}
+            onChange={e => {
+              const v = e.target.value.replace(/\D/g, '');
+              const arr = value.split('');
+              arr[i] = v;
+              onChange(arr.join('').slice(0, 6));
+              if (v && i < 5) {
+                const next = document.getElementById(`otp-${label}-${i + 1}`);
+                if (next) (next as HTMLInputElement).focus();
+              }
+            }}
+            onKeyDown={e => {
+              if (e.key === 'Backspace' && !value[i] && i > 0) {
+                const prev = document.getElementById(`otp-${label}-${i - 1}`);
+                if (prev) (prev as HTMLInputElement).focus();
+              }
+            }}
+            id={`otp-${label}-${i}`}
+            style={{
+              width: '44px', height: '52px', textAlign: 'center', fontSize: '1.2rem', fontWeight: 800,
+              border: value[i] ? '2px solid #2F5DAA' : '2px solid rgba(10,31,68,0.12)',
+              borderRadius: '10px', outline: 'none', color: '#0A1F44',
+              background: value[i] ? 'rgba(47,93,170,0.05)' : '#fff',
+              transition: 'all 0.15s',
+            }}
+          />
+        ))}
+      </div>
+      {hint && <p style={{ fontSize: '0.65rem', color: '#A0AEC0', textAlign: 'center', marginTop: '8px' }}>{hint}</p>}
+    </div>
+  );
+}
+
 interface Employee { _id: string; name: string; }
 interface CropArea { x: number; y: number; width: number; height: number; }
 
@@ -293,17 +337,126 @@ export default function CheckInPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const webcamRef = useRef<Webcam>(null);
 
+  // OTP state
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpLoading, setOtpLoading] = useState(false);
+  const [otpError, setOtpError] = useState('');
+  const [emailOtp, setEmailOtp] = useState('');
+  const [phoneOtp, setPhoneOtp] = useState('');
+  const [devEmailOtp, setDevEmailOtp] = useState('');
+  const [devPhoneOtp, setDevPhoneOtp] = useState('');
+  const [otpVerified, setOtpVerified] = useState(false);
+
+  // Blink detection state
+  const [blinkDetected, setBlinkDetected] = useState(false);
+  const blinkCanvasRef = useRef<HTMLCanvasElement>(null);
+  const blinkIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const lastBrightnessRef = useRef<number[]>([]);
+
   useEffect(() => {
     fetch(`${API_URL}/api/v1/users/employees`).then(r => r.json()).then(d => setEmployees(d)).catch(console.error);
   }, []);
+
+  // Blink detection via frame brightness analysis
+  useEffect(() => {
+    if (!showCamera || cameraError) {
+      if (blinkIntervalRef.current) { clearInterval(blinkIntervalRef.current); blinkIntervalRef.current = null; }
+      return;
+    }
+    setBlinkDetected(false);
+    lastBrightnessRef.current = [];
+
+    blinkIntervalRef.current = setInterval(() => {
+      const video = webcamRef.current?.video;
+      const canvas = blinkCanvasRef.current;
+      if (!video || !canvas || video.readyState < 2) return;
+
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      canvas.width = video.videoWidth || 320;
+      canvas.height = video.videoHeight || 240;
+      ctx.drawImage(video, 0, 0);
+
+      // Sample the upper-center region where eyes are likely located
+      const rx = Math.floor(canvas.width * 0.2);
+      const ry = Math.floor(canvas.height * 0.3);
+      const rw = Math.floor(canvas.width * 0.6);
+      const rh = Math.floor(canvas.height * 0.25);
+
+      try {
+        const imageData = ctx.getImageData(rx, ry, rw, rh);
+        const data = imageData.data;
+        let brightness = 0;
+        for (let i = 0; i < data.length; i += 4) {
+          brightness += data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
+        }
+        brightness /= data.length / 4;
+
+        const history = lastBrightnessRef.current;
+        history.push(brightness);
+        if (history.length > 10) history.shift();
+
+        if (history.length >= 8) {
+          const baseline = history.slice(0, history.length - 2).reduce((a, b) => a + b, 0) / (history.length - 2);
+          const recent = history[history.length - 1];
+          // Drop >10% = blink detected
+          if (baseline > 10 && (baseline - recent) / baseline > 0.10) {
+            setBlinkDetected(true);
+            if (blinkIntervalRef.current) { clearInterval(blinkIntervalRef.current); blinkIntervalRef.current = null; }
+          }
+        }
+      } catch { /* cross-origin guard */ }
+    }, 150);
+
+    return () => { if (blinkIntervalRef.current) { clearInterval(blinkIntervalRef.current); blinkIntervalRef.current = null; } };
+  }, [showCamera, cameraError]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const capturePhoto = useCallback(() => {
     const img = webcamRef.current?.getScreenshot();
-    if (img) { setPhoto(img); setShowCamera(false); setCameraError(''); }
+    if (img) { setPhoto(img); setShowCamera(false); setCameraError(''); setBlinkDetected(false); lastBrightnessRef.current = []; }
   }, []);
+
+  const sendOtp = async () => {
+    if (!formData.phone) { setOtpError('Mobile number is required for verification'); return; }
+    setOtpLoading(true); setOtpError('');
+    try {
+      const fullPhone = `${countryCode}${formData.phone}`;
+      const res = await fetch(`${API_URL}/api/v1/auth/send-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: formData.email || undefined, phone: fullPhone }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setOtpError(data.message || 'Failed to send OTP'); return; }
+      setOtpSent(true);
+      if (data.emailOtp) setDevEmailOtp(data.emailOtp);
+      if (data.phoneOtp) setDevPhoneOtp(data.phoneOtp);
+    } catch { setOtpError('Connection failed. Please try again.'); }
+    finally { setOtpLoading(false); }
+  };
+
+  const verifyOtp = async () => {
+    setOtpLoading(true); setOtpError('');
+    try {
+      const fullPhone = `${countryCode}${formData.phone}`;
+      const body: any = { phone: fullPhone, phoneOtp };
+      if (formData.email) { body.email = formData.email; body.emailOtp = emailOtp; }
+      const res = await fetch(`${API_URL}/api/v1/auth/verify-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!res.ok) { setOtpError(data.message || 'Verification failed'); return; }
+      setOtpVerified(true);
+      setStep(2);
+    } catch { setOtpError('Connection failed. Please try again.'); }
+    finally { setOtpLoading(false); }
+  };
 
   const onCropComplete = useCallback((_: unknown, area: CropArea) => setCroppedArea(area), []);
 
@@ -408,6 +561,9 @@ export default function CheckInPage() {
           </div>
         )}
 
+        {/* Hidden canvas for blink detection */}
+        <canvas ref={blinkCanvasRef} style={{ display: 'none' }}/>
+
         {/* Camera overlay */}
         {showCamera && (
           <div style={{ position: 'fixed', inset: 0, zIndex: 400, background: '#0A1F44', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '20px', padding: '24px' }}>
@@ -423,47 +579,71 @@ export default function CheckInPage() {
                   <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem', lineHeight: 1.6, marginBottom: '28px' }}>
                     Please allow camera access in your browser settings and try again. Camera is required for walk-in check-in.
                   </p>
-                  <button
-                    onClick={() => { setCameraError(''); setShowCamera(true); }}
-                    className="btn-vp-primary"
-                    style={{ width: '100%', justifyContent: 'center', marginBottom: '10px' }}
-                  >
-                    Try Again
-                  </button>
-                  <button onClick={() => { setShowCamera(false); setCameraError(''); }} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'transparent', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', fontSize: '0.75rem' }}>
-                    Cancel
-                  </button>
+                  <button onClick={() => { setCameraError(''); setShowCamera(true); }} className="btn-vp-primary" style={{ width: '100%', justifyContent: 'center', marginBottom: '10px' }}>Try Again</button>
+                  <button onClick={() => { setShowCamera(false); setCameraError(''); }} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'transparent', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', fontSize: '0.75rem' }}>Cancel</button>
                 </div>
               ) : (
                 <>
-                  <div style={{ borderRadius: '16px', overflow: 'hidden', border: '2px solid rgba(255,255,255,0.1)', position: 'relative' }}>
+                  {/* Blink status badge */}
+                  <div style={{ textAlign: 'center', marginBottom: '12px' }}>
+                    <div style={{
+                      display: 'inline-flex', alignItems: 'center', gap: '8px',
+                      padding: '8px 18px', borderRadius: '999px',
+                      background: blinkDetected ? 'rgba(22,163,74,0.15)' : 'rgba(255,255,255,0.06)',
+                      border: blinkDetected ? '1px solid rgba(22,163,74,0.4)' : '1px solid rgba(255,255,255,0.12)',
+                      transition: 'all 0.3s',
+                    }}>
+                      <div style={{
+                        width: '8px', height: '8px', borderRadius: '50%',
+                        background: blinkDetected ? '#22c55e' : '#f59e0b',
+                        boxShadow: blinkDetected ? '0 0 8px rgba(34,197,94,0.6)' : '0 0 8px rgba(245,158,11,0.6)',
+                        animation: blinkDetected ? 'none' : 'pulse 1.5s infinite',
+                      }}/>
+                      <span style={{ fontSize: '0.7rem', fontWeight: 700, color: blinkDetected ? '#22c55e' : 'rgba(255,255,255,0.7)', letterSpacing: '0.05em' }}>
+                        {blinkDetected ? 'Liveness Verified ✓' : 'Please blink naturally…'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div style={{ borderRadius: '16px', overflow: 'hidden', border: blinkDetected ? '2px solid rgba(34,197,94,0.5)' : '2px solid rgba(255,255,255,0.1)', position: 'relative', transition: 'border-color 0.3s' }}>
                     <Webcam
                       ref={webcamRef}
                       audio={false}
                       screenshotFormat="image/jpeg"
                       videoConstraints={{ facingMode: 'user', width: 440, height: 440 }}
                       style={{ width: '100%', display: 'block' }}
-                      onUserMediaError={(err) => {
-                        console.error('Camera error:', err);
-                        setCameraError(String(err));
-                      }}
+                      onUserMediaError={(err) => { console.error('Camera error:', err); setCameraError(String(err)); }}
                     />
-                    {/* Overlay guide circle */}
-                    <div style={{
-                      position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none',
-                    }}>
-                      <div style={{ width: '200px', height: '200px', borderRadius: '50%', border: '2px solid rgba(255,255,255,0.5)' }}/>
+                    {/* Overlay guide */}
+                    <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
+                      <div style={{ width: '200px', height: '200px', borderRadius: '50%', border: `2px solid ${blinkDetected ? 'rgba(34,197,94,0.6)' : 'rgba(255,255,255,0.5)'}`, transition: 'border-color 0.3s' }}/>
                     </div>
+                    {/* Eye scan guide overlay */}
+                    {!blinkDetected && (
+                      <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <div style={{ width: '200px', height: '200px', borderRadius: '50%', position: 'relative' }}>
+                          <div style={{ position: 'absolute', top: '38%', left: '22%', width: '22%', height: '12%', borderRadius: '50%', border: '1.5px dashed rgba(251,191,36,0.5)' }}/>
+                          <div style={{ position: 'absolute', top: '38%', right: '22%', width: '22%', height: '12%', borderRadius: '50%', border: '1.5px dashed rgba(251,191,36,0.5)' }}/>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                  <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.4)', fontSize: '0.72rem', marginTop: '10px' }}>Position your face within the circle</p>
+                  <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.4)', fontSize: '0.72rem', marginTop: '10px' }}>
+                    {blinkDetected ? 'Liveness confirmed — you can take your photo now' : 'Position your face within the circle and blink once'}
+                  </p>
                   <div style={{ display: 'flex', gap: '10px', marginTop: '16px' }}>
-                    <button onClick={() => { setShowCamera(false); setCameraError(''); }} style={{ flex: 1, padding: '13px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'transparent', color: '#fff', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600 }}>Cancel</button>
-                    <button onClick={capturePhoto} className="btn-vp-primary" style={{ flex: 2, justifyContent: 'center' }}>
+                    <button onClick={() => { setShowCamera(false); setCameraError(''); setBlinkDetected(false); }} style={{ flex: 1, padding: '13px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'transparent', color: '#fff', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600 }}>Cancel</button>
+                    <button
+                      onClick={capturePhoto}
+                      disabled={!blinkDetected}
+                      className="btn-vp-primary"
+                      style={{ flex: 2, justifyContent: 'center', opacity: blinkDetected ? 1 : 0.4, cursor: blinkDetected ? 'pointer' : 'not-allowed' }}
+                    >
                       <svg style={{ width: '16px', height: '16px', marginRight: '6px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <circle cx="12" cy="12" r="4" strokeWidth="2"/>
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
                       </svg>
-                      Take Photo
+                      {blinkDetected ? 'Take Photo' : 'Waiting for blink…'}
                     </button>
                   </div>
                 </>
@@ -551,9 +731,65 @@ export default function CheckInPage() {
               </div>
             </div>
 
-            <button type="button" onClick={() => setStep(2)} className="btn-vp-primary" style={{ width: '100%', padding: '14px', justifyContent: 'center', fontSize: '0.7rem' }}>
-              Continue to Visit Details →
-            </button>
+            {/* OTP Verification Panel */}
+            {otpSent && !otpVerified ? (
+              <div className="lux-card" style={{ padding: '28px', marginBottom: '16px', border: '1.5px solid rgba(47,93,170,0.2)', background: 'rgba(47,93,170,0.02)' }}>
+                <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+                  <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(47,93,170,0.08)', border: '1px solid rgba(47,93,170,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
+                    <svg style={{ width: '22px', height: '22px', color: '#2F5DAA' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                  </div>
+                  <h3 style={{ fontSize: '1rem', fontWeight: 800, color: '#0A1F44', marginBottom: '4px' }}>Verify Your Identity</h3>
+                  <p style={{ fontSize: '0.75rem', color: '#6B7FA3' }}>Enter the 6-digit codes sent to your phone{formData.email ? ' and email' : ''}</p>
+                </div>
+
+                {/* Dev mode hint */}
+                {(devPhoneOtp || devEmailOtp) && (
+                  <div style={{ padding: '10px 14px', background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: '10px', marginBottom: '20px', textAlign: 'center' }}>
+                    <p style={{ fontSize: '0.65rem', fontWeight: 700, color: '#b45309', letterSpacing: '0.05em' }}>DEV MODE — OTP shown for testing</p>
+                    {devPhoneOtp && <p style={{ fontSize: '0.8rem', color: '#0A1F44', marginTop: '4px' }}>Phone OTP: <strong>{devPhoneOtp}</strong></p>}
+                    {devEmailOtp && <p style={{ fontSize: '0.8rem', color: '#0A1F44', marginTop: '2px' }}>Email OTP: <strong>{devEmailOtp}</strong></p>}
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  <OtpInput value={phoneOtp} onChange={setPhoneOtp} label={`Phone OTP (${countryCode}${formData.phone})`} hint="Check your SMS messages"/>
+                  {formData.email && (
+                    <OtpInput value={emailOtp} onChange={setEmailOtp} label={`Email OTP (${formData.email})`} hint="Check your inbox and spam folder"/>
+                  )}
+                </div>
+
+                {otpError && <div style={{ padding: '10px 14px', background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '10px', color: '#dc2626', fontSize: '0.75rem', marginTop: '16px', textAlign: 'center' }}>{otpError}</div>}
+
+                <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+                  <button type="button" onClick={() => { setOtpSent(false); setOtpError(''); setPhoneOtp(''); setEmailOtp(''); }} style={{ flex: 1, padding: '13px', borderRadius: '10px', border: '1.5px solid rgba(10,31,68,0.12)', background: 'transparent', color: '#0A1F44', cursor: 'pointer', fontSize: '0.72rem', fontWeight: 700 }}>← Back</button>
+                  <button
+                    type="button"
+                    onClick={verifyOtp}
+                    disabled={otpLoading || phoneOtp.length < 6 || (!!formData.email && emailOtp.length < 6)}
+                    className="btn-vp-primary"
+                    style={{ flex: 2, justifyContent: 'center', opacity: (phoneOtp.length < 6 || (!!formData.email && emailOtp.length < 6)) ? 0.5 : 1 }}
+                  >
+                    {otpLoading ? 'Verifying…' : 'Verify & Continue →'}
+                  </button>
+                </div>
+                <p style={{ textAlign: 'center', fontSize: '0.65rem', color: '#A0AEC0', marginTop: '12px' }}>
+                  Didn't receive?{' '}
+                  <button type="button" onClick={sendOtp} style={{ background: 'none', border: 'none', color: '#2F5DAA', cursor: 'pointer', fontSize: '0.65rem', fontWeight: 700, padding: 0 }}>Resend OTP</button>
+                </p>
+              </div>
+            ) : !otpVerified ? (
+              <button
+                type="button"
+                onClick={sendOtp}
+                disabled={otpLoading || !formData.phone}
+                className="btn-vp-primary"
+                style={{ width: '100%', padding: '14px', justifyContent: 'center', fontSize: '0.7rem', opacity: !formData.phone ? 0.5 : 1 }}
+              >
+                {otpLoading ? 'Sending OTP…' : 'Send OTP & Continue →'}
+              </button>
+            ) : null}
+
+            {otpError && !otpSent && <div style={{ padding: '10px 14px', background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '10px', color: '#dc2626', fontSize: '0.75rem', marginTop: '12px' }}>{otpError}</div>}
           </div>
         )}
 
