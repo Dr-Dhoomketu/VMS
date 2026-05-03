@@ -37,7 +37,10 @@ export async function sendOtpEmail(to: string, otp: string): Promise<boolean> {
   }
   const from = `"VISITORPASS" <${process.env['SMTP_FROM'] || process.env['SMTP_USER']}>`;
   try {
-    await transport.sendMail({
+    const timeout = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('Email send timeout')), 10000)
+    );
+    await Promise.race([timeout, transport.sendMail({
       from,
       to,
       subject: 'Your VISITORPASS Email OTP',
@@ -59,7 +62,7 @@ export async function sendOtpEmail(to: string, otp: string): Promise<boolean> {
         </div>
       `,
       text: `Your VISITORPASS email OTP is: ${otp}. Valid for 10 minutes. Do not share with anyone.`,
-    });
+    })]);;
     logger.info({ to }, 'OTP email sent');
     return true;
   } catch (err) {

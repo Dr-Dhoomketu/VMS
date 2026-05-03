@@ -77,14 +77,15 @@ router.post('/send-otp', async (req: Request, res: Response): Promise<void> => {
   if (email) {
     const otp = generateOTP();
     otpStore.set(`email:${email}`, { otp, expires: Date.now() + 10 * 60 * 1000 });
-    await sendOtpEmail(email, otp);
+    // Fire and forget — don't block the response waiting for email delivery
+    sendOtpEmail(email, otp).catch(() => {});
   }
 
   if (phone) {
     const otp = generateOTP();
     otpStore.set(`phone:${phone}`, { otp, expires: Date.now() + 10 * 60 * 1000 });
-    await sendSmsOtp(phone, otp);
-    // OTP is stored server-side only; never returned in the response regardless of SMS delivery
+    // Fire and forget — don't block the response waiting for SMS delivery
+    sendSmsOtp(phone, otp).catch(() => {});
   }
 
   res.json(result);
