@@ -421,36 +421,41 @@ export default function CheckInPage() {
     if (img) { setPhoto(img); setShowCamera(false); setCameraError(''); setBlinkDetected(false); lastBrightnessRef.current = []; }
   }, []);
 
+  const resetRecaptcha = () => {
+    try { recaptchaVerifierRef.current?.clear(); } catch {}
+    recaptchaVerifierRef.current = null;
+    // Wipe the DOM node so Firebase can render fresh
+    const el = document.getElementById('recaptcha-container');
+    if (el) el.innerHTML = '';
+  };
+
   const sendOtp = async () => {
     if (!formData.phone) { setOtpError('Mobile number is required for verification'); return; }
     setOtpLoading(true); setOtpError('');
     try {
       const fullPhone = `${countryCode}${formData.phone}`;
 
-      // Create or reuse invisible reCAPTCHA verifier
-      if (!recaptchaVerifierRef.current) {
-        recaptchaVerifierRef.current = new RecaptchaVerifier(auth, 'recaptcha-container', {
-          size: 'invisible',
-          callback: () => {},
-        });
-      }
+      // Always reset before creating a fresh verifier to avoid "already rendered" error
+      resetRecaptcha();
+      recaptchaVerifierRef.current = new RecaptchaVerifier(auth, 'recaptcha-container', {
+        size: 'invisible',
+        callback: () => {},
+      });
 
       const confirmation = await signInWithPhoneNumber(auth, fullPhone, recaptchaVerifierRef.current);
       confirmationResultRef.current = confirmation;
       setOtpSent(true);
     } catch (err: any) {
       console.error('Firebase OTP error:', err);
-      // Reset reCAPTCHA on error so it can be retried
-      if (recaptchaVerifierRef.current) {
-        recaptchaVerifierRef.current.clear();
-        recaptchaVerifierRef.current = null;
-      }
-      if (err.code === 'auth/invalid-phone-number') {
-        setOtpError('Invalid phone number. Include country code (e.g. +91XXXXXXXXXX).');
+      resetRecaptcha();
+      if (err.code === 'auth/billing-not-enabled') {
+        setOtpError('Firebase billing not enabled. Go to Firebase Console → Authentication → Sign-in method → Phone → "Phone numbers for testing" and add your number with a test code (e.g. 123456). No billing needed for test numbers.');
+      } else if (err.code === 'auth/invalid-phone-number') {
+        setOtpError('Invalid phone number. Make sure the country code is correct (e.g. +91XXXXXXXXXX).');
       } else if (err.code === 'auth/too-many-requests') {
         setOtpError('Too many attempts. Please wait a few minutes and try again.');
       } else if (err.code === 'auth/unauthorized-domain') {
-        setOtpError('Domain not authorised in Firebase. Add this domain in Firebase Console → Authentication → Settings → Authorised Domains.');
+        setOtpError('This domain is not authorised. Add it in Firebase Console → Authentication → Settings → Authorised Domains.');
       } else {
         setOtpError(err.message || 'Failed to send OTP. Please try again.');
       }
@@ -777,7 +782,7 @@ export default function CheckInPage() {
                 {otpError && <div style={{ padding: '10px 14px', background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '10px', color: '#dc2626', fontSize: '0.75rem', marginTop: '16px', textAlign: 'center' }}>{otpError}</div>}
 
                 <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
-                  <button type="button" onClick={() => { setOtpSent(false); setOtpError(''); setPhoneOtp(''); confirmationResultRef.current = null; }} style={{ flex: 1, padding: '13px', borderRadius: '10px', border: '1.5px solid rgba(10,31,68,0.12)', background: 'transparent', color: '#0A1F44', cursor: 'pointer', fontSize: '0.72rem', fontWeight: 700 }}>← Back</button>
+                  <button type="button" onClick={() => { setOtpSent(false); setOtpError(''); setPhoneOtp(''); confirmationResultRef.current = null; resetRecaptcha(); }} style={{ flex: 1, padding: '13px', borderRadius: '10px', border: '1.5px solid rgba(10,31,68,0.12)', background: 'transparent', color: '#0A1F44', cursor: 'pointer', fontSize: '0.72rem', fontWeight: 700 }}>← Back</button>
                   <button
                     type="button"
                     onClick={verifyOtp}
@@ -790,7 +795,7 @@ export default function CheckInPage() {
                 </div>
                 <p style={{ textAlign: 'center', fontSize: '0.65rem', color: '#A0AEC0', marginTop: '12px' }}>
                   Didn't receive?{' '}
-                  <button type="button" onClick={() => { setOtpSent(false); setPhoneOtp(''); confirmationResultRef.current = null; if (recaptchaVerifierRef.current) { recaptchaVerifierRef.current.clear(); recaptchaVerifierRef.current = null; } setTimeout(sendOtp, 100); }} style={{ background: 'none', border: 'none', color: '#2F5DAA', cursor: 'pointer', fontSize: '0.65rem', fontWeight: 700, padding: 0 }}>Resend OTP</button>
+                  <button type="button" onClick={() => { setOtpSent(false); setPhoneOtp(''); confirmationResultRef.current = null; resetRecaptcha(); setTimeout(sendOtp, 150); }} style={{ background: 'none', border: 'none', color: '#2F5DAA', cursor: 'pointer', fontSize: '0.65rem', fontWeight: 700, padding: 0 }}>Resend OTP</button>
                 </p>
               </div>
             ) : !otpVerified ? (
