@@ -2,6 +2,7 @@ import { useRef, useEffect } from 'react';
 import { Link } from 'wouter';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import ProcessAnimation from '@/components/ProcessAnimation';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -368,6 +369,9 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* ── PROCESS ANIMATION ── */}
+      <ProcessAnimation />
 
       {/* ── HOW IT WORKS ── */}
       <section ref={stepsRef} style={{ padding: '80px 52px 100px', position: 'relative', zIndex: 1 }}>
