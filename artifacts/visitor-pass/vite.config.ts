@@ -44,6 +44,10 @@ export default defineConfig({
     strictPort: true,
     host: "0.0.0.0",
     allowedHosts: true,
+    headers: {
+      "Permissions-Policy": "camera=*, microphone=*",
+      "Feature-Policy": "camera *; microphone *",
+    },
     fs: {
       strict: true,
     },
@@ -52,5 +56,9 @@ export default defineConfig({
     port,
     host: "0.0.0.0",
     allowedHosts: true,
+    headers: {
+      "Permissions-Policy": "camera=*, microphone=*",
+      "Feature-Policy": "camera *; microphone *",
+    },
   },
 });
