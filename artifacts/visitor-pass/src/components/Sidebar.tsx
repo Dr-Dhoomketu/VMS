@@ -69,68 +69,46 @@ export default function Sidebar() {
 
       {/* Logo + collapse toggle */}
       <div style={{
-        padding: collapsed ? '20px 0' : '20px 16px 20px 24px',
+        padding: '0 12px',
         borderBottom: '1px solid rgba(255,255,255,0.07)',
         position: 'relative', zIndex: 1,
         display: 'flex', alignItems: 'center',
-        justifyContent: collapsed ? 'center' : 'space-between',
+        justifyContent: 'space-between',
         minHeight: '68px',
-        transition: 'padding 0.25s ease',
+        gap: '8px',
       }}>
         {!collapsed && (
-          <div style={{ overflow: 'hidden', whiteSpace: 'nowrap' }}>
+          <div style={{ overflow: 'hidden', whiteSpace: 'nowrap', flex: 1, paddingLeft: '12px' }}>
             <img src="/vts-logo.png" alt="VISITORPASS" style={{ height: '46px', width: 'auto', objectFit: 'contain', filter: 'brightness(0) invert(1)', display: 'block' }}/>
             <p style={{ fontSize: '0.45rem', fontWeight: 800, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', marginTop: '6px' }}>Management Portal</p>
           </div>
         )}
         {collapsed && (
-          <div style={{ width: '30px', height: '30px', borderRadius: '8px', background: 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <svg style={{ width: '14px', height: '14px', color: 'rgba(255,255,255,0.6)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"/>
-            </svg>
+          <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg style={{ width: '15px', height: '15px', color: 'rgba(255,255,255,0.6)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"/>
+              </svg>
+            </div>
           </div>
         )}
         <button
           onClick={toggleCollapse}
           title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           style={{
-            width: '28px', height: '28px', borderRadius: '8px',
+            width: '30px', height: '30px', borderRadius: '8px', flexShrink: 0,
             background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', flexShrink: 0,
-            position: collapsed ? 'absolute' : 'relative',
-            right: collapsed ? '-100px' : undefined,
-            opacity: collapsed ? 0 : 1,
-            transition: 'opacity 0.2s',
+            cursor: 'pointer',
           }}
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.12)'; }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.14)'; }}
           onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.06)'; }}
         >
-          <svg style={{ width: '13px', height: '13px', color: 'rgba(255,255,255,0.5)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg style={{ width: '13px', height: '13px', color: 'rgba(255,255,255,0.6)', transition: 'transform 0.25s', transform: collapsed ? 'rotate(180deg)' : 'none' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/>
           </svg>
         </button>
       </div>
-
-      {/* Expand button when collapsed */}
-      {collapsed && (
-        <button
-          onClick={toggleCollapse}
-          title="Expand sidebar"
-          style={{
-            margin: '12px auto 0', width: '40px', height: '40px', borderRadius: '10px',
-            background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', flexShrink: 0, position: 'relative', zIndex: 1,
-          }}
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.12)'; }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.06)'; }}
-        >
-          <svg style={{ width: '14px', height: '14px', color: 'rgba(255,255,255,0.6)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"/>
-          </svg>
-        </button>
-      )}
 
       <nav style={{ flex: 1, padding: collapsed ? '12px 8px' : '16px 12px', display: 'flex', flexDirection: 'column', gap: '2px', overflowY: 'auto', position: 'relative', zIndex: 1, transition: 'padding 0.25s ease' }}>
         {!collapsed && (

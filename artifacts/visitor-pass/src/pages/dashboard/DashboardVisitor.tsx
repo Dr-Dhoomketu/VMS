@@ -4,6 +4,7 @@ import { API_URL } from '@/lib/api';
 
 interface Visit {
   _id: string; purpose: string; createdAt: string; status: string;
+  checkoutTime?: string;
   visitor?: { name: string; aadhar?: string; imageUrl?: string; };
   meetWith?: { name: string; };
 }
@@ -61,13 +62,14 @@ export default function DashboardVisitor() {
             <th className="px-6 py-4 text-left">Identity</th>
             <th className="px-6 py-4 text-left">Meeting With</th>
             <th className="px-6 py-4 text-left">Purpose</th>
-            <th className="px-6 py-4 text-left">Time Recorded</th>
+            <th className="px-6 py-4 text-left">Check-In</th>
+            <th className="px-6 py-4 text-left">Check-Out</th>
             <th className="px-6 py-4 text-left">Status</th>
             <th className="px-6 py-4 text-center">Action</th>
           </tr></thead>
           <tbody>
-            {loading ? <tr><td colSpan={7} className="py-12 text-center text-gray-500 italic">Accessing archives...</td></tr>
-            : visitors.length === 0 ? <tr><td colSpan={7} className="py-12 text-center text-gray-500 italic">No visitor records found.</td></tr>
+            {loading ? <tr><td colSpan={8} className="py-12 text-center text-gray-500 italic">Accessing archives...</td></tr>
+            : visitors.length === 0 ? <tr><td colSpan={8} className="py-12 text-center text-gray-500 italic">No visitor records found.</td></tr>
             : visitors.map(v => (
               <tr key={v._id} className="group hover:bg-[#F8FAFC] transition-colors">
                 <td className="px-6 py-4">
@@ -85,6 +87,7 @@ export default function DashboardVisitor() {
                 <td className="px-6 py-4 text-[#6B7FA3] text-sm">{v.meetWith?.name}</td>
                 <td className="px-6 py-4 text-[#6B7FA3] text-xs uppercase tracking-widest">{v.purpose}</td>
                 <td className="px-6 py-4 text-[#6B7FA3] text-[10px]">{new Date(v.createdAt).toLocaleString()}</td>
+                <td className="px-6 py-4 text-[#6B7FA3] text-[10px]">{v.checkoutTime ? new Date(v.checkoutTime).toLocaleString() : <span className="text-[#C4C9D4]">—</span>}</td>
                 <td className="px-6 py-4">
                   <span className={`badge ${v.status==='CheckedOut'?'badge-checkedout':v.status==='Approved'?'badge-approved':v.status==='Rejected'?'badge-rejected':'badge-pending'}`}>
                     {v.status === 'Approved' ? 'Active' : v.status}
