@@ -18,7 +18,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-router.post('/request', upload.single('webcamImage'), async (req: any, res: Response): Promise<void> => {
+router.post('/request', upload.single('photo'), async (req: any, res: Response): Promise<void> => {
   const { name, aadhar, phone, email, address, gender, meetWith, purpose, scheduledTime, fromTime, toTime, duration } = req.body;
   try {
     let visitor: any = aadhar ? await Visitor.findOne({ aadhar }) : null;

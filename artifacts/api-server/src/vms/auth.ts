@@ -76,19 +76,14 @@ router.post('/send-otp', async (req: Request, res: Response): Promise<void> => {
   if (email) {
     const otp = generateOTP();
     otpStore.set(`email:${email}`, { otp, expires: Date.now() + 10 * 60 * 1000 });
-    // Always return email OTP in result (no email service configured by default)
-    result.emailOtp = otp;
+    // OTP is stored server-side only; never returned in the response
   }
 
   if (phone) {
     const otp = generateOTP();
     otpStore.set(`phone:${phone}`, { otp, expires: Date.now() + 10 * 60 * 1000 });
-    const smsSent = await sendSmsOtp(phone, otp);
-    if (!smsSent) {
-      // Dev mode — return OTP in response if SMS not configured
-      result.phoneOtp = otp;
-    }
-    // smsSent=true means real SMS was delivered, don't expose OTP in response
+    await sendSmsOtp(phone, otp);
+    // OTP is stored server-side only; never returned in the response regardless of SMS delivery
   }
 
   res.json(result);
