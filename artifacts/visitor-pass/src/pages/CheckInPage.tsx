@@ -341,6 +341,7 @@ export default function CheckInPage() {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const webcamRef = useRef<Webcam>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // OTP state
   const [otpSent, setOtpSent] = useState(false);
@@ -426,6 +427,21 @@ export default function CheckInPage() {
   const capturePhoto = useCallback(() => {
     const img = webcamRef.current?.getScreenshot();
     if (img) { setPhoto(img); setShowCamera(false); setCameraError(''); setBlinkDetected(false); lastBrightnessRef.current = []; }
+  }, []);
+
+  const handleFileUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      if (ev.target?.result) {
+        setPhoto(ev.target.result as string);
+        setShowCamera(false);
+        setCameraError('');
+      }
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
   }, []);
 
   const openCamera = useCallback(async () => {
@@ -646,6 +662,8 @@ export default function CheckInPage() {
 
         {/* Hidden canvas for blink detection */}
         <canvas ref={blinkCanvasRef} style={{ display: 'none' }}/>
+        {/* Hidden file input for photo upload fallback */}
+        <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFileUpload} />
         {/* Invisible reCAPTCHA container required by Firebase Phone Auth */}
         <div key={recaptchaKey} id="recaptcha-container" />
 
@@ -668,16 +686,28 @@ export default function CheckInPage() {
                   </p>
                   <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem', lineHeight: 1.6, marginBottom: '8px' }}>
                     {cameraError.includes('NotFoundError') || cameraError.includes('DevicesNotFound')
-                      ? 'No camera device was detected. Please connect a camera and try again.'
+                      ? 'No camera was detected on this device. You can upload a photo from your computer instead, or skip and continue without one.'
                       : cameraError.includes('NotReadableError') || cameraError.includes('TrackStartError')
                       ? 'Your camera is being used by another app. Close it and try again.'
                       : cameraError.includes('not supported')
                       ? 'This browser does not support camera access. Please use Chrome or Firefox.'
-                      : 'Please allow camera access in your browser settings and try again. Camera is required for walk-in check-in.'}
+                      : 'Please allow camera access in your browser settings and try again.'}
                   </p>
-                  <p style={{ color: 'rgba(255,255,255,0.25)', fontSize: '0.65rem', marginBottom: '24px', fontFamily: 'monospace', wordBreak: 'break-all' }}>{cameraError}</p>
-                  <button onClick={openCamera} className="btn-vp-primary" style={{ width: '100%', justifyContent: 'center', marginBottom: '10px' }}>Try Again</button>
-                  <button onClick={() => { setShowCamera(false); setCameraError(''); }} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'transparent', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', fontSize: '0.75rem' }}>Cancel</button>
+                  <p style={{ color: 'rgba(255,255,255,0.25)', fontSize: '0.65rem', marginBottom: '20px', fontFamily: 'monospace', wordBreak: 'break-all' }}>{cameraError}</p>
+                  {(cameraError.includes('NotFoundError') || cameraError.includes('DevicesNotFound')) ? (
+                    <>
+                      <button onClick={() => fileInputRef.current?.click()} className="btn-vp-primary" style={{ width: '100%', justifyContent: 'center', marginBottom: '10px' }}>
+                        <svg style={{ width: '14px', height: '14px', marginRight: '6px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                        Upload Photo from Device
+                      </button>
+                      <button onClick={() => { setShowCamera(false); setCameraError(''); }} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'transparent', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', fontSize: '0.75rem' }}>Continue without photo</button>
+                    </>
+                  ) : (
+                    <>
+                      <button onClick={openCamera} className="btn-vp-primary" style={{ width: '100%', justifyContent: 'center', marginBottom: '10px' }}>Try Again</button>
+                      <button onClick={() => { setShowCamera(false); setCameraError(''); }} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'transparent', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', fontSize: '0.75rem' }}>Cancel</button>
+                    </>
+                  )}
                 </div>
               ) : (
                 <>
@@ -779,7 +809,7 @@ export default function CheckInPage() {
                   <label className="vp-label">Full Name *</label>
                   <input required name="name" value={formData.name} onChange={handleChange} type="text" placeholder="John Doe"/>
                 </div>
-                <div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   <button type="button" onClick={openCamera} style={{
                     display: 'flex', alignItems: 'center', gap: '5px', marginTop: '18px',
                     padding: '8px 14px', borderRadius: '8px', border: '1.5px solid rgba(47,93,170,0.2)',
@@ -790,6 +820,14 @@ export default function CheckInPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
                     </svg>
                     {croppedPhotoUrl ? 'Retake' : 'Camera'}
+                  </button>
+                  <button type="button" onClick={() => fileInputRef.current?.click()} style={{
+                    display: 'flex', alignItems: 'center', gap: '5px',
+                    padding: '8px 14px', borderRadius: '8px', border: '1.5px solid rgba(47,93,170,0.2)',
+                    background: 'transparent', cursor: 'pointer', fontSize: '0.68rem', fontWeight: 700, color: '#6B7FA3', whiteSpace: 'nowrap',
+                  }}>
+                    <svg style={{ width: '12px', height: '12px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                    Upload
                   </button>
                 </div>
               </div>
