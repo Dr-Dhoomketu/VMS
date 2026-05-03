@@ -413,6 +413,16 @@ export default function AppointmentPage() {
                   <label className="vp-label">Purpose of Visit <span style={{ color: '#ef4444' }}>*</span></label>
                   <input required name="purpose" value={formData.purpose} onChange={handleChange} type="text" placeholder="Interview, Meeting, etc."/>
                 </div>
+
+                {/* Expected check-out time */}
+                <div>
+                  <label className="vp-label">Expected Check-out Time</label>
+                  <QuickTimePicker
+                    value={formData.duration}
+                    onChange={v => setFormData(f => ({ ...f, duration: v }))}
+                    placeholder="Departure time"
+                  />
+                </div>
                 <div>
                   <label className="vp-label">Visitor Status</label>
                   <select name="visitorStatus" value={formData.visitorStatus} onChange={handleChange}>

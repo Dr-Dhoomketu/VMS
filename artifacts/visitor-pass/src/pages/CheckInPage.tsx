@@ -482,61 +482,45 @@ export default function CheckInPage() {
 
             {error && <div style={{ padding: '14px 18px', background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '12px', color: '#dc2626', fontSize: '0.8rem', marginBottom: '20px' }}>{error}</div>}
 
-            <div className="lux-card" style={{ padding: '32px', marginBottom: '20px' }}>
-              <h3 style={{ fontSize: '0.55rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.25em', color: '#6B7FA3', marginBottom: '24px' }}>Personal Information</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '18px' }}>
+            <div className="lux-card" style={{ padding: '24px 28px', marginBottom: '16px' }}>
+              <h3 style={{ fontSize: '0.55rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.25em', color: '#6B7FA3', marginBottom: '18px' }}>Personal Information</h3>
 
-                {/* Photo capture — camera only for walk-in */}
-                <div style={{ gridColumn: '1/-1', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
-                  <div style={{
-                    width: '90px', height: '90px', borderRadius: '50%', overflow: 'hidden',
-                    border: '2px dashed rgba(47,93,170,0.25)', background: 'rgba(47,93,170,0.04)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  }}>
-                    {croppedPhotoUrl ? (
-                      <img src={croppedPhotoUrl} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }}/>
-                    ) : (
-                      <svg style={{ width: '28px', height: '28px', color: '#A0AEC0' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                      </svg>
-                    )}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => { setCameraError(''); setShowCamera(true); }}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: '6px',
-                      padding: '9px 20px', borderRadius: '8px', border: '1.5px solid rgba(47,93,170,0.2)',
-                      background: 'rgba(47,93,170,0.05)', cursor: 'pointer', fontSize: '0.72rem', fontWeight: 700, color: '#2F5DAA',
-                    }}
-                  >
-                    <svg style={{ width: '13px', height: '13px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
-                    </svg>
-                    {croppedPhotoUrl ? 'Retake Photo' : 'Take Photo'}
-                  </button>
-                  {croppedPhotoUrl && (
-                    <button type="button" onClick={() => { setCroppedPhoto(null); setCroppedPhotoUrl(null); }} style={{ fontSize: '0.62rem', color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>
-                      Remove photo
-                    </button>
-                  )}
+              {/* Photo + Name row */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '16px' }}>
+                <div style={{
+                  width: '72px', height: '72px', borderRadius: '50%', overflow: 'hidden', flexShrink: 0,
+                  border: croppedPhotoUrl ? '2px solid #2F5DAA' : '2px dashed rgba(47,93,170,0.25)',
+                  background: 'rgba(47,93,170,0.04)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+                }} onClick={() => { setCameraError(''); setShowCamera(true); }}>
+                  {croppedPhotoUrl
+                    ? <img src={croppedPhotoUrl} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }}/>
+                    : <svg style={{ width: '24px', height: '24px', color: '#A0AEC0' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                  }
                 </div>
-
-                <div>
+                <div style={{ flex: 1 }}>
                   <label className="vp-label">Full Name *</label>
                   <input required name="name" value={formData.name} onChange={handleChange} type="text" placeholder="John Doe"/>
                 </div>
                 <div>
+                  <button type="button" onClick={() => { setCameraError(''); setShowCamera(true); }} style={{
+                    display: 'flex', alignItems: 'center', gap: '5px', marginTop: '18px',
+                    padding: '8px 14px', borderRadius: '8px', border: '1.5px solid rgba(47,93,170,0.2)',
+                    background: 'rgba(47,93,170,0.05)', cursor: 'pointer', fontSize: '0.68rem', fontWeight: 700, color: '#2F5DAA', whiteSpace: 'nowrap',
+                  }}>
+                    <svg style={{ width: '12px', height: '12px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                    {croppedPhotoUrl ? 'Retake' : 'Camera'}
+                  </button>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                <div>
                   <label className="vp-label">Email</label>
                   <input name="email" value={formData.email} onChange={handleChange} type="email" placeholder="you@example.com"/>
-                </div>
-                <div>
-                  <label className="vp-label">Mobile Number *</label>
-                  <div style={{ display: 'flex' }}>
-                    <CountryCodePicker value={countryCode} onChange={setCountryCode}/>
-                    <input required name="phone" value={formData.phone} onChange={handleChange} type="tel" placeholder="9876543210" style={{ borderRadius: '0 10px 10px 0', borderLeft: 'none' }}/>
-                  </div>
                 </div>
                 <div>
                   <label className="vp-label">Gender</label>
@@ -546,8 +530,11 @@ export default function CheckInPage() {
                   </select>
                 </div>
                 <div style={{ gridColumn: '1/-1' }}>
-                  <label className="vp-label">Address</label>
-                  <input name="address" value={formData.address} onChange={handleChange} type="text" placeholder="Street, City"/>
+                  <label className="vp-label">Mobile Number *</label>
+                  <div style={{ display: 'flex' }}>
+                    <CountryCodePicker value={countryCode} onChange={setCountryCode}/>
+                    <input required name="phone" value={formData.phone} onChange={handleChange} type="tel" placeholder="9876543210" style={{ borderRadius: '0 10px 10px 0', borderLeft: 'none' }}/>
+                  </div>
                 </div>
                 <div>
                   <label className="vp-label">Nationality</label>
@@ -558,22 +545,13 @@ export default function CheckInPage() {
                   <input name="aadhar" value={formData.aadhar} onChange={handleChange} type="text" placeholder="XXXX-XXXX-XXXX"/>
                 </div>
                 <div style={{ gridColumn: '1/-1' }}>
-                  <label className="vp-label">Badge Color</label>
-                  <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginTop: '6px' }}>
-                    {['#2F5DAA','#0A1F44','#1e7e34','#c0392b','#7d3c98','#b7950b','#1a5276','#117a65'].map(c => (
-                      <button key={c} type="button" onClick={() => setBadgeColor(c)} style={{
-                        width: '28px', height: '28px', borderRadius: '50%', background: c,
-                        border: badgeColor === c ? `3px solid ${isLight(c) ? '#333' : '#fff'}` : '2px solid transparent',
-                        cursor: 'pointer', outline: badgeColor === c ? `2px solid ${c}` : 'none', outlineOffset: '2px',
-                      }}/>
-                    ))}
-                    <input type="color" value={badgeColor} onChange={e => setBadgeColor(e.target.value)} style={{ width: '28px', height: '28px', padding: 0, border: '1px solid #E2E8F0', borderRadius: '50%', cursor: 'pointer', overflow: 'hidden' }}/>
-                  </div>
+                  <label className="vp-label">Address</label>
+                  <input name="address" value={formData.address} onChange={handleChange} type="text" placeholder="Street, City"/>
                 </div>
               </div>
             </div>
 
-            <button type="button" onClick={() => setStep(2)} className="btn-vp-primary" style={{ width: '100%', padding: '15px', justifyContent: 'center', fontSize: '0.7rem' }}>
+            <button type="button" onClick={() => setStep(2)} className="btn-vp-primary" style={{ width: '100%', padding: '14px', justifyContent: 'center', fontSize: '0.7rem' }}>
               Continue to Visit Details →
             </button>
           </div>

@@ -94,7 +94,7 @@ export default function DashboardEmployee() {
                 <tr key={emp._id} className="group hover:bg-[#F8FAFC] transition-colors">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-[#EEF3FB] flex items-center justify-center text-[#2F5DAA] font-bold text-xs">{emp.name?.charAt(0)}</div>
+                      <div className="w-12 h-12 rounded-full bg-[#EEF3FB] flex items-center justify-center text-[#2F5DAA] font-bold text-base flex-shrink-0">{emp.name?.charAt(0)}</div>
                       <span className="text-[#0A1F44] font-bold uppercase tracking-wide">{emp.name}</span>
                     </div>
                   </td>

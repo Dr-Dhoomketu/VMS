@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { API_URL } from '@/lib/api';
 
+
 interface Visit {
   _id: string; purpose: string; createdAt: string; status: string;
-  visitor?: { name: string; aadhar?: string; };
+  visitor?: { name: string; aadhar?: string; imageUrl?: string; };
   meetWith?: { name: string; };
 }
 
@@ -69,7 +70,17 @@ export default function DashboardVisitor() {
             : visitors.length === 0 ? <tr><td colSpan={7} className="py-12 text-center text-gray-500 italic">No visitor records found.</td></tr>
             : visitors.map(v => (
               <tr key={v._id} className="group hover:bg-[#F8FAFC] transition-colors">
-                <td className="px-6 py-4"><span className="text-[#0A1F44] font-bold uppercase tracking-wide">{v.visitor?.name}</span></td>
+                <td className="px-6 py-4">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{ width: '38px', height: '38px', borderRadius: '50%', overflow: 'hidden', background: 'rgba(47,93,170,0.08)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {v.visitor?.imageUrl
+                        ? <img src={`${API_URL}${v.visitor.imageUrl}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt=""/>
+                        : <span style={{ color: '#2F5DAA', fontSize: '0.8rem', fontWeight: 800 }}>{v.visitor?.name?.charAt(0)}</span>
+                      }
+                    </div>
+                    <span className="text-[#0A1F44] font-bold uppercase tracking-wide">{v.visitor?.name}</span>
+                  </div>
+                </td>
                 <td className="px-6 py-4 text-[#6B7FA3] text-[10px] font-mono">{v.visitor?.aadhar || '—'}</td>
                 <td className="px-6 py-4 text-[#6B7FA3] text-sm">{v.meetWith?.name}</td>
                 <td className="px-6 py-4 text-[#6B7FA3] text-xs uppercase tracking-widest">{v.purpose}</td>

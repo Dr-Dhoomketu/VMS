@@ -5,7 +5,7 @@ import GeoBackground from '@/components/GeoBackground';
 
 function QRMiniSVG() {
   return (
-    <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: 120, height: 120, opacity: 0.25 }}>
+    <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: 200, height: 200, opacity: 0.75 }}>
       <path d="M 10 30 L 10 10 L 30 10" stroke="white" strokeWidth="3" strokeLinecap="round"/>
       <path d="M 90 10 L 110 10 L 110 30" stroke="white" strokeWidth="3" strokeLinecap="round"/>
       <path d="M 10 90 L 10 110 L 30 110" stroke="white" strokeWidth="3" strokeLinecap="round"/>
@@ -100,7 +100,7 @@ export default function LoginPage() {
             <QRMiniSVG />
           </div>
 
-          <h2 style={{ fontSize: '3.5rem', fontWeight: 900, color: '#ffffff', lineHeight: 1, letterSpacing: '-0.03em', textTransform: 'uppercase', marginBottom: '16px' }}>
+          <h2 style={{ fontSize: '4.5rem', fontWeight: 900, color: '#ffffff', lineHeight: 1, letterSpacing: '-0.03em', textTransform: 'uppercase', marginBottom: '16px' }}>
             VISITOR<br/>PASS
           </h2>
 
