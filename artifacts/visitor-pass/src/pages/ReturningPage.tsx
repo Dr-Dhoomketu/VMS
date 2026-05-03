@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'wouter';
 import { API_URL } from '@/lib/api';
+import GeoBackground from '@/components/GeoBackground';
 
 interface Employee { _id: string; name: string; }
 interface Visitor { name: string; phone: string; email?: string; aadhar?: string; imageUrl?: string; }
@@ -46,34 +47,50 @@ export default function ReturningPage() {
   };
 
   return (
-    <main className="min-h-screen flex flex-col bg-white text-[#0A1F44] relative dot-bg">
-      <nav className="relative z-50 flex justify-between items-center px-10 py-6 border-b border-[#E2E8F0] bg-white">
-        <img src="/vts-logo.png" alt="VISITORPASS" className="h-9 w-auto object-contain" style={{ width: 'auto' }}/>
+    <main style={{ minHeight: '100vh', background: '#ffffff', color: '#0A1F44', position: 'relative' }}>
+      <GeoBackground />
+
+      <nav style={{
+        position: 'sticky', top: 0, zIndex: 50,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '0 40px', height: '64px',
+        background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(10,31,68,0.06)',
+      }}>
+        <img src="/vts-logo.png" alt="VISITORPASS" style={{ height: '32px', width: 'auto', objectFit: 'contain' }}/>
+        <Link href="/" style={{
+          display: 'inline-flex', alignItems: 'center', gap: '8px',
+          fontSize: '0.65rem', fontWeight: 700, color: '#6B7FA3', textDecoration: 'none',
+          letterSpacing: '0.1em', textTransform: 'uppercase',
+        }}>
+          <span style={{ width: '28px', height: '28px', borderRadius: '50%', border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <svg style={{ width: '12px', height: '12px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </span>
+          Close
+        </Link>
       </nav>
 
-      <div className="flex-1 flex items-center justify-center p-6">
-        <div className="w-full max-w-md">
-          <Link href="/" className="inline-flex items-center gap-2 mb-6 text-[#6B7FA3] hover:text-[#0A1F44] text-[10px] uppercase tracking-[0.2em] font-bold transition-colors group">
-            <span className="w-8 h-8 rounded-full border border-[#E2E8F0] flex items-center justify-center group-hover:bg-[#F8FAFC] transition-all">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/></svg>
-            </span>
-            Close
-          </Link>
+      <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 24px', minHeight: 'calc(100vh - 64px)' }}>
+        <div style={{ width: '100%', maxWidth: '460px' }}>
 
           {step === 1 && (
             <div className="fade-up">
-              <div className="vp-section-card">
-                <form onSubmit={handleSearch} className="space-y-8 py-4">
-                  <div className="text-center">
-                    <h2 className="text-4xl font-black tracking-tighter uppercase text-[#0A1F44]">Returning Visitor</h2>
-                    <p className="text-[#6B7FA3] text-[10px] uppercase tracking-[0.3em] font-bold mt-1">Please enter your registered number</p>
-                  </div>
-                  {error && <p className="text-red-500 text-[10px] uppercase font-bold text-center tracking-widest p-4 bg-red-50 border border-red-200 rounded-xl">{error}</p>}
+              <div style={{ textAlign: 'center', marginBottom: '36px' }}>
+                <p style={{ fontSize: '0.55rem', fontWeight: 800, letterSpacing: '0.35em', textTransform: 'uppercase', color: '#2F5DAA', marginBottom: '8px' }}>Welcome Back</p>
+                <h1 style={{ fontSize: '2.5rem', fontWeight: 900, letterSpacing: '-0.04em', textTransform: 'uppercase', color: '#0A1F44' }}>Returning Visitor</h1>
+              </div>
+              <div className="lux-card" style={{ padding: '36px' }}>
+                <form onSubmit={handleSearch} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  {error && <div style={{ padding: '12px 16px', background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '10px', color: '#dc2626', fontSize: '0.78rem' }}>{error}</div>}
                   <div>
-                    <label className="vp-label">Mobile Number</label>
-                    <input required type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+91 ..."/>
+                    <label className="vp-label">Registered Mobile Number</label>
+                    <input required type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+91 9876 543 210"/>
                   </div>
-                  <button type="submit" className="btn-primary w-full py-4 text-xs font-black tracking-[0.2em]">Search Records →</button>
+                  <button type="submit" className="btn-vp-primary" style={{ width: '100%', padding: '14px', justifyContent: 'center', fontSize: '0.7rem' }}>
+                    Search Records →
+                  </button>
                 </form>
               </div>
             </div>
@@ -81,60 +98,75 @@ export default function ReturningPage() {
 
           {step === 2 && (
             <div className="fade-up">
-              <div className="vp-section-card">
-                <form onSubmit={handleCheckIn} className="space-y-8 text-center py-4">
-                  <div className="text-center">
-                    <h2 className="text-4xl font-black tracking-tighter uppercase text-[#0A1F44]">Record Found</h2>
-                    <p className="text-[#6B7FA3] text-[10px] uppercase tracking-[0.3em] font-bold mt-1">Welcome back!</p>
+              <div style={{ textAlign: 'center', marginBottom: '36px' }}>
+                <p style={{ fontSize: '0.55rem', fontWeight: 800, letterSpacing: '0.35em', textTransform: 'uppercase', color: '#16a34a', marginBottom: '8px' }}>Record Found</p>
+                <h1 style={{ fontSize: '2.5rem', fontWeight: 900, letterSpacing: '-0.04em', textTransform: 'uppercase', color: '#0A1F44' }}>Welcome Back</h1>
+              </div>
+              <div className="lux-card" style={{ padding: '36px' }}>
+                <form onSubmit={handleCheckIn} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  {error && <div style={{ padding: '12px 16px', background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '10px', color: '#dc2626', fontSize: '0.78rem' }}>{error}</div>}
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: '#F4F7FC', borderRadius: '12px' }}>
+                    <div style={{ width: '56px', height: '56px', borderRadius: '50%', overflow: 'hidden', border: '2px solid rgba(47,93,170,0.15)', flexShrink: 0 }}>
+                      <img src={visitorData?.imageUrl ? `${API_URL}${visitorData.imageUrl}` : 'https://via.placeholder.com/80'} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }}/>
+                    </div>
+                    <div>
+                      <h3 style={{ fontSize: '1rem', fontWeight: 800, color: '#0A1F44', letterSpacing: '-0.01em' }}>{visitorData?.name}</h3>
+                      <p style={{ fontSize: '0.72rem', color: '#6B7FA3', fontWeight: 500 }}>{visitorData?.phone}</p>
+                    </div>
                   </div>
-                  <div className="w-24 h-24 mx-auto rounded-2xl overflow-hidden border border-[#E2E8F0] shadow-md">
-                    <img src={visitorData?.imageUrl ? `${API_URL}${visitorData.imageUrl}` : 'https://via.placeholder.com/150'} alt="avatar" className="w-full h-full object-cover"/>
+
+                  <div>
+                    <label className="vp-label">Who are you meeting?</label>
+                    <select required value={formData.meetWith} onChange={e => setFormData({ ...formData, meetWith: e.target.value })}>
+                      <option value="">Select Employee</option>
+                      {employees.map(emp => <option key={emp._id} value={emp._id}>{emp.name}</option>)}
+                    </select>
                   </div>
                   <div>
-                    <h3 className="text-2xl font-black tracking-tighter uppercase text-[#0A1F44]">Hello, {visitorData?.name}</h3>
-                    <p className="text-[#6B7FA3] text-[10px] uppercase tracking-widest font-bold">Please confirm your visit details</p>
+                    <label className="vp-label">Purpose of Visit</label>
+                    <input required type="text" value={formData.purpose} onChange={e => setFormData({ ...formData, purpose: e.target.value })} placeholder="Meeting, Interview..."/>
                   </div>
-                  <div className="text-left space-y-4">
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
                     <div>
-                      <label className="vp-label">Who are you meeting?</label>
-                      <select required value={formData.meetWith} onChange={e => setFormData({...formData, meetWith: e.target.value})}>
-                        <option value="">Select Employee</option>
-                        {employees.map(emp => <option key={emp._id} value={emp._id}>{emp.name}</option>)}
-                      </select>
+                      <label className="vp-label">Check-In Time</label>
+                      <input required type="time" value={formData.fromTime} onChange={e => setFormData({ ...formData, fromTime: e.target.value })}/>
                     </div>
                     <div>
-                      <label className="vp-label">Purpose of Visit</label>
-                      <input required type="text" value={formData.purpose} onChange={e => setFormData({...formData, purpose: e.target.value})}/>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="vp-label">Check-In Time</label>
-                        <input required type="time" value={formData.fromTime} onChange={e => setFormData({...formData, fromTime: e.target.value})}/>
-                      </div>
-                      <div>
-                        <label className="vp-label">Duration</label>
-                        <input type="text" value={formData.duration} onChange={e => setFormData({...formData, duration: e.target.value})} placeholder="e.g. 1hr"/>
-                      </div>
+                      <label className="vp-label">Duration</label>
+                      <input type="text" value={formData.duration} onChange={e => setFormData({ ...formData, duration: e.target.value })} placeholder="e.g. 1hr"/>
                     </div>
                   </div>
-                  <button type="submit" disabled={isSubmitting} className="btn-primary w-full py-4 text-xs font-black tracking-[0.2em]">
+                  <button type="submit" disabled={isSubmitting} className="btn-vp-primary" style={{ width: '100%', padding: '14px', justifyContent: 'center', fontSize: '0.7rem' }}>
                     {isSubmitting ? 'Submitting...' : 'Submit Request →'}
                   </button>
-                  <button type="button" onClick={() => setStep(1)} className="text-[10px] uppercase tracking-widest text-[#6B7FA3] hover:text-[#0A1F44] font-bold transition-colors">Not you? Search again</button>
+                  <button type="button" onClick={() => setStep(1)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6B7FA3', fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', padding: '4px' }}>
+                    Not you? Search again
+                  </button>
                 </form>
               </div>
             </div>
           )}
 
           {step === 3 && (
-            <div className="text-center py-16 fade-up">
-              <div className="w-24 h-24 rounded-full bg-green-50 border border-green-200 flex items-center justify-center mx-auto mb-8">
-                <svg className="w-12 h-12 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/></svg>
+            <div style={{ textAlign: 'center' }} className="fade-up">
+              <div style={{
+                width: '80px', height: '80px', borderRadius: '50%',
+                background: 'rgba(22,163,74,0.08)', border: '2px solid rgba(22,163,74,0.25)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 28px',
+              }}>
+                <svg style={{ width: '36px', height: '36px', color: '#16a34a' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/>
+                </svg>
               </div>
-              <p className="vp-caption mb-4">Request dispatched</p>
-              <h3 className="text-3xl font-black tracking-tighter uppercase mb-4 text-[#0A1F44]">Request Sent</h3>
-              <p className="text-[#6B7FA3] font-bold text-[10px] uppercase tracking-widest leading-relaxed">Host notified. Please wait for approval.</p>
-              <Link href="/" className="inline-block mt-12 btn-primary py-4 px-12 rounded-2xl text-[10px] font-black uppercase tracking-[0.4em]">Return to Home</Link>
+              <p style={{ fontSize: '0.55rem', fontWeight: 800, letterSpacing: '0.35em', textTransform: 'uppercase', color: '#2F5DAA', marginBottom: '12px' }}>Request Dispatched</p>
+              <h2 style={{ fontSize: '2.2rem', fontWeight: 900, letterSpacing: '-0.04em', textTransform: 'uppercase', color: '#0A1F44', marginBottom: '16px' }}>Request Sent</h2>
+              <p style={{ color: '#6B7FA3', fontSize: '0.875rem', lineHeight: 1.7, maxWidth: '320px', margin: '0 auto 36px' }}>
+                Host notified. Please wait for approval before proceeding.
+              </p>
+              <Link href="/">
+                <button className="btn-vp-primary" style={{ padding: '14px 40px', fontSize: '0.7rem' }}>Return to Home</button>
+              </Link>
             </div>
           )}
         </div>

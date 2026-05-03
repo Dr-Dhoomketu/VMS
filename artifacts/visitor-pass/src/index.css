@@ -116,6 +116,123 @@ select option { background: #ffffff; color: var(--navy); }
 @keyframes eyeBlink { 0%, 88%, 100% { transform: scaleY(1); } 92% { transform: scaleY(0.05); } }
 .statue-eye { transform-origin: center; animation: eyeBlink 5s ease-in-out infinite; }
 
+/* ─── LUXURY GEOMETRIC REDESIGN ─── */
+
+@keyframes geoFloat {
+  0%, 100% { transform: rotate(45deg) translateY(0px); }
+  50%       { transform: rotate(45deg) translateY(-18px); }
+}
+@keyframes hexSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+@keyframes luxGlare {
+  0%   { left: -100%; }
+  100% { left: 200%; }
+}
+@keyframes gradientBorderPulse {
+  0%, 100% { opacity: 0.3; }
+  50%       { opacity: 0.8; }
+}
+@keyframes scanLineSweep {
+  0%   { top: 4%;  opacity: 0; }
+  5%   { opacity: 1; }
+  95%  { opacity: 1; }
+  100% { top: 94%; opacity: 0; }
+}
+@keyframes nodeGlow {
+  0%, 100% { opacity: 0.15; }
+  50%       { opacity: 0.55; }
+}
+
+/* Luxury card — white, glass-clean, diagonal glare on hover */
+.lux-card {
+  background: #ffffff;
+  border: 1px solid rgba(47, 93, 170, 0.12);
+  border-radius: 20px;
+  box-shadow: 0 2px 16px rgba(10, 31, 68, 0.05), 0 1px 4px rgba(10, 31, 68, 0.04);
+  transition: box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.35s ease;
+  position: relative;
+  overflow: hidden;
+}
+.lux-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 55%;
+  height: 100%;
+  background: linear-gradient(
+    108deg,
+    transparent 35%,
+    rgba(255, 255, 255, 0.65) 50%,
+    transparent 65%
+  );
+  transition: none;
+  pointer-events: none;
+  z-index: 10;
+}
+.lux-card:hover {
+  box-shadow: 0 18px 56px rgba(10, 31, 68, 0.11), 0 4px 18px rgba(47, 93, 170, 0.08);
+  transform: translateY(-3px);
+  border-color: rgba(47, 93, 170, 0.22);
+}
+.lux-card:hover::after {
+  left: 180%;
+  transition: left 0.55s ease;
+}
+
+/* Coloured top bar variant */
+.lux-card-accent::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #2F5DAA, #4A7FD4, #2F5DAA);
+  background-size: 200% auto;
+  animation: shimmer 3s linear infinite;
+}
+
+/* Glass nav pill / tag */
+.lux-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(47, 93, 170, 0.14);
+  border-radius: 999px;
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #2F5DAA;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 12px rgba(10, 31, 68, 0.06);
+}
+
+/* Enhanced stat card */
+.lux-stat-card {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid rgba(10, 31, 68, 0.06);
+  box-shadow: 0 2px 12px rgba(10, 31, 68, 0.04);
+  overflow: hidden;
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+.lux-stat-card:hover {
+  box-shadow: 0 8px 32px rgba(10, 31, 68, 0.1);
+  transform: translateY(-2px);
+}
+
+/* Improved input focus */
+input:focus, select:focus, textarea:focus {
+  border-color: #2F5DAA;
+  box-shadow: 0 0 0 3px rgba(47, 93, 170, 0.10), 0 2px 8px rgba(47, 93, 170, 0.06);
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {

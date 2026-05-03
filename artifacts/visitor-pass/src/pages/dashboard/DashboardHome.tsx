@@ -4,11 +4,11 @@ import socket, { connectSocket } from '@/utils/socket';
 import { API_URL } from '@/lib/api';
 
 const statCards = [
-  { key:'total',      label:'Total Visits', sub:'All Time',    color:'#2F5DAA', bg:'rgba(47,93,170,0.08)' },
-  { key:'today',      label:'Today',        sub:'Live Traffic',color:'#0A1F44', bg:'rgba(10,31,68,0.06)'  },
-  { key:'checkedIn',  label:'On Premise',   sub:'Active Now',  color:'#16a34a', bg:'rgba(22,163,74,0.08)' },
-  { key:'checkedOut', label:'Checked Out',  sub:'Cleared',     color:'#6B7FA3', bg:'rgba(107,127,163,0.08)' },
-  { key:'preVisitor', label:'Scheduled',    sub:'Pre-Booked',  color:'#7C3AED', bg:'rgba(124,58,237,0.08)' },
+  { key:'total',      label:'Total Visits',  sub:'All Time',    color:'#2F5DAA', bg:'rgba(47,93,170,0.08)',  bar:'#2F5DAA' },
+  { key:'today',      label:'Today',         sub:'Live Traffic', color:'#0A1F44', bg:'rgba(10,31,68,0.06)',   bar:'#0A1F44' },
+  { key:'checkedIn',  label:'On Premise',    sub:'Active Now',  color:'#16a34a', bg:'rgba(22,163,74,0.08)',  bar:'#16a34a' },
+  { key:'checkedOut', label:'Checked Out',   sub:'Cleared',     color:'#6B7FA3', bg:'rgba(107,127,163,0.08)',bar:'#6B7FA3' },
+  { key:'preVisitor', label:'Scheduled',     sub:'Pre-Booked',  color:'#7C3AED', bg:'rgba(124,58,237,0.08)', bar:'#7C3AED' },
 ];
 
 interface Stats { total:number; today:number; checkedIn:number; checkedOut:number; preVisitor:number; }
@@ -28,15 +28,15 @@ export default function DashboardHome() {
     setUser(u);
     fetchStats(); fetchVisitors();
     connectSocket(u);
-    socket.on('visit_updated', ()=>{ fetchStats(); fetchVisitors(); });
-    socket.on('new_visit', ()=>{ fetchStats(); fetchVisitors(); });
-    return ()=>{ socket.off('visit_updated'); socket.off('new_visit'); };
+    socket.on('visit_updated', () => { fetchStats(); fetchVisitors(); });
+    socket.on('new_visit', () => { fetchStats(); fetchVisitors(); });
+    return () => { socket.off('visit_updated'); socket.off('new_visit'); };
   }, []);
 
   const fetchStats = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/v1/visits/stats`, { headers:{ Authorization:`Bearer ${token}` } });
+      const res = await fetch(`${API_URL}/api/v1/visits/stats`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json(); if (res.ok) setStats(data);
     } catch {}
   };
@@ -44,7 +44,7 @@ export default function DashboardHome() {
   const fetchVisitors = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/v1/visits?status=Approved`, { headers:{ Authorization:`Bearer ${token}` } });
+      const res = await fetch(`${API_URL}/api/v1/visits?status=Approved`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json(); if (res.ok) setVisitors(data);
     } catch {} finally { setLoading(false); }
   };
@@ -52,49 +52,66 @@ export default function DashboardHome() {
   const handleCheckout = async (id: string) => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`${API_URL}/api/v1/visits/${id}/checkout`, { method:'POST', headers:{ Authorization:`Bearer ${token}` } });
+      const res = await fetch(`${API_URL}/api/v1/visits/${id}/checkout`, { method:'POST', headers: { Authorization: `Bearer ${token}` } });
       if (res.ok) { fetchStats(); fetchVisitors(); }
     } catch {}
   };
 
   return (
     <div className="fade-up">
-      <div className="flex justify-between items-end mb-8 pb-6 border-b border-[#E2E8F0]">
+      {/* Page header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '28px', paddingBottom: '24px', borderBottom: '1px solid #E2E8F0' }}>
         <div>
-          <p className="vp-caption mb-2">Operations Center</p>
-          <h1 className="text-3xl font-black tracking-tight text-[#0A1F44]">System Overview</h1>
-          <p className="text-sm text-[#6B7FA3] mt-1">Real-time monitoring of facility access and visitor flow.</p>
+          <p style={{ fontSize: '0.55rem', fontWeight: 800, letterSpacing: '0.35em', textTransform: 'uppercase', color: '#2F5DAA', marginBottom: '6px' }}>Operations Center</p>
+          <h1 style={{ fontSize: '1.8rem', fontWeight: 900, letterSpacing: '-0.03em', color: '#0A1F44' }}>System Overview</h1>
+          <p style={{ fontSize: '0.82rem', color: '#6B7FA3', marginTop: '4px' }}>Real-time monitoring of facility access and visitor flow.</p>
         </div>
         {user && (
-          <div className="text-right">
-            <p className="text-[9px] uppercase tracking-[0.3em] font-bold text-[#6B7FA3] mb-1">Signed in as</p>
-            <p className="text-sm font-bold text-[#0A1F44]">{user.name}</p>
-            <p className="text-[10px] text-[#2F5DAA] font-semibold uppercase tracking-widest">{user.role}</p>
+          <div style={{ textAlign: 'right' }}>
+            <p style={{ fontSize: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.3em', fontWeight: 800, color: '#6B7FA3', marginBottom: '4px' }}>Signed in as</p>
+            <p style={{ fontSize: '0.875rem', fontWeight: 700, color: '#0A1F44' }}>{user.name}</p>
+            <p style={{ fontSize: '0.6rem', color: '#2F5DAA', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em' }}>{user.role}</p>
           </div>
         )}
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-        {statCards.map(({ key, label, sub, color, bg }) => (
-          <div key={key} className="vp-stat-card">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center mb-3" style={{ background:bg }}>
-              <div className="w-3 h-3 rounded-full" style={{ background:color }}/>
+      {/* Stat cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '14px', marginBottom: '28px' }}>
+        {statCards.map(({ key, label, sub, color, bg, bar }) => (
+          <div key={key} style={{
+            background: '#ffffff', borderRadius: '16px',
+            border: '1px solid rgba(10,31,68,0.06)',
+            boxShadow: '0 2px 12px rgba(10,31,68,0.04)',
+            overflow: 'hidden', position: 'relative',
+          }}>
+            <div style={{ height: '3px', background: `linear-gradient(90deg, ${bar}, transparent)` }}/>
+            <div style={{ padding: '20px' }}>
+              <div style={{
+                width: '34px', height: '34px', borderRadius: '10px',
+                background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                marginBottom: '12px',
+              }}>
+                <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: color }}/>
+              </div>
+              <div style={{ fontSize: '1.8rem', fontWeight: 900, color: '#0A1F44', letterSpacing: '-0.03em', lineHeight: 1 }}>
+                {(stats as Record<string,number>)[key] ?? 0}
+              </div>
+              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#0A1F44', marginTop: '6px' }}>{label}</div>
+              <div style={{ fontSize: '0.55rem', fontWeight: 700, color: '#6B7FA3', textTransform: 'uppercase', letterSpacing: '0.15em', marginTop: '3px' }}>{sub}</div>
             </div>
-            <div className="text-2xl font-black text-[#0A1F44] mb-1">{(stats as Record<string,number>)[key] ?? 0}</div>
-            <div className="text-xs font-semibold text-[#0A1F44]">{label}</div>
-            <div className="text-[10px] text-[#6B7FA3] uppercase tracking-widest mt-0.5">{sub}</div>
           </div>
         ))}
       </div>
 
-      <div className="mb-4 flex items-center justify-between">
+      {/* Active visitors table */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
         <div>
-          <h2 className="text-lg font-black text-[#0A1F44]">Active Visitors</h2>
-          <p className="text-xs text-[#6B7FA3] mt-0.5">Currently on premises</p>
+          <h2 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0A1F44', letterSpacing: '-0.02em' }}>Active Visitors</h2>
+          <p style={{ fontSize: '0.72rem', color: '#6B7FA3', marginTop: '3px' }}>Currently on premises</p>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"/>
-          <span className="text-[10px] font-bold text-[#6B7FA3] uppercase tracking-widest">Live</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#22c55e', animation: 'pulse 2s ease-in-out infinite' }}/>
+          <span style={{ fontSize: '0.55rem', fontWeight: 800, color: '#6B7FA3', textTransform: 'uppercase', letterSpacing: '0.2em' }}>Live</span>
         </div>
       </div>
 
@@ -102,41 +119,52 @@ export default function DashboardHome() {
         <table className="dark-table w-full">
           <thead>
             <tr>
-              <th className="px-5 py-4 text-left">Visitor</th>
-              <th className="px-5 py-4 text-left">Meeting With</th>
-              <th className="px-5 py-4 text-left">Purpose</th>
-              <th className="px-5 py-4 text-left">Check-In</th>
-              <th className="px-5 py-4 text-left">Status</th>
-              <th className="px-5 py-4 text-center">Action</th>
+              <th>Visitor</th>
+              <th>Meeting With</th>
+              <th>Purpose</th>
+              <th>Check-In</th>
+              <th>Status</th>
+              <th style={{ textAlign: 'center' }}>Action</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={6} className="py-12 text-center text-[#6B7FA3] text-sm">Loading...</td></tr>
-            ) : visitors.length===0 ? (
-              <tr><td colSpan={6} className="py-12 text-center text-[#6B7FA3] text-sm">No active visitors on premises.</td></tr>
+              <tr><td colSpan={6} style={{ textAlign: 'center', padding: '48px', color: '#6B7FA3', fontSize: '0.875rem' }}>Loading...</td></tr>
+            ) : visitors.length === 0 ? (
+              <tr><td colSpan={6} style={{ textAlign: 'center', padding: '48px', color: '#6B7FA3', fontSize: '0.875rem' }}>No active visitors on premises.</td></tr>
             ) : visitors.map(v => (
               <tr key={v._id}>
-                <td className="px-5 py-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full overflow-hidden bg-[#EEF3FB] shrink-0">
+                <td>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{ width: '34px', height: '34px', borderRadius: '50%', overflow: 'hidden', background: 'rgba(47,93,170,0.08)', flexShrink: 0 }}>
                       {v.visitor?.imageUrl
-                        ? <img src={`${API_URL}${v.visitor.imageUrl}`} className="w-full h-full object-cover" alt=""/>
-                        : <div className="w-full h-full flex items-center justify-center text-[#2F5DAA] text-xs font-bold">{v.visitor?.name?.charAt(0)}</div>
+                        ? <img src={`${API_URL}${v.visitor.imageUrl}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt=""/>
+                        : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#2F5DAA', fontSize: '0.75rem', fontWeight: 800 }}>{v.visitor?.name?.charAt(0)}</div>
                       }
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-[#0A1F44]">{v.visitor?.name}</p>
-                      <p className="text-[10px] text-[#6B7FA3]">{v.visitor?.email}</p>
+                      <p style={{ fontSize: '0.875rem', fontWeight: 600, color: '#0A1F44' }}>{v.visitor?.name}</p>
+                      <p style={{ fontSize: '0.7rem', color: '#6B7FA3' }}>{v.visitor?.email}</p>
                     </div>
                   </div>
                 </td>
-                <td className="px-5 py-4 text-sm text-[#0A1F44]">{v.meetWith?.name||'—'}</td>
-                <td className="px-5 py-4 text-sm text-[#6B7FA3]">{v.purpose}</td>
-                <td className="px-5 py-4 text-xs text-[#6B7FA3]">{new Date(v.createdAt).toLocaleTimeString()}</td>
-                <td className="px-5 py-4"><span className="badge badge-approved">Active</span></td>
-                <td className="px-5 py-4 text-center">
-                  <button onClick={()=>handleCheckout(v._id)} className="text-xs font-semibold text-red-500 hover:text-red-700 transition-colors px-3 py-1.5 rounded-lg hover:bg-red-50">Check Out</button>
+                <td style={{ fontSize: '0.875rem', color: '#0A1F44', fontWeight: 500 }}>{v.meetWith?.name || '—'}</td>
+                <td style={{ fontSize: '0.875rem', color: '#6B7FA3' }}>{v.purpose}</td>
+                <td style={{ fontSize: '0.78rem', color: '#6B7FA3' }}>{new Date(v.createdAt).toLocaleTimeString()}</td>
+                <td><span className="badge badge-approved">Active</span></td>
+                <td style={{ textAlign: 'center' }}>
+                  <button onClick={() => handleCheckout(v._id)}
+                    style={{
+                      fontSize: '0.72rem', fontWeight: 700, color: '#dc2626',
+                      background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.15)',
+                      borderRadius: '8px', padding: '6px 14px', cursor: 'pointer',
+                      transition: 'all 0.2s',
+                    }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(239,68,68,0.12)'; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(239,68,68,0.06)'; }}
+                  >
+                    Check Out
+                  </button>
                 </td>
               </tr>
             ))}

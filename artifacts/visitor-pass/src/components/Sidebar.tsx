@@ -31,49 +31,104 @@ export default function Sidebar() {
   const filteredLinks = navLinks.filter(link => !user || link.roles.includes(user.role));
 
   return (
-    <aside className="w-[240px] bg-[#0A1F44] min-h-screen flex flex-col shrink-0 z-[60]">
-      <div className="px-6 py-7 border-b border-white/10">
-        <img src="/vts-logo.png" alt="VISITORPASS" className="h-8 w-auto object-contain brightness-0 invert" style={{ width: 'auto' }} />
-        <p className="text-[9px] font-bold tracking-[0.25em] uppercase text-white/30 mt-2">Management Portal</p>
+    <aside style={{
+      width: '248px',
+      background: 'linear-gradient(180deg, #0A1F44 0%, #0d2552 100%)',
+      minHeight: '100vh',
+      display: 'flex',
+      flexDirection: 'column',
+      flexShrink: 0,
+      zIndex: 60,
+      position: 'relative',
+      overflow: 'hidden',
+    }}>
+      <div style={{
+        position: 'absolute', inset: 0, pointerEvents: 'none',
+        backgroundImage: 'radial-gradient(circle, rgba(47,93,170,0.06) 1px, transparent 1px)',
+        backgroundSize: '24px 24px',
+      }}/>
+      <div style={{
+        position: 'absolute', top: '-60px', right: '-60px',
+        width: '180px', height: '180px',
+        background: 'radial-gradient(circle, rgba(47,93,170,0.15) 0%, transparent 70%)',
+        borderRadius: '50%', pointerEvents: 'none',
+      }}/>
+
+      <div style={{ padding: '24px', borderBottom: '1px solid rgba(255,255,255,0.07)', position: 'relative', zIndex: 1 }}>
+        <img src="/vts-logo.png" alt="VISITORPASS" style={{ height: '32px', width: 'auto', objectFit: 'contain', filter: 'brightness(0) invert(1)' }}/>
+        <p style={{ fontSize: '0.5rem', fontWeight: 800, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', marginTop: '8px' }}>Management Portal</p>
       </div>
 
-      <nav className="flex-1 py-6 px-4 flex flex-col gap-1 overflow-y-auto">
-        <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-white/25 px-3 mb-3">Navigation</p>
+      <nav style={{ flex: 1, padding: '16px 12px', display: 'flex', flexDirection: 'column', gap: '2px', overflowY: 'auto', position: 'relative', zIndex: 1 }}>
+        <p style={{ fontSize: '0.45rem', fontWeight: 800, letterSpacing: '0.35em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.2)', padding: '0 12px', marginBottom: '8px', marginTop: '4px' }}>Navigation</p>
         {filteredLinks.map((link) => {
           const isActive = location === link.path;
           return (
             <Link key={link.name} href={link.path}
-              className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 relative group ${
-                isActive ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white/80 hover:bg-white/5'
-              }`}>
-              {isActive && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-white rounded-r-full"/>}
-              <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              style={{
+                display: 'flex', alignItems: 'center', gap: '10px',
+                padding: '10px 12px', borderRadius: '10px',
+                transition: 'all 0.2s ease', position: 'relative',
+                textDecoration: 'none',
+                background: isActive ? 'rgba(47,93,170,0.25)' : 'transparent',
+                color: isActive ? '#ffffff' : 'rgba(255,255,255,0.45)',
+                border: isActive ? '1px solid rgba(47,93,170,0.4)' : '1px solid transparent',
+              }}
+              onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.8)'; }}
+              onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.45)'; }}
+            >
+              {isActive && (
+                <div style={{
+                  position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)',
+                  width: '3px', height: '18px',
+                  background: 'linear-gradient(180deg, #4A7FD4, #2F5DAA)',
+                  borderRadius: '0 2px 2px 0',
+                }}/>
+              )}
+              <svg style={{ width: '15px', height: '15px', flexShrink: 0 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d={link.icon}/>
               </svg>
-              <span className="text-xs font-semibold">{link.name}</span>
+              <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>{link.name}</span>
             </Link>
           );
         })}
       </nav>
 
-      <div className="px-4 py-5 border-t border-white/10">
+      <div style={{ padding: '12px', borderTop: '1px solid rgba(255,255,255,0.07)', position: 'relative', zIndex: 1 }}>
         {user && (
-          <div className="flex items-center gap-3 px-3 mb-4">
-            <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white text-xs font-bold shrink-0">
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: '10px',
+            padding: '10px 12px', marginBottom: '4px',
+            background: 'rgba(255,255,255,0.04)', borderRadius: '10px',
+          }}>
+            <div style={{
+              width: '32px', height: '32px', borderRadius: '50%',
+              background: 'linear-gradient(135deg, #2F5DAA, #4A7FD4)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: '#ffffff', fontSize: '0.75rem', fontWeight: 800, flexShrink: 0,
+            }}>
               {user.name?.charAt(0)?.toUpperCase()}
             </div>
-            <div className="min-w-0">
-              <p className="text-xs font-semibold text-white truncate">{user.name}</p>
-              <p className="text-[9px] text-white/40 uppercase tracking-widest">{user.role}</p>
+            <div style={{ minWidth: 0 }}>
+              <p style={{ fontSize: '0.75rem', fontWeight: 700, color: '#ffffff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.name}</p>
+              <p style={{ fontSize: '0.5rem', color: '#4A7FD4', textTransform: 'uppercase', letterSpacing: '0.2em', fontWeight: 700 }}>{user.role}</p>
             </div>
           </div>
         )}
         <button onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-white/40 hover:text-white/80 hover:bg-white/5 transition-all">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          style={{
+            width: '100%', display: 'flex', alignItems: 'center', gap: '10px',
+            padding: '10px 12px', borderRadius: '10px',
+            color: 'rgba(255,255,255,0.4)', background: 'transparent',
+            border: 'none', cursor: 'pointer', transition: 'all 0.2s',
+          }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.8)'; (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.05)'; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.4)'; (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+        >
+          <svg style={{ width: '15px', height: '15px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
           </svg>
-          <span className="text-xs font-semibold">Sign Out</span>
+          <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>Sign Out</span>
         </button>
       </div>
     </aside>

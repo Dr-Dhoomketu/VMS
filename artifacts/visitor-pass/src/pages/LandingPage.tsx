@@ -1,611 +1,376 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect } from 'react';
 import { Link } from 'wouter';
 import gsap from 'gsap';
-import { useGSAP } from '@gsap/react';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import GeoBackground from '@/components/GeoBackground';
 
-if (typeof window !== 'undefined') {
-  gsap.registerPlugin(ScrollTrigger);
-}
+gsap.registerPlugin(ScrollTrigger);
 
-function GreekSkyline() {
+function QRScannerSVG() {
   return (
-    <svg viewBox="0 0 1440 320" fill="none" xmlns="http://www.w3.org/2000/svg"
-      className="w-full h-auto" preserveAspectRatio="xMidYMax meet">
-      <line x1="0" y1="300" x2="1440" y2="300" stroke="#2F5DAA" strokeWidth="2"/>
-      <line x1="0" y1="308" x2="1440" y2="308" stroke="#2F5DAA" strokeWidth="0.5" opacity="0.4"/>
-
-      <rect x="560" y="120" width="320" height="180" stroke="#2F5DAA" strokeWidth="1.2" fill="none"/>
-      <rect x="540" y="110" width="360" height="14" stroke="#2F5DAA" strokeWidth="1.2" fill="none"/>
-      <rect x="520" y="100" width="400" height="12" stroke="#2F5DAA" strokeWidth="1.2" fill="none"/>
-      <polyline points="520,100 720,50 920,100" stroke="#2F5DAA" strokeWidth="1.5" fill="none"/>
-      {[580,620,660,700,740,780,820,860].map((x,i) => (
-        <g key={i}>
-          <rect x={x} y="124" width="14" height="172" stroke="#2F5DAA" strokeWidth="1" fill="none"/>
-          <ellipse cx={x+7} cy="124" rx="8" ry="3" stroke="#2F5DAA" strokeWidth="0.8" fill="none"/>
-          <ellipse cx={x+7} cy="296" rx="8" ry="3" stroke="#2F5DAA" strokeWidth="0.8" fill="none"/>
-        </g>
-      ))}
-
-      <rect x="200" y="170" width="200" height="130" stroke="#2F5DAA" strokeWidth="1" fill="none"/>
-      <rect x="185" y="162" width="230" height="10" stroke="#2F5DAA" strokeWidth="1" fill="none"/>
-      <polyline points="185,162 300,120 415,162" stroke="#2F5DAA" strokeWidth="1.2" fill="none"/>
-      {[215,245,275,305,335,365].map((x,i) => (
-        <rect key={i} x={x} y="172" width="10" height="126" stroke="#2F5DAA" strokeWidth="0.8" fill="none"/>
-      ))}
-
-      <rect x="1040" y="160" width="220" height="140" stroke="#2F5DAA" strokeWidth="1" fill="none"/>
-      <rect x="1025" y="152" width="250" height="10" stroke="#2F5DAA" strokeWidth="1" fill="none"/>
-      <polyline points="1025,152 1150,108 1275,152" stroke="#2F5DAA" strokeWidth="1.2" fill="none"/>
-      {[1055,1085,1115,1145,1175,1205,1235].map((x,i) => (
-        <rect key={i} x={x} y="162" width="10" height="136" stroke="#2F5DAA" strokeWidth="0.8" fill="none"/>
-      ))}
-
-      <rect x="60" y="210" width="100" height="90" stroke="#2F5DAA" strokeWidth="0.8" fill="none"/>
-      <rect x="50" y="204" width="120" height="8" stroke="#2F5DAA" strokeWidth="0.8" fill="none"/>
-      <polyline points="50,204 110,175 170,204" stroke="#2F5DAA" strokeWidth="1" fill="none"/>
-      {[72,96,120,144].map((x,i) => (
-        <rect key={i} x={x} y="212" width="8" height="86" stroke="#2F5DAA" strokeWidth="0.7" fill="none"/>
-      ))}
-
-      <rect x="1280" y="200" width="120" height="100" stroke="#2F5DAA" strokeWidth="0.8" fill="none"/>
-      <rect x="1268" y="193" width="144" height="9" stroke="#2F5DAA" strokeWidth="0.8" fill="none"/>
-      <polyline points="1268,193 1340,162 1412,193" stroke="#2F5DAA" strokeWidth="1" fill="none"/>
-      {[1292,1318,1344,1370].map((x,i) => (
-        <rect key={i} x={x} y="202" width="8" height="96" stroke="#2F5DAA" strokeWidth="0.7" fill="none"/>
-      ))}
-
-      {[[100,30],[300,20],[500,40],[900,25],[1100,35],[1350,20],[1420,45]].map(([x,y],i) => (
-        <circle key={i} cx={x} cy={y} r="2" fill="#2F5DAA" opacity="0.5"/>
-      ))}
-
-      <g opacity="0.15" transform="scale(1,-1) translate(0,-620)">
-        <rect x="560" y="120" width="320" height="180" stroke="#2F5DAA" strokeWidth="1" fill="none"/>
-        <polyline points="520,100 720,50 920,100" stroke="#2F5DAA" strokeWidth="1" fill="none"/>
-        {[580,620,660,700,740,780,820,860].map((x,i) => (
-          <rect key={i} x={x} y="124" width="14" height="172" stroke="#2F5DAA" strokeWidth="0.8" fill="none"/>
-        ))}
-      </g>
-    </svg>
-  );
-}
-
-function SecurityCharacter({ mousePos }: { mousePos: { x: number; y: number } }) {
-  const [pupil, setPupil] = useState({ x: 0, y: 0 });
-  const targetRef = useRef({ x: 0, y: 0 });
-  const rafRef = useRef<number>(0);
-
-  useEffect(() => {
-    const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
-    const tick = () => {
-      setPupil(prev => {
-        const nx = lerp(prev.x, targetRef.current.x, 0.08);
-        const ny = lerp(prev.y, targetRef.current.y, 0.08);
-        if (Math.abs(nx - prev.x) < 0.001 && Math.abs(ny - prev.y) < 0.001) return prev;
-        return { x: nx, y: ny };
-      });
-      rafRef.current = requestAnimationFrame(tick);
-    };
-    rafRef.current = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(rafRef.current);
-  }, []);
-
-  useEffect(() => {
-    if (!mousePos) return;
-    targetRef.current = { x: (mousePos.x - 0.5) * 16, y: (mousePos.y - 0.5) * 10 };
-  }, [mousePos]);
-
-  const clampedPupil = (baseX: number, baseY: number, r = 5) => {
-    const mag = Math.sqrt(pupil.x ** 2 + pupil.y ** 2);
-    const scale = mag > r ? r / mag : 1;
-    return { cx: baseX + pupil.x * scale, cy: baseY + pupil.y * scale };
-  };
-
-  return (
-    <svg viewBox="0 0 400 500" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full opacity-80 mix-blend-multiply">
+    <svg viewBox="0 0 520 500" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%', maxWidth: '480px' }}>
       <defs>
-        <clipPath id="robotEyeL">
-          <path d="M130 220 C150 205, 180 215, 185 225 C170 235, 145 235, 130 220 Z"/>
-        </clipPath>
-        <clipPath id="robotEyeR">
-          <path d="M270 220 C250 205, 220 215, 215 225 C230 235, 255 235, 270 220 Z"/>
-        </clipPath>
-        <filter id="glow">
-          <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
-          <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        <radialGradient id="qrGlow" cx="50%" cy="46%" r="48%">
+          <stop offset="0%" stopColor="#2F5DAA" stopOpacity="0.12"/>
+          <stop offset="100%" stopColor="#2F5DAA" stopOpacity="0"/>
+        </radialGradient>
+        <linearGradient id="scanGrad" x1="0" x2="1" y1="0" y2="0">
+          <stop offset="0%" stopColor="#2F5DAA" stopOpacity="0"/>
+          <stop offset="25%" stopColor="#2F5DAA" stopOpacity="0.7"/>
+          <stop offset="50%" stopColor="#4A7FD4" stopOpacity="1"/>
+          <stop offset="75%" stopColor="#2F5DAA" stopOpacity="0.7"/>
+          <stop offset="100%" stopColor="#2F5DAA" stopOpacity="0"/>
+        </linearGradient>
+        <filter id="scanGlowF" x="-20%" y="-300%" width="140%" height="700%">
+          <feGaussianBlur stdDeviation="3" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
         </filter>
       </defs>
-      <g stroke="#2F5DAA" strokeWidth="0.5" opacity="0.9">
-        <polyline points="200,450 140,410 100,320 80,240 100,140 140,80 200,50 260,80 300,140 320,240 300,320 260,410 200,450"/>
-        <polyline points="140,80 200,100 260,80"/>
-        <polyline points="100,140 140,150 200,140 260,150 300,140"/>
-        <line x1="200" y1="50" x2="200" y2="100"/>
-        <line x1="140" y1="80" x2="140" y2="150"/>
-        <line x1="260" y1="80" x2="260" y2="150"/>
-        <line x1="200" y1="100" x2="140" y2="150"/>
-        <line x1="200" y1="100" x2="260" y2="150"/>
-        <line x1="200" y1="100" x2="200" y2="140"/>
-        <line x1="100" y1="140" x2="140" y2="80"/>
-        <line x1="300" y1="140" x2="260" y2="80"/>
-        <polyline points="80,240 120,240 130,220 185,225 200,200 215,225 270,220 280,240 320,240"/>
-        <line x1="100" y1="140" x2="120" y2="240"/>
-        <line x1="140" y1="150" x2="130" y2="220"/>
-        <line x1="200" y1="140" x2="185" y2="225"/>
-        <line x1="200" y1="140" x2="200" y2="200"/>
-        <line x1="200" y1="140" x2="215" y2="225"/>
-        <line x1="260" y1="150" x2="270" y2="220"/>
-        <line x1="300" y1="140" x2="280" y2="240"/>
-        <polyline points="100,320 130,280 160,260 200,280 240,260 270,280 300,320"/>
-        <line x1="120" y1="240" x2="130" y2="280"/>
-        <line x1="130" y1="220" x2="160" y2="260"/>
-        <line x1="185" y1="225" x2="160" y2="260"/>
-        <line x1="185" y1="225" x2="200" y2="280"/>
-        <line x1="200" y1="200" x2="200" y2="280"/>
-        <line x1="215" y1="225" x2="200" y2="280"/>
-        <line x1="215" y1="225" x2="240" y2="260"/>
-        <line x1="270" y1="220" x2="240" y2="260"/>
-        <line x1="280" y1="240" x2="270" y2="280"/>
-        <polyline points="200,200 185,280 200,320 215,280 200,200"/>
-        <line x1="160" y1="260" x2="185" y2="280"/>
-        <line x1="240" y1="260" x2="215" y2="280"/>
-        <polyline points="140,410 160,360 200,370 240,360 260,410"/>
-        <line x1="130" y1="280" x2="160" y2="360"/>
-        <line x1="160" y1="260" x2="160" y2="360"/>
-        <line x1="185" y1="280" x2="160" y2="360"/>
-        <line x1="185" y1="280" x2="200" y2="370"/>
-        <line x1="200" y1="320" x2="200" y2="370"/>
-        <line x1="215" y1="280" x2="200" y2="370"/>
-        <line x1="215" y1="280" x2="240" y2="360"/>
-        <line x1="240" y1="260" x2="240" y2="360"/>
-        <line x1="270" y1="280" x2="240" y2="360"/>
-        <polyline points="160,360 200,390 240,360"/>
-        <line x1="200" y1="370" x2="200" y2="390"/>
-        <line x1="140" y1="410" x2="200" y2="390"/>
-        <line x1="260" y1="410" x2="200" y2="390"/>
-        <line x1="200" y1="450" x2="200" y2="390"/>
-        <polyline points="140,410 140,500"/>
-        <polyline points="260,410 260,500"/>
-        <polyline points="200,450 180,500"/>
-        <polyline points="200,450 220,500"/>
-        <line x1="140" y1="450" x2="180" y2="500"/>
-        <line x1="260" y1="450" x2="220" y2="500"/>
-        <polyline points="140,500 50,520"/>
-        <polyline points="260,500 350,520"/>
+
+      <ellipse cx="258" cy="230" rx="210" ry="195" fill="url(#qrGlow)"/>
+
+      <circle cx="258" cy="220" r="155" stroke="rgba(47,93,170,0.05)" strokeWidth="1">
+        <animate attributeName="r" values="145;185;145" dur="4s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.4;0;0.4" dur="4s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="258" cy="220" r="155" stroke="rgba(47,93,170,0.05)" strokeWidth="1">
+        <animate attributeName="r" values="145;185;145" dur="4s" begin="2s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.4;0;0.4" dur="4s" begin="2s" repeatCount="indefinite"/>
+      </circle>
+
+      <rect x="68" y="55" width="348" height="330" rx="4" stroke="rgba(47,93,170,0.08)" strokeWidth="1" strokeDasharray="5 5"/>
+
+      <path d="M 68 115 L 68 55 L 128 55" stroke="#0A1F44" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M 356 55 L 416 55 L 416 115" stroke="#0A1F44" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M 68 325 L 68 385 L 128 385" stroke="#0A1F44" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M 356 385 L 416 385 L 416 325" stroke="#0A1F44" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round"/>
+
+      <circle cx="68"  cy="55"  r="5" fill="#2F5DAA" opacity="0.6"/>
+      <circle cx="416" cy="55"  r="5" fill="#2F5DAA" opacity="0.6"/>
+      <circle cx="68"  cy="385" r="5" fill="#2F5DAA" opacity="0.6"/>
+      <circle cx="416" cy="385" r="5" fill="#2F5DAA" opacity="0.6"/>
+
+      <rect x="88"  y="75"  width="74" height="74" stroke="#2F5DAA" strokeWidth="2.5" fill="rgba(47,93,170,0.04)" rx="2"/>
+      <rect x="102" y="89"  width="46" height="46" fill="rgba(47,93,170,0.10)" rx="1"/>
+      <rect x="116" y="103" width="18" height="18" fill="#2F5DAA" rx="1"/>
+
+      <rect x="322" y="75"  width="74" height="74" stroke="#2F5DAA" strokeWidth="2.5" fill="rgba(47,93,170,0.04)" rx="2"/>
+      <rect x="336" y="89"  width="46" height="46" fill="rgba(47,93,170,0.10)" rx="1"/>
+      <rect x="350" y="103" width="18" height="18" fill="#2F5DAA" rx="1"/>
+
+      <rect x="88"  y="295" width="74" height="74" stroke="#2F5DAA" strokeWidth="2.5" fill="rgba(47,93,170,0.04)" rx="2"/>
+      <rect x="102" y="309" width="46" height="46" fill="rgba(47,93,170,0.10)" rx="1"/>
+      <rect x="116" y="323" width="18" height="18" fill="#2F5DAA" rx="1"/>
+
+      {([
+        [176,75],[192,75],[208,75],[236,75],[264,75],[292,75],[308,75],
+        [176,91],[208,91],[236,91],[292,91],
+        [176,107],[192,107],[208,107],[222,107],[264,107],[292,107],[308,107],
+        [176,123],[208,123],[250,123],[278,123],
+        [176,139],[192,139],[208,139],[236,139],[264,139],[308,139],
+        [176,155],[264,155],[278,155],[292,155],
+        [176,171],[192,171],[222,171],[250,171],[308,171],
+        [176,187],[208,187],[222,187],[250,187],[278,187],[308,187],
+        [192,203],[236,203],[264,203],[308,203],
+        [176,219],[208,219],[222,219],[264,219],[292,219],
+        [192,235],[250,235],[278,235],[308,235],
+        [176,251],[208,251],[236,251],[292,251],[308,251],
+        [192,267],[222,267],[264,267],[278,267],
+        [176,283],[208,283],[236,283],[250,283],[308,283],
+      ] as [number,number][]).map(([x,y],i)=>(
+        <rect key={i} x={x} y={y} width="10" height="10" rx="1"
+          fill={i%3===0?'rgba(47,93,170,0.65)':i%3===1?'rgba(47,93,170,0.35)':'rgba(47,93,170,0.5)'}/>
+      ))}
+
+      {([
+        [322,187],[338,187],[354,187],[382,187],
+        [322,203],[354,203],[382,203],
+        [338,219],[366,219],[382,219],
+        [322,235],[354,235],[382,235],
+        [322,251],[338,251],[366,251],
+        [322,267],[354,267],[382,267],
+        [338,283],[366,283],
+      ] as [number,number][]).map(([x,y],i)=>(
+        <rect key={i} x={x} y={y} width="10" height="10" rx="1"
+          fill={i%2===0?'rgba(47,93,170,0.45)':'rgba(47,93,170,0.25)'}/>
+      ))}
+
+      <rect x="68" width="348" height="2.5" fill="url(#scanGrad)" filter="url(#scanGlowF)">
+        <animate attributeName="y" values="55;385;55" dur="3s" repeatCount="indefinite" calcMode="linear"/>
+        <animate attributeName="opacity" values="0;1;1;1;0" keyTimes="0;0.05;0.45;0.95;1" dur="3s" repeatCount="indefinite"/>
+      </rect>
+
+      <text x="258" y="36" textAnchor="middle" fontSize="7.5" fontWeight="800" fontFamily="sans-serif" fill="rgba(47,93,170,0.4)" letterSpacing="0.35em">VISITOR MANAGEMENT SYSTEM</text>
+
+      <g transform="translate(432,90)">
+        <rect x="0" y="0" width="82" height="28" rx="14" fill="white" stroke="rgba(47,93,170,0.18)"/>
+        <circle cx="14" cy="14" r="5" fill="rgba(47,93,170,0.12)"/>
+        <circle cx="14" cy="14" r="2.5" fill="#2F5DAA">
+          <animate attributeName="r" values="2.5;4;2.5" dur="2s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="1;0.3;1" dur="2s" repeatCount="indefinite"/>
+        </circle>
+        <text x="27" y="18.5" fontSize="7.5" fontWeight="800" fontFamily="sans-serif" fill="#0A1F44" letterSpacing="0.12em">SCANNING</text>
       </g>
-      <g fill="#2F5DAA" opacity="1.0">
-        {[
-          [200,50],[140,80],[260,80],[100,140],[300,140],[200,100],
-          [140,150],[260,150],[200,140],[80,240],[320,240],[120,240],
-          [280,240],[130,220],[270,220],[185,225],[215,225],[200,200],
-          [100,320],[300,320],[130,280],[270,280],[160,260],[240,260],
-          [200,280],[185,280],[215,280],[200,320],[140,410],[260,410],
-          [160,360],[240,360],[200,370],[200,390],[200,450]
-        ].map((pt,i) => <circle key={i} cx={pt[0]} cy={pt[1]} r="1.5"/>)}
+      <line x1="416" y1="104" x2="432" y2="104" stroke="rgba(47,93,170,0.25)" strokeWidth="1" strokeDasharray="3 3"/>
+
+      <g transform="translate(432,228)">
+        <rect x="0" y="0" width="84" height="28" rx="14" fill="rgba(22,163,74,0.06)" stroke="rgba(22,163,74,0.28)"/>
+        <circle cx="14" cy="14" r="5" fill="rgba(22,163,74,0.15)"/>
+        <path d="M 11 14 L 13.5 16.5 L 18 11" stroke="#16a34a" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        <text x="27" y="18.5" fontSize="7.5" fontWeight="800" fontFamily="sans-serif" fill="#16a34a" letterSpacing="0.12em">VERIFIED</text>
       </g>
-      <path d="M130 220 C150 205, 180 215, 185 225 C170 235, 145 235, 130 220 Z" stroke="#2F5DAA" strokeWidth="1.2" fill="none" opacity="0.8"/>
-      <path d="M270 220 C250 205, 220 215, 215 225 C230 235, 255 235, 270 220 Z" stroke="#2F5DAA" strokeWidth="1.2" fill="none" opacity="0.8"/>
-      <path d="M130 220 C150 205, 180 215, 185 225 C170 235, 145 235, 130 220 Z" fill="#2F5DAA" opacity="0.05"/>
-      <path d="M270 220 C250 205, 220 215, 215 225 C230 235, 255 235, 270 220 Z" fill="#2F5DAA" opacity="0.05"/>
-      <g clipPath="url(#robotEyeL)">
-        <circle cx={clampedPupil(160,221).cx} cy={clampedPupil(160,221).cy} r="7" fill="#2F5DAA" filter="url(#glow)" opacity="0.8"/>
-        <circle cx={clampedPupil(160,221).cx} cy={clampedPupil(160,221).cy} r="3" fill="#EEF3FB"/>
+      <line x1="416" y1="242" x2="432" y2="242" stroke="rgba(47,93,170,0.25)" strokeWidth="1" strokeDasharray="3 3"/>
+
+      <g transform="translate(-100,148)">
+        <rect x="0" y="0" width="90" height="28" rx="14" fill="white" stroke="rgba(47,93,170,0.18)"/>
+        <rect x="7" y="7" width="14" height="14" rx="3" fill="rgba(47,93,170,0.08)"/>
+        <rect x="10" y="10" width="8" height="8" rx="1" fill="#2F5DAA" opacity="0.5"/>
+        <text x="28" y="18.5" fontSize="7.5" fontWeight="800" fontFamily="sans-serif" fill="#0A1F44" letterSpacing="0.1em">GATE PASS</text>
       </g>
-      <g clipPath="url(#robotEyeR)">
-        <circle cx={clampedPupil(240,221).cx} cy={clampedPupil(240,221).cy} r="7" fill="#2F5DAA" filter="url(#glow)" opacity="0.8"/>
-        <circle cx={clampedPupil(240,221).cx} cy={clampedPupil(240,221).cy} r="3" fill="#EEF3FB"/>
+      <line x1="68" y1="162" x2="-10" y2="162" stroke="rgba(47,93,170,0.25)" strokeWidth="1" strokeDasharray="3 3"/>
+
+      <g transform="translate(-100,298)">
+        <rect x="0" y="0" width="90" height="28" rx="14" fill="rgba(47,93,170,0.06)" stroke="rgba(47,93,170,0.2)"/>
+        <path d="M 12 17 L 12 13 A 3 3 0 0 1 18 13 L 18 17 Z M 9 17 L 21 17 L 21 22 L 9 22 Z" stroke="#2F5DAA" strokeWidth="1.2" fill="none" strokeLinejoin="round"/>
+        <text x="28" y="18.5" fontSize="7.5" fontWeight="800" fontFamily="sans-serif" fill="#2F5DAA" letterSpacing="0.1em">GRANTED</text>
       </g>
+      <line x1="68" y1="312" x2="-10" y2="312" stroke="rgba(47,93,170,0.25)" strokeWidth="1" strokeDasharray="3 3"/>
+
+      <rect x="154" y="402" width="196" height="34" rx="17" fill="rgba(10,31,68,0.04)" stroke="rgba(47,93,170,0.12)"/>
+      <text x="252" y="424" textAnchor="middle" fontSize="8.5" fontWeight="800" fontFamily="sans-serif" fill="#2F5DAA" letterSpacing="0.22em">SCAN TO CHECK IN</text>
+
+      <circle cx="258" cy="460" r="3" fill="#2F5DAA" opacity="0.3"/>
+      <circle cx="240" cy="460" r="2" fill="#2F5DAA" opacity="0.15"/>
+      <circle cx="276" cy="460" r="2" fill="#2F5DAA" opacity="0.15"/>
     </svg>
   );
 }
 
-function GreekStatue() {
-  return (
-    <svg viewBox="0 0 200 500" fill="none" className="w-full h-full opacity-90 drop-shadow-xl" stroke="#2F5DAA" strokeWidth="0.8">
-      <g strokeWidth="1" fill="rgba(255,255,255,0.7)">
-        <rect x="60" y="420" width="80" height="20"/>
-        <rect x="50" y="440" width="100" height="20"/>
-        <rect x="40" y="460" width="120" height="40"/>
-        <line x1="60" y1="430" x2="140" y2="430" strokeWidth="0.5"/>
-        <line x1="50" y1="450" x2="150" y2="450" strokeWidth="0.5"/>
-        {[50,70,90,110,130,150].map(x => <line key={x} x1={x} y1="460" x2={x} y2="500" strokeWidth="0.3" opacity="0.5"/>)}
-      </g>
-      <g fill="rgba(255,255,255,0.5)">
-        <path d="M100,70 C120,70 130,90 125,120 C120,150 105,170 105,200 C105,230 115,300 115,420 Z"/>
-        <path d="M100,70 C80,70 70,90 75,120 C80,150 95,170 95,200 C95,230 85,300 85,420 Z"/>
-        <path d="M85,420 L115,420"/>
-        <path d="M75,120 C90,160 120,180 125,200 C130,240 100,300 115,420 Z"/>
-        <path d="M80,130 C95,170 115,190 120,210 C125,250 95,310 110,420 Z"/>
-        <path d="M85,140 C100,180 110,200 115,220 C120,260 90,320 105,420 Z"/>
-        <path d="M70,150 C110,180 130,160 140,150"/>
-        <path d="M125,120 C110,140 90,150 75,150"/>
-        <path d="M120,130 C105,150 85,160 70,160"/>
-        <ellipse cx="100" cy="45" rx="14" ry="18"/>
-        <path d="M86,45 C86,30 114,30 114,45"/>
-        <path d="M100,45 L100,55"/>
-        <line x1="93" y1="40" x2="98" y2="40"/>
-        <line x1="102" y1="40" x2="107" y2="40"/>
-        <path d="M75,120 C60,150 65,190 85,210 Z"/>
-        <path d="M125,120 C140,150 135,190 115,210 Z"/>
-      </g>
-      <path d="M95,200 C80,250 90,350 80,420" strokeWidth="0.5" opacity="0.6"/>
-      <path d="M105,200 C120,250 110,350 120,420" strokeWidth="0.5" opacity="0.6"/>
-    </svg>
-  );
-}
-
-const STEPS = [
-  {
-    id: 1, label: 'Register',
-    desc: 'Fill in your details and capture a photo at the kiosk or online.',
-    icon: (
-      <svg viewBox="0 0 48 48" fill="none" className="w-full h-full">
-        <circle cx="24" cy="16" r="8" stroke="#2F5DAA" strokeWidth="1.8"/>
-        <path d="M8 40 C8 31 15 26 24 26 C33 26 40 31 40 40" stroke="#2F5DAA" strokeWidth="1.8" strokeLinecap="round"/>
-        <line x1="32" y1="16" x2="40" y2="16" stroke="#2F5DAA" strokeWidth="1.8" strokeLinecap="round"/>
-        <line x1="36" y1="12" x2="36" y2="20" stroke="#2F5DAA" strokeWidth="1.8" strokeLinecap="round"/>
-      </svg>
-    ),
-  },
-  {
-    id: 2, label: 'Submit Request',
-    desc: 'Your visit request is sent to the host employee for approval.',
-    icon: (
-      <svg viewBox="0 0 48 48" fill="none" className="w-full h-full">
-        <rect x="8" y="10" width="32" height="28" rx="4" stroke="#2F5DAA" strokeWidth="1.8"/>
-        <line x1="14" y1="19" x2="34" y2="19" stroke="#2F5DAA" strokeWidth="1.5"/>
-        <line x1="14" y1="25" x2="34" y2="25" stroke="#2F5DAA" strokeWidth="1.5"/>
-        <line x1="14" y1="31" x2="26" y2="31" stroke="#2F5DAA" strokeWidth="1.5"/>
-        <path d="M30 6 L30 14" stroke="#2F5DAA" strokeWidth="1.8" strokeLinecap="round"/>
-        <path d="M26 10 L30 6 L34 10" stroke="#2F5DAA" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
-    ),
-  },
-  {
-    id: 3, label: 'Email Sent',
-    desc: 'A confirmation email with your visit details lands in your inbox.',
-    icon: (
-      <svg viewBox="0 0 48 48" fill="none" className="w-full h-full">
-        <rect x="6" y="12" width="36" height="26" rx="4" stroke="#2F5DAA" strokeWidth="1.8"/>
-        <path d="M6 16 L24 28 L42 16" stroke="#2F5DAA" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-        <circle cx="36" cy="14" r="6" fill="#2F5DAA"/>
-        <path d="M33 14 L35.5 16.5 L39 12" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
-    ),
-  },
-  {
-    id: 4, label: 'Show QR Code',
-    desc: 'Present your unique QR code at the entrance for instant scan.',
-    icon: (
-      <svg viewBox="0 0 48 48" fill="none" className="w-full h-full">
-        <rect x="8" y="8" width="14" height="14" rx="2" stroke="#2F5DAA" strokeWidth="1.8"/>
-        <rect x="11" y="11" width="8" height="8" rx="1" fill="#2F5DAA" opacity="0.25"/>
-        <rect x="26" y="8" width="14" height="14" rx="2" stroke="#2F5DAA" strokeWidth="1.8"/>
-        <rect x="29" y="11" width="8" height="8" rx="1" fill="#2F5DAA" opacity="0.25"/>
-        <rect x="8" y="26" width="14" height="14" rx="2" stroke="#2F5DAA" strokeWidth="1.8"/>
-        <rect x="11" y="29" width="8" height="8" rx="1" fill="#2F5DAA" opacity="0.25"/>
-        <rect x="26" y="26" width="5" height="5" rx="1" fill="#2F5DAA"/>
-        <rect x="33" y="26" width="5" height="5" rx="1" fill="#2F5DAA"/>
-        <rect x="26" y="33" width="5" height="5" rx="1" fill="#2F5DAA"/>
-        <rect x="33" y="33" width="5" height="5" rx="1" fill="#2F5DAA"/>
-      </svg>
-    ),
-  },
-  {
-    id: 5, label: 'Access Granted',
-    desc: 'Gate opens, badge prints, and your host is notified of your arrival.',
-    icon: (
-      <svg viewBox="0 0 48 48" fill="none" className="w-full h-full">
-        <circle cx="24" cy="24" r="16" stroke="#2F5DAA" strokeWidth="1.8"/>
-        <path d="M16 24 L21 29 L32 18" stroke="#2F5DAA" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
-    ),
-  },
+const steps = [
+  { num: '01', title: 'Arrive & Scan', body: 'Walk up to the reception kiosk. Scan the QR code or enter your mobile number to begin check-in in seconds.' },
+  { num: '02', title: 'Identity Verified', body: 'The system verifies your identity, captures a photo, and routes your visit request to your host for instant approval.' },
+  { num: '03', title: 'Gate Pass Issued', body: 'Receive your digital gate pass instantly. Your host is notified and access is granted — seamlessly and securely.' },
 ];
 
-function HowItWorks() {
-  const sectionRef = useRef<HTMLElement>(null);
-  const pathRef = useRef<SVGPathElement>(null);
-  const [activeStep, setActiveStep] = useState(-1);
-
-  useEffect(() => {
-    const path = pathRef.current;
-    if (!path) return;
-    const len = path.getTotalLength();
-    path.style.strokeDasharray = String(len);
-    path.style.strokeDashoffset = String(len);
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          path.style.transition = `stroke-dashoffset 2.4s cubic-bezier(0.4,0,0.2,1)`;
-          path.style.strokeDashoffset = '0';
-          STEPS.forEach((_, i) => {
-            setTimeout(() => setActiveStep(i), 400 + i * 480);
-          });
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.3 }
-    );
-    if (sectionRef.current) observer.observe(sectionRef.current);
-    return () => observer.disconnect();
-  }, []);
-
-  return (
-    <section ref={sectionRef} className="relative py-20 px-8 md:px-16 overflow-hidden bg-white">
-      <div className="absolute inset-0 dot-bg opacity-30 pointer-events-none"/>
-      <div className="max-w-5xl mx-auto">
-        <div className="text-center mb-14">
-          <div className="vp-caption mb-2">How It Works</div>
-          <h2 className="text-3xl md:text-4xl font-black tracking-tight text-[#0A1F44]">From Arrival to Access</h2>
-          <p className="text-[#6B7FA3] mt-2 text-sm max-w-sm mx-auto">Five steps. Under 60 seconds.</p>
-        </div>
-
-        <div className="relative w-full" style={{ paddingBottom: '28%' }}>
-          <svg viewBox="0 0 680 220" fill="none" xmlns="http://www.w3.org/2000/svg"
-            className="absolute inset-0 w-full h-full" preserveAspectRatio="xMidYMid meet">
-            <path
-              ref={pathRef}
-              d="M 40 80 C 90 80 100 150 170 150 C 240 150 250 80 340 80 C 430 80 440 150 510 150 C 580 150 590 80 640 80"
-              stroke="#2F5DAA" strokeWidth="1.5" strokeLinecap="round" fill="none" opacity="0.35"
-            />
-
-            {STEPS.map((step, i) => {
-              const cx = [40, 170, 340, 510, 640][i];
-              const cy = [80, 150, 80, 150, 80][i];
-              const labelY = cy < 100 ? cy - 52 : cy + 38;
-              const active = activeStep >= i;
-
-              return (
-                <g key={step.id} style={{
-                  opacity: active ? 1 : 0,
-                  transform: active ? 'translateY(0)' : 'translateY(12px)',
-                  transition: 'opacity 0.5s ease, transform 0.5s ease',
-                }}>
-                  <circle cx={cx} cy={cy} r="28"
-                    fill={i === 4 ? '#0A1F44' : 'white'}
-                    stroke="#2F5DAA" strokeWidth="1.5"/>
-                  <foreignObject x={cx - 18} y={cy - 18} width="36" height="36">
-                    <div style={{ width: 36, height: 36, padding: 4 }}>
-                      {i === 4
-                        ? <svg viewBox="0 0 48 48" fill="none" style={{ width: '100%', height: '100%' }}>
-                            <circle cx="24" cy="24" r="16" stroke="white" strokeWidth="1.8"/>
-                            <path d="M16 24 L21 29 L32 18" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
-                          </svg>
-                        : step.icon
-                      }
-                    </div>
-                  </foreignObject>
-                  <circle cx={cx + 20} cy={cy - 20} r="9" fill="#2F5DAA"/>
-                  <text x={cx + 20} y={cy - 16}
-                    textAnchor="middle" fontSize="8" fontWeight="800" fill="white" fontFamily="sans-serif">
-                    {step.id}
-                  </text>
-                  <text x={cx} y={labelY}
-                    textAnchor="middle" fontSize="9.5" fontWeight="800"
-                    fill="#0A1F44" fontFamily="sans-serif" letterSpacing="0.3">
-                    {step.label}
-                  </text>
-                  <circle cx={cx} cy={cy} r="4" fill="#2F5DAA" opacity="0.5"/>
-                </g>
-              );
-            })}
-
-            {activeStep >= 4 && (
-              <circle r="5" fill="#2F5DAA" opacity="0.8">
-                <animateMotion
-                  dur="3s"
-                  repeatCount="indefinite"
-                  path="M 40 80 C 90 80 100 150 170 150 C 240 150 250 80 340 80 C 430 80 440 150 510 150 C 580 150 590 80 640 80"
-                />
-              </circle>
-            )}
-          </svg>
-        </div>
-
-        <div className="grid grid-cols-5 gap-3 mt-4">
-          {STEPS.map((step, i) => (
-            <div key={step.id} className="text-center" style={{
-              opacity: activeStep >= i ? 1 : 0,
-              transform: activeStep >= i ? 'translateY(0)' : 'translateY(8px)',
-              transition: `opacity 0.5s ease ${i * 0.1}s, transform 0.5s ease ${i * 0.1}s`,
-            }}>
-              <p className="text-[10px] text-[#6B7FA3] leading-relaxed">{step.desc}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
 export default function LandingPage() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [mousePos, setMousePos] = useState({ x: 0.5, y: 0.5 });
-  const [loaded, setLoaded] = useState(false);
+  const cardsRef  = useRef<HTMLDivElement>(null);
+  const stepsRef  = useRef<HTMLDivElement>(null);
+  const scannerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      setMousePos({ x: e.clientX / window.innerWidth, y: e.clientY / window.innerHeight });
-    };
-    window.addEventListener('mousemove', handler);
-    return () => window.removeEventListener('mousemove', handler);
+    const ctx = gsap.context(() => {
+      gsap.from('.hero-text-item', { y: 28, opacity: 0, duration: 0.8, stagger: 0.12, ease: 'power3.out', delay: 0.1 });
+      gsap.from(scannerRef.current, { x: 40, opacity: 0, duration: 1, ease: 'power3.out', delay: 0.25 });
+      gsap.from('.quick-card', {
+        scrollTrigger: { trigger: cardsRef.current, start: 'top 85%' },
+        y: 30, opacity: 0, duration: 0.6, stagger: 0.12, ease: 'power3.out',
+      });
+      gsap.from('.step-item', {
+        scrollTrigger: { trigger: stepsRef.current, start: 'top 85%' },
+        y: 25, opacity: 0, duration: 0.6, stagger: 0.15, ease: 'power3.out',
+      });
+    });
+    return () => ctx.revert();
   }, []);
 
-  useGSAP(() => {
-    const tl = gsap.timeline({ onComplete: () => setLoaded(true) });
-
-    tl.to('.vp-loader', { height: 0, duration: 1.2, ease: 'expo.inOut', delay: 0.3 });
-    tl.from('.vp-nav-item', { y: -16, opacity: 0, stagger: 0.08, ease: 'power3.out', duration: 0.6 }, '-=0.4');
-    tl.from('.vp-hero-word', { y: 60, opacity: 0, stagger: 0.06, duration: 0.9, ease: 'back.out(1.4)' }, '-=0.3');
-    tl.from('.vp-hero-sub', { opacity: 0, y: 20, duration: 0.7, ease: 'power2.out' }, '-=0.5');
-    tl.from('.vp-hero-cta', { opacity: 0, y: 16, stagger: 0.1, duration: 0.5, ease: 'power2.out' }, '-=0.4');
-    tl.from('.vp-statue', { opacity: 0, y: 30, duration: 1, ease: 'power3.out' }, '-=0.8');
-
-    gsap.to('.vp-skyline-bg', {
-      y: -60,
-      ease: 'none',
-      scrollTrigger: {
-        trigger: containerRef.current,
-        start: 'top top',
-        end: 'bottom top',
-        scrub: 1.5,
-      }
-    });
-  }, { scope: containerRef });
-
   return (
-    <main ref={containerRef} className="relative min-h-screen bg-white text-[#0A1F44] overflow-hidden">
-
-      {/* Loader */}
-      <div className="vp-loader fixed inset-0 z-[200] bg-[#0A1F44] flex items-center justify-center origin-top">
-        <div className="text-white font-black text-sm tracking-[0.5em] uppercase opacity-60">VISITORPASS</div>
-      </div>
+    <div style={{ minHeight: '100vh', background: '#ffffff', color: '#0A1F44', overflowX: 'hidden' }}>
+      <GeoBackground />
 
       {/* NAV */}
-      <nav className="vp-nav fixed top-0 w-full z-50 flex justify-between items-center px-8 md:px-16 py-5">
-        <div className="vp-nav-item flex items-center gap-3">
-          <img src="/vts-logo.png" alt="VISITORPASS" className="h-9 w-auto object-contain"/>
-        </div>
-        <div className="vp-nav-item flex items-center gap-6">
-          <span className="hidden md:block text-xs font-semibold text-[#6B7FA3] tracking-wide">Enterprise Visitor Management</span>
+      <nav style={{
+        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '0 48px', height: '68px',
+        background: 'rgba(255,255,255,0.88)',
+        backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
+        borderBottom: '1px solid rgba(10,31,68,0.06)',
+      }}>
+        <img src="/vts-logo.png" alt="VISITORPASS" style={{ height: '34px', width: 'auto', objectFit: 'contain' }}/>
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <Link href="/check-in">
+            <button className="btn-vp-secondary" style={{ padding: '9px 20px', fontSize: '0.65rem' }}>Check In</button>
+          </Link>
           <Link href="/login">
-            <button className="btn-vp-primary text-xs px-6 py-3">
-              Employee Portal <span className="ml-1">→</span>
-            </button>
+            <button className="btn-vp-primary" style={{ padding: '10px 22px', fontSize: '0.65rem' }}>Employee Portal →</button>
           </Link>
         </div>
       </nav>
 
-      {/* HERO SECTION */}
-      <section className="relative flex flex-col overflow-hidden" style={{ minHeight: 'calc(100vh - 0px)' }}>
+      {/* HERO */}
+      <section style={{
+        minHeight: '100vh', display: 'flex', alignItems: 'center',
+        padding: '100px 48px 60px', position: 'relative', zIndex: 1,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '48px', maxWidth: '1280px', margin: '0 auto', width: '100%' }}>
 
-        <div className="vp-skyline-bg absolute bottom-0 left-0 right-0 pointer-events-none" style={{ opacity: 0.06 }}>
-          <GreekSkyline/>
-        </div>
-
-        <div className="absolute inset-0 dot-bg opacity-30 pointer-events-none"/>
-
-        <div className="absolute pointer-events-none"
-          style={{ top: '50%', right: '-4%', transform: 'translateY(-48%)', width: '72vw', maxWidth: 900, height: '90vh', opacity: 0.42 }}>
-          <SecurityCharacter mousePos={mousePos}/>
-        </div>
-
-        <div className="vp-statue absolute bottom-[140px] right-[1%] pointer-events-none" style={{ opacity: 0.28, width: 140, height: 340 }}>
-          <GreekStatue/>
-        </div>
-
-        <div className="relative z-10 flex-1 flex items-center w-full max-w-7xl mx-auto px-8 md:px-16 pt-10 pb-6">
-          <div className="flex flex-col gap-5 max-w-lg">
-            <div className="vp-caption vp-hero-word" style={{ letterSpacing: '0.18em', color: '#2F5DAA', fontSize: '0.7rem', fontWeight: 700 }}>
-              VISITOR MANAGEMENT SYSTEM
+          {/* Left text */}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div className="hero-text-item" style={{
+              display: 'inline-flex', alignItems: 'center', gap: '8px',
+              padding: '7px 18px', borderRadius: '999px',
+              background: 'rgba(47,93,170,0.06)', border: '1px solid rgba(47,93,170,0.14)',
+              marginBottom: '28px',
+            }}>
+              <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#2F5DAA', animation: 'pulseBlue 2s infinite' }}/>
+              <span style={{ fontSize: '0.57rem', fontWeight: 800, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#2F5DAA' }}>
+                Enterprise Visitor Management
+              </span>
             </div>
 
-            <h1 className="font-black leading-none tracking-tight text-[#0A1F44]"
-              style={{ fontSize: 'clamp(3.5rem,7vw,6.5rem)', lineHeight: 0.88 }}>
-              {'VISITOR'.split('').map((c, i) => (
-                <span key={i} className="vp-hero-word inline-block">{c}</span>
-              ))}
-              <br/>
-              <span className="vp-hero-word inline-block text-[#2F5DAA]">PASS</span>
+            <h1 className="hero-text-item" style={{
+              fontSize: 'clamp(3rem, 6vw, 5.2rem)',
+              fontWeight: 900, lineHeight: 0.93, letterSpacing: '-0.04em',
+              textTransform: 'uppercase', color: '#0A1F44', marginBottom: '24px',
+            }}>
+              VISITOR<br/>
+              <span style={{
+                background: 'linear-gradient(135deg, #2F5DAA 0%, #4A7FD4 100%)',
+                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
+              }}>PASS</span>
             </h1>
 
-            <p className="vp-hero-sub text-[#6B7FA3] leading-relaxed" style={{ fontSize: '0.95rem' }}>
-              The next generation of visitor management.<br/>
-              <span className="font-semibold text-[#0A1F44]">Intelligent. Secure. Enterprise-grade.</span>
+            <p className="hero-text-item" style={{
+              fontSize: '0.95rem', color: '#6B7FA3', lineHeight: 1.78,
+              maxWidth: '440px', marginBottom: '36px',
+            }}>
+              Secure, intelligent visitor management for modern enterprises. Instant check-in, digital gate passes, and real-time host notifications.
             </p>
 
-            <div className="flex flex-wrap gap-3 vp-hero-cta">
+            <div className="hero-text-item" style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '44px' }}>
               <Link href="/check-in">
-                <button className="btn-vp-primary px-7 py-3 text-xs font-bold tracking-wider uppercase">
-                  New Visitor →
-                </button>
+                <button className="btn-vp-primary" style={{ padding: '14px 30px', fontSize: '0.7rem' }}>New Visitor →</button>
+              </Link>
+              <Link href="/returning">
+                <button className="btn-vp-secondary" style={{ padding: '14px 28px', fontSize: '0.7rem' }}>Returning Visitor</button>
               </Link>
               <Link href="/appointment">
-                <button className="px-7 py-3 text-xs font-bold tracking-wider uppercase text-[#0A1F44] border-2 border-[#0A1F44] rounded-full hover:border-[#2F5DAA] hover:text-[#2F5DAA] transition-all">
-                  Pre-Book Visit →
-                </button>
+                <button className="btn-vp-secondary" style={{ padding: '14px 28px', fontSize: '0.7rem' }}>Pre-Book</button>
               </Link>
             </div>
+
+            <div className="hero-text-item" style={{ display: 'flex', gap: '36px' }}>
+              {[
+                { value: '99.9%',   label: 'Uptime' },
+                { value: '<3s',     label: 'Check-in Time' },
+                { value: '256-bit', label: 'Encryption' },
+              ].map(({ value, label }) => (
+                <div key={label}>
+                  <div style={{ fontSize: '1.25rem', fontWeight: 900, color: '#0A1F44', letterSpacing: '-0.02em' }}>{value}</div>
+                  <div style={{ fontSize: '0.55rem', fontWeight: 700, color: '#6B7FA3', letterSpacing: '0.18em', textTransform: 'uppercase', marginTop: '4px' }}>{label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Right: QR Scanner */}
+          <div ref={scannerRef} style={{ flex: '0 0 460px', display: 'flex', justifyContent: 'center' }} className="hero-scanner">
+            <QRScannerSVG />
           </div>
         </div>
+      </section>
 
-        {/* THREE ENTRY CARDS */}
-        <div className="relative z-10 w-full border-t border-[#E2E8F0] bg-white/80 backdrop-blur-sm">
-          <div className="max-w-7xl mx-auto px-8 md:px-16 grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-[#E2E8F0]">
+      {/* QUICK ACCESS CARDS */}
+      <section ref={cardsRef} style={{ padding: '0 48px 80px', position: 'relative', zIndex: 1 }}>
+        <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+          <div style={{ marginBottom: '48px', textAlign: 'center' }}>
+            <p style={{ fontSize: '0.57rem', fontWeight: 800, letterSpacing: '0.35em', textTransform: 'uppercase', color: '#2F5DAA', marginBottom: '10px' }}>Quick Access</p>
+            <h2 style={{ fontSize: '2rem', fontWeight: 900, letterSpacing: '-0.03em', color: '#0A1F44' }}>How would you like to proceed?</h2>
+          </div>
 
-            <Link href="/check-in">
-              <div className="group flex items-start gap-4 py-6 pr-8 hover:bg-[#F8FAFF] transition-colors cursor-pointer">
-                <div className="w-10 h-10 rounded-xl bg-[#EEF3FB] flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-[#2F5DAA] transition-colors">
-                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
-                    <circle cx="12" cy="7" r="4" stroke="#2F5DAA" strokeWidth="1.5" className="group-hover:stroke-white"/>
-                    <path d="M4 21C4 17 7.6 14 12 14C16.4 14 20 17 20 21" stroke="#2F5DAA" strokeWidth="1.5" strokeLinecap="round"/>
-                    <line x1="16" y1="7" x2="20" y2="7" stroke="#2F5DAA" strokeWidth="1.5" strokeLinecap="round"/>
-                    <line x1="18" y1="5" x2="18" y2="9" stroke="#2F5DAA" strokeWidth="1.5" strokeLinecap="round"/>
-                  </svg>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+            {[
+              {
+                href: '/check-in', label: 'First Time Visit', title: 'New Visitor Check-In',
+                body: 'Register your details, capture a photo, and submit your visit request for host approval.',
+                iconPath: 'M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z',
+              },
+              {
+                href: '/returning', label: 'Return Visit', title: 'Returning Visitor',
+                body: "Already registered? Look up your record with your mobile number and check in instantly.",
+                iconPath: 'M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15',
+              },
+              {
+                href: '/appointment', label: 'Pre-Scheduled', title: 'Book Appointment',
+                body: 'Schedule your visit in advance. Your host receives a pre-approval request immediately.',
+                iconPath: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z',
+              },
+            ].map(({ href, label, title, body, iconPath }) => (
+              <Link key={href} href={href} style={{ textDecoration: 'none' }}>
+                <div className="quick-card lux-card" style={{ padding: '36px', cursor: 'pointer', height: '100%' }}>
+                  <div style={{
+                    width: '50px', height: '50px', borderRadius: '14px',
+                    background: 'rgba(47,93,170,0.07)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: '#2F5DAA', marginBottom: '20px',
+                  }}>
+                    <svg style={{ width: '22px', height: '22px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d={iconPath}/>
+                    </svg>
+                  </div>
+                  <div style={{ fontSize: '0.55rem', fontWeight: 800, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#2F5DAA', marginBottom: '10px' }}>{label}</div>
+                  <h3 style={{ fontSize: '1.08rem', fontWeight: 800, color: '#0A1F44', letterSpacing: '-0.02em', marginBottom: '12px' }}>{title}</h3>
+                  <p style={{ fontSize: '0.8rem', color: '#6B7FA3', lineHeight: 1.72 }}>{body}</p>
+                  <div style={{ marginTop: '24px', fontSize: '0.68rem', fontWeight: 700, color: '#2F5DAA', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    Get Started
+                    <svg style={{ width: '13px', height: '13px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <div className="text-sm font-black text-[#2F5DAA] uppercase tracking-wider mb-1">New Visitor</div>
-                  <p className="text-xs text-[#6B7FA3] leading-relaxed">Initiate a secure check-in sequence and register your arrival using our advanced verification.</p>
-                </div>
-                <span className="text-[#2F5DAA] text-lg self-end pb-0.5 opacity-40 group-hover:opacity-100 group-hover:translate-x-1 transition-all">→</span>
-              </div>
-            </Link>
-
-            <Link href="/returning">
-              <div className="group flex items-start gap-4 py-6 px-8 hover:bg-[#F8FAFF] transition-colors cursor-pointer">
-                <div className="w-10 h-10 rounded-xl bg-[#EEF3FB] flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-[#2F5DAA] transition-colors">
-                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
-                    <path d="M4 12C4 7.6 7.6 4 12 4C16.4 4 20 7.6 20 12C20 16.4 16.4 20 12 20" stroke="#2F5DAA" strokeWidth="1.5" strokeLinecap="round"/>
-                    <path d="M15 9L20 12L15 15" stroke="#2F5DAA" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </div>
-                <div className="flex-1">
-                  <div className="text-sm font-black text-[#2F5DAA] uppercase tracking-wider mb-1">Returning</div>
-                  <p className="text-xs text-[#6B7FA3] leading-relaxed">Fast-track entry using your registered biometric or mobile identity token.</p>
-                </div>
-                <span className="text-[#2F5DAA] text-lg self-end pb-0.5 opacity-40 group-hover:opacity-100 group-hover:translate-x-1 transition-all">→</span>
-              </div>
-            </Link>
-
-            <Link href="/appointment">
-              <div className="group flex items-start gap-4 py-6 pl-8 hover:bg-[#F8FAFF] transition-colors cursor-pointer">
-                <div className="w-10 h-10 rounded-xl bg-[#EEF3FB] flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-[#2F5DAA] transition-colors">
-                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
-                    <rect x="3" y="5" width="18" height="16" rx="2" stroke="#2F5DAA" strokeWidth="1.5"/>
-                    <line x1="3" y1="10" x2="21" y2="10" stroke="#2F5DAA" strokeWidth="1.2"/>
-                    <line x1="8" y1="3" x2="8" y2="7" stroke="#2F5DAA" strokeWidth="1.5" strokeLinecap="round"/>
-                    <line x1="16" y1="3" x2="16" y2="7" stroke="#2F5DAA" strokeWidth="1.5" strokeLinecap="round"/>
-                    <rect x="7" y="13" width="3" height="3" rx="0.5" fill="#2F5DAA" opacity="0.6"/>
-                    <rect x="13" y="13" width="3" height="3" rx="0.5" fill="#2F5DAA" opacity="0.6"/>
-                  </svg>
-                </div>
-                <div className="flex-1">
-                  <div className="text-sm font-black text-[#2F5DAA] uppercase tracking-wider mb-1">Pre-Book</div>
-                  <p className="text-xs text-[#6B7FA3] leading-relaxed">Schedule your visit in advance for a seamless and frictionless arrival experience.</p>
-                </div>
-                <span className="text-[#2F5DAA] text-lg self-end pb-0.5 opacity-40 group-hover:opacity-100 group-hover:translate-x-1 transition-all">→</span>
-              </div>
-            </Link>
-
+              </Link>
+            ))}
           </div>
         </div>
       </section>
 
       {/* HOW IT WORKS */}
-      <HowItWorks/>
+      <section ref={stepsRef} style={{ padding: '80px 48px', background: '#F4F7FC', position: 'relative', overflow: 'hidden' }}>
+        <div style={{
+          position: 'absolute', inset: 0, pointerEvents: 'none',
+          backgroundImage: 'radial-gradient(circle, rgba(47,93,170,0.05) 1px, transparent 1px)',
+          backgroundSize: '30px 30px',
+        }}/>
+        <div style={{ maxWidth: '1280px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
+          <div style={{ textAlign: 'center', marginBottom: '60px' }}>
+            <p style={{ fontSize: '0.57rem', fontWeight: 800, letterSpacing: '0.35em', textTransform: 'uppercase', color: '#2F5DAA', marginBottom: '10px' }}>The Process</p>
+            <h2 style={{ fontSize: '2.2rem', fontWeight: 900, letterSpacing: '-0.03em', color: '#0A1F44' }}>Three steps to access</h2>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '20px' }}>
+            {steps.map((s, i) => (
+              <div key={i} className="step-item lux-card" style={{ padding: '36px' }}>
+                <div style={{ fontSize: '2.8rem', fontWeight: 900, letterSpacing: '-0.04em', color: 'rgba(47,93,170,0.1)', lineHeight: 1, marginBottom: '20px' }}>{s.num}</div>
+                <h3 style={{ fontSize: '1.08rem', fontWeight: 800, color: '#0A1F44', marginBottom: '12px', letterSpacing: '-0.02em' }}>{s.title}</h3>
+                <p style={{ fontSize: '0.82rem', color: '#6B7FA3', lineHeight: 1.75 }}>{s.body}</p>
+                <div style={{ marginTop: '24px', width: '30px', height: '2px', background: 'linear-gradient(90deg, #2F5DAA, transparent)', borderRadius: '2px' }}/>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* FOOTER */}
-      <footer className="py-10 px-8 md:px-16 border-t border-[#E2E8F0]">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="flex items-center gap-3">
-            <img src="/vts-logo.png" alt="VISITORPASS" className="h-7 w-auto object-contain"/>
-            <span className="text-xs text-[#6B7FA3]">Enterprise Visitor Management</span>
-          </div>
-          <p className="text-xs text-[#6B7FA3]">© 2025 VISITORPASS. All rights reserved.</p>
+      <footer style={{
+        borderTop: '1px solid rgba(10,31,68,0.06)', padding: '28px 48px',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px',
+        background: '#ffffff', position: 'relative', zIndex: 1,
+      }}>
+        <img src="/vts-logo.png" alt="VISITORPASS" style={{ height: '26px', width: 'auto', objectFit: 'contain' }}/>
+        <div style={{ display: 'flex', gap: '28px', flexWrap: 'wrap' }}>
+          {['New Visitor', 'Returning', 'Appointment', 'Login'].map((t, i) => (
+            <Link key={t} href={['/check-in', '/returning', '/appointment', '/login'][i]}
+              style={{ fontSize: '0.68rem', fontWeight: 600, color: '#6B7FA3', textDecoration: 'none' }}>{t}</Link>
+          ))}
         </div>
+        <p style={{ fontSize: '0.6rem', color: '#A0AEC0' }}>© 2025 VisitorPass. All rights reserved.</p>
       </footer>
 
-    </main>
+      <style>{`
+        @media (max-width: 1100px) { .hero-scanner { display: none !important; } }
+        @media (max-width: 768px) {
+          section, nav, footer { padding-left: 20px !important; padding-right: 20px !important; }
+        }
+      `}</style>
+    </div>
   );
 }
