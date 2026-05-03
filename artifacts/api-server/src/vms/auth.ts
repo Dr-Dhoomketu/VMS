@@ -115,8 +115,25 @@ router.get('/test-email', async (req: Request, res: Response): Promise<void> => 
   const user = process.env['SMTP_USER'];
   const pass = process.env['SMTP_PASS'];
   if (!user || !pass) { res.json({ error: 'SMTP_USER or SMTP_PASS not set', host, user: !!user, pass: !!pass }); return; }
-  const ok = await sendOtpEmail(to, '123456');
-  res.json({ success: ok, smtp: { host: host || '(auto)', user, to } });
+
+  try {
+    const nodemailer = await import('nodemailer');
+    const domain = user.split('@')[1]?.toLowerCase() ?? '';
+    const transport = domain === 'gmail.com'
+      ? nodemailer.createTransport({ service: 'gmail', auth: { user, pass } })
+      : nodemailer.createTransport({ host: host || 'smtp.gmail.com', port: 587, auth: { user, pass } });
+
+    await transport.verify();
+    await transport.sendMail({
+      from: `"VISITORPASS Test" <${user}>`,
+      to,
+      subject: 'VISITORPASS Email Test',
+      text: 'This is a test email from VISITORPASS. If you received this, email OTP will work.',
+    });
+    res.json({ success: true, message: 'Email sent successfully!', smtp: { host: host || '(gmail service)', user, to } });
+  } catch (err: any) {
+    res.json({ success: false, error: err?.message, code: err?.code, smtp: { host: host || '(gmail service)', user, to } });
+  }
 });
 
 router.get('/me', protect, async (req: any, res: Response): Promise<void> => {
