@@ -70,7 +70,13 @@ async function connectDB() {
   try {
     await mongoose.connect(uri);
     logger.info("MongoDB connected");
-    await autoSeed();
+    const isProd = process.env["NODE_ENV"] === "production";
+    const seedEnabled = process.env["SEED_DB"] === "true";
+    if (!isProd || seedEnabled) {
+      await autoSeed();
+    } else {
+      logger.info("Production mode — skipping auto-seed. Set SEED_DB=true to seed explicitly.");
+    }
   } catch (err) {
     logger.error({ err }, "MongoDB connection failed — exiting");
     process.exit(1);
