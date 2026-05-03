@@ -1,7 +1,25 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import Cropper from 'react-easy-crop';
 import { Link } from 'wouter';
 import { API_URL } from '@/lib/api';
 import GeoBackground from '@/components/GeoBackground';
+
+interface CropArea { x: number; y: number; width: number; height: number; }
+
+function getCroppedImg(imageSrc: string, croppedAreaPixels: CropArea): Promise<File> {
+  return new Promise((resolve) => {
+    const image = new Image();
+    image.src = imageSrc;
+    image.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = croppedAreaPixels.width;
+      canvas.height = croppedAreaPixels.height;
+      const ctx = canvas.getContext('2d')!;
+      ctx.drawImage(image, croppedAreaPixels.x, croppedAreaPixels.y, croppedAreaPixels.width, croppedAreaPixels.height, 0, 0, croppedAreaPixels.width, croppedAreaPixels.height);
+      canvas.toBlob(blob => resolve(new File([blob!], 'photo.jpg', { type: 'image/jpeg' })), 'image/jpeg', 0.9);
+    };
+  });
+}
 
 interface Employee { _id: string; name: string; }
 
@@ -123,8 +141,34 @@ export default function AppointmentPage() {
     fromTime: '', toTime: '', duration: '',
   });
   const [flexibleEnd, setFlexibleEnd] = useState(false);
+  const [rawPhoto, setRawPhoto] = useState<string | null>(null);
+  const [croppedPhoto, setCroppedPhoto] = useState<File | null>(null);
+  const [croppedPhotoUrl, setCroppedPhotoUrl] = useState<string | null>(null);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedArea, setCroppedArea] = useState<CropArea | null>(null);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => { if (ev.target?.result) setRawPhoto(ev.target.result as string); };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
+  const onCropComplete = useCallback((_: unknown, area: CropArea) => setCroppedArea(area), []);
+
+  const confirmCrop = async () => {
+    if (!rawPhoto || !croppedArea) return;
+    const file = await getCroppedImg(rawPhoto, croppedArea);
+    setCroppedPhoto(file);
+    setCroppedPhotoUrl(URL.createObjectURL(file));
+    setRawPhoto(null);
+  };
 
   useEffect(() => {
     fetch(`${API_URL}/api/v1/users/employees`).then(r => r.json()).then(d => setEmployees(d)).catch(console.error);
@@ -144,10 +188,11 @@ export default function AppointmentPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); setError(''); setIsSubmitting(true);
     try {
-      const payload = { ...formData, toTime: flexibleEnd ? 'Flexible / Open-ended' : formData.toTime };
-      const res = await fetch(`${API_URL}/api/v1/visits/request`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload),
-      });
+      const payload = new FormData();
+      const fields = { ...formData, toTime: flexibleEnd ? 'Flexible / Open-ended' : formData.toTime };
+      Object.entries(fields).forEach(([k, v]) => payload.append(k, v));
+      if (croppedPhoto) payload.append('photo', croppedPhoto);
+      const res = await fetch(`${API_URL}/api/v1/visits/request`, { method: 'POST', body: payload });
       if (res.ok) setStep(2);
       else { const d = await res.json(); setError(d.message || 'Submission failed'); }
     } catch { setError('Connection failed'); }
@@ -157,6 +202,26 @@ export default function AppointmentPage() {
   return (
     <main style={{ minHeight: '100vh', background: '#ffffff', color: '#0A1F44', position: 'relative' }}>
       <GeoBackground />
+
+      {/* Hidden file input */}
+      <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFileUpload} />
+
+      {/* Photo crop overlay */}
+      {rawPhoto && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 400, background: '#0A1F44', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span style={{ color: '#fff', fontSize: '0.7rem', fontWeight: 800, letterSpacing: '0.2em', textTransform: 'uppercase' }}>Crop Photo</span>
+            <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.7rem' }}>Pinch or scroll to zoom</span>
+          </div>
+          <div style={{ flex: 1, position: 'relative' }}>
+            <Cropper image={rawPhoto} crop={crop} zoom={zoom} aspect={1} onCropChange={setCrop} onZoomChange={setZoom} onCropComplete={onCropComplete} cropShape="round"/>
+          </div>
+          <div style={{ padding: '20px', display: 'flex', gap: '12px', justifyContent: 'center', background: '#0A1F44' }}>
+            <button onClick={() => setRawPhoto(null)} style={{ padding: '12px 28px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.08)', color: '#fff', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 700 }}>Cancel</button>
+            <button onClick={confirmCrop} className="btn-vp-primary">Use This Photo</button>
+          </div>
+        </div>
+      )}
 
       <nav style={{
         position: 'sticky', top: 0, zIndex: 50,
@@ -196,6 +261,50 @@ export default function AppointmentPage() {
             {/* Personal Info */}
             <div className="lux-card" style={{ padding: '36px', marginBottom: '20px' }}>
               <h3 style={{ fontSize: '0.55rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.25em', color: '#6B7FA3', marginBottom: '24px' }}>Personal Information</h3>
+
+              {/* Photo upload */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '24px', paddingBottom: '24px', borderBottom: '1px solid rgba(10,31,68,0.06)' }}>
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  style={{
+                    width: '80px', height: '80px', borderRadius: '50%', overflow: 'hidden', flexShrink: 0,
+                    border: croppedPhotoUrl ? '2px solid #2F5DAA' : '2px dashed rgba(47,93,170,0.25)',
+                    background: 'rgba(47,93,170,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    cursor: 'pointer', transition: 'border-color 0.2s',
+                  }}
+                >
+                  {croppedPhotoUrl ? (
+                    <img src={croppedPhotoUrl} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }}/>
+                  ) : (
+                    <svg style={{ width: '26px', height: '26px', color: '#A0AEC0' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                    </svg>
+                  )}
+                </div>
+                <div>
+                  <p style={{ fontSize: '0.72rem', fontWeight: 700, color: '#0A1F44', marginBottom: '4px' }}>Visitor Photo <span style={{ color: '#6B7FA3', fontWeight: 500 }}>(optional)</span></p>
+                  <p style={{ fontSize: '0.67rem', color: '#6B7FA3', marginBottom: '10px', lineHeight: 1.5 }}>Upload a clear photo for your visitor badge.</p>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button type="button" onClick={() => fileInputRef.current?.click()} style={{
+                      display: 'inline-flex', alignItems: 'center', gap: '5px',
+                      padding: '7px 14px', borderRadius: '8px', border: '1.5px solid rgba(47,93,170,0.2)',
+                      background: 'rgba(47,93,170,0.05)', cursor: 'pointer', fontSize: '0.68rem', fontWeight: 700, color: '#2F5DAA',
+                    }}>
+                      <svg style={{ width: '11px', height: '11px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                      </svg>
+                      {croppedPhotoUrl ? 'Change Photo' : 'Upload Photo'}
+                    </button>
+                    {croppedPhotoUrl && (
+                      <button type="button" onClick={() => { setCroppedPhoto(null); setCroppedPhotoUrl(null); }} style={{
+                        padding: '7px 12px', borderRadius: '8px', border: '1px solid #E2E8F0',
+                        background: 'transparent', cursor: 'pointer', fontSize: '0.68rem', fontWeight: 600, color: '#ef4444',
+                      }}>Remove</button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '18px' }}>
                 <div>
                   <label className="vp-label">Full Name <span style={{ color: '#ef4444' }}>*</span></label>

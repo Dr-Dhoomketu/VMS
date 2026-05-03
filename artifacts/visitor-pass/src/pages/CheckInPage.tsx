@@ -292,7 +292,6 @@ export default function CheckInPage() {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const webcamRef = useRef<Webcam>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetch(`${API_URL}/api/v1/users/employees`).then(r => r.json()).then(d => setEmployees(d)).catch(console.error);
@@ -305,15 +304,6 @@ export default function CheckInPage() {
     const img = webcamRef.current?.getScreenshot();
     if (img) { setPhoto(img); setShowCamera(false); setCameraError(''); }
   }, []);
-
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = ev => { if (ev.target?.result) setPhoto(ev.target.result as string); };
-    reader.readAsDataURL(file);
-    e.target.value = '';
-  };
 
   const onCropComplete = useCallback((_: unknown, area: CropArea) => setCroppedArea(area), []);
 
@@ -347,15 +337,6 @@ export default function CheckInPage() {
   return (
     <main style={{ minHeight: '100vh', background: '#ffffff', color: '#0A1F44', position: 'relative' }}>
       <GeoBackground />
-
-      {/* Hidden file input for photo upload fallback */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        style={{ display: 'none' }}
-        onChange={handleFileUpload}
-      />
 
       <nav style={{
         position: 'sticky', top: 0, zIndex: 50,
@@ -440,14 +421,14 @@ export default function CheckInPage() {
                   </div>
                   <p style={{ color: '#fff', fontWeight: 700, fontSize: '0.95rem', marginBottom: '8px' }}>Camera access denied</p>
                   <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem', lineHeight: 1.6, marginBottom: '28px' }}>
-                    Your browser blocked camera access. Please allow camera permission or upload a photo instead.
+                    Please allow camera access in your browser settings and try again. Camera is required for walk-in check-in.
                   </p>
                   <button
-                    onClick={() => { setCameraError(''); setShowCamera(false); fileInputRef.current?.click(); }}
+                    onClick={() => { setCameraError(''); setShowCamera(true); }}
                     className="btn-vp-primary"
                     style={{ width: '100%', justifyContent: 'center', marginBottom: '10px' }}
                   >
-                    Upload Photo Instead
+                    Try Again
                   </button>
                   <button onClick={() => { setShowCamera(false); setCameraError(''); }} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'transparent', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', fontSize: '0.75rem' }}>
                     Cancel
@@ -505,7 +486,7 @@ export default function CheckInPage() {
               <h3 style={{ fontSize: '0.55rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.25em', color: '#6B7FA3', marginBottom: '24px' }}>Personal Information</h3>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '18px' }}>
 
-                {/* Photo capture */}
+                {/* Photo capture — camera only for walk-in */}
                 <div style={{ gridColumn: '1/-1', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
                   <div style={{
                     width: '90px', height: '90px', borderRadius: '50%', overflow: 'hidden',
@@ -520,37 +501,21 @@ export default function CheckInPage() {
                       </svg>
                     )}
                   </div>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <button
-                      type="button"
-                      onClick={() => { setCameraError(''); setShowCamera(true); }}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: '6px',
-                        padding: '8px 16px', borderRadius: '8px', border: '1.5px solid rgba(47,93,170,0.2)',
-                        background: 'rgba(47,93,170,0.04)', cursor: 'pointer', fontSize: '0.72rem', fontWeight: 700, color: '#2F5DAA',
-                      }}
-                    >
-                      <svg style={{ width: '13px', height: '13px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
-                      </svg>
-                      Use Camera
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: '6px',
-                        padding: '8px 16px', borderRadius: '8px', border: '1.5px solid #E2E8F0',
-                        background: '#F8FAFC', cursor: 'pointer', fontSize: '0.72rem', fontWeight: 700, color: '#6B7FA3',
-                      }}
-                    >
-                      <svg style={{ width: '13px', height: '13px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
-                      </svg>
-                      Upload Photo
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => { setCameraError(''); setShowCamera(true); }}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '6px',
+                      padding: '9px 20px', borderRadius: '8px', border: '1.5px solid rgba(47,93,170,0.2)',
+                      background: 'rgba(47,93,170,0.05)', cursor: 'pointer', fontSize: '0.72rem', fontWeight: 700, color: '#2F5DAA',
+                    }}
+                  >
+                    <svg style={{ width: '13px', height: '13px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                    {croppedPhotoUrl ? 'Retake Photo' : 'Take Photo'}
+                  </button>
                   {croppedPhotoUrl && (
                     <button type="button" onClick={() => { setCroppedPhoto(null); setCroppedPhotoUrl(null); }} style={{ fontSize: '0.62rem', color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>
                       Remove photo
