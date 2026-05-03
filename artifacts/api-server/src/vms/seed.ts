@@ -24,12 +24,20 @@ async function ensureUser(
 }
 
 export async function autoSeed() {
-  const deptNames = ['Engineering', 'Human Resources', 'Finance', 'Operations', 'Marketing'];
-  for (const name of deptNames) {
-    const exists = await Department.findOne({ name });
+  const deptData = [
+    { name: 'IT', code: 'IT' },
+    { name: 'Human Resources', code: 'HR' },
+    { name: 'General', code: 'GEN' },
+    { name: 'Finance', code: 'FIN' },
+    { name: 'Operations', code: 'OPS' },
+    { name: 'Marketing', code: 'MKT' },
+    { name: 'Engineering', code: 'ENG' },
+  ];
+  for (const d of deptData) {
+    const exists = await Department.findOne({ name: d.name });
     if (!exists) {
-      await Department.create({ name, code: name.replace(/\s+/g, '').slice(0, 3).toUpperCase() });
-      console.log('Created dept:', name);
+      await Department.create(d);
+      console.log('Created dept:', d.name);
     }
   }
 
@@ -48,14 +56,19 @@ export async function autoSeed() {
     }
   }
 
-  await ensureUser('admin@visitorpass.com', 'Admin User', 'admin123', 'Admin');
-
-  const eng = await Department.findOne({ name: 'Engineering' });
+  const it = await Department.findOne({ name: 'IT' });
+  const hr = await Department.findOne({ name: 'Human Resources' });
+  const gen = await Department.findOne({ name: 'General' });
   const mgr = await Designation.findOne({ name: 'Manager' });
-  await ensureUser(
-    'employee@visitorpass.com', 'John Smith', 'employee123', 'Employee',
-    { department: eng?._id, designation: mgr?._id }
-  );
+  const eng = await Department.findOne({ name: 'Engineering' });
+
+  await ensureUser('admin@vms.com', 'Admin User', 'password123', 'Admin');
+  await ensureUser('it@vms.com', 'IT Employee', 'password123', 'Employee', { department: it?._id, designation: mgr?._id });
+  await ensureUser('hr@vms.com', 'HR Employee', 'password123', 'Employee', { department: hr?._id, designation: mgr?._id });
+  await ensureUser('general@vms.com', 'General Employee', 'password123', 'Employee', { department: gen?._id, designation: mgr?._id });
+
+  await ensureUser('admin@visitorpass.com', 'Admin User', 'admin123', 'Admin');
+  await ensureUser('employee@visitorpass.com', 'John Smith', 'employee123', 'Employee', { department: eng?._id, designation: mgr?._id });
 
   console.log('Auto-seed complete.');
 }

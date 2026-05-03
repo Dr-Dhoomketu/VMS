@@ -4,6 +4,23 @@ import { protect, authorize } from './auth.js';
 
 const router = Router();
 
+function resolveQrLookup(body: any): Promise<any> {
+  if (body.qrData && typeof body.qrData === 'object') {
+    const { visitId, token } = body.qrData;
+    if (visitId) {
+      return Visit.findOne({ _id: visitId, ...(token ? { qrToken: token } : {}) })
+        .populate('visitor', 'name phone email imageUrl aadhar gender address')
+        .populate('meetWith', 'name email');
+    }
+  }
+  if (body.qrToken) {
+    return Visit.findOne({ qrToken: body.qrToken })
+      .populate('visitor', 'name phone email imageUrl aadhar gender address')
+      .populate('meetWith', 'name email');
+  }
+  return Promise.resolve(null);
+}
+
 router.get('/scan/:qrToken', protect, async (req: Request, res: Response): Promise<void> => {
   try {
     const visit = await Visit.findOne({ qrToken: req.params.qrToken })
@@ -17,11 +34,8 @@ router.get('/scan/:qrToken', protect, async (req: Request, res: Response): Promi
 });
 
 router.post('/scan', protect, async (req: Request, res: Response): Promise<void> => {
-  const { qrToken } = req.body;
   try {
-    const visit = await Visit.findOne({ qrToken })
-      .populate('visitor', 'name phone email imageUrl aadhar gender address')
-      .populate('meetWith', 'name email');
+    const visit = await resolveQrLookup(req.body);
     if (!visit) { res.status(404).json({ message: 'QR code not found or invalid' }); return; }
     res.json(visit);
   } catch (err: any) {
@@ -30,9 +44,16 @@ router.post('/scan', protect, async (req: Request, res: Response): Promise<void>
 });
 
 router.post('/checkin', protect, authorize('Admin', 'Security'), async (req: any, res: Response): Promise<void> => {
-  const { qrToken } = req.body;
+  const { qrToken, visitId, qrData } = req.body;
   try {
-    const visit = await Visit.findOne({ qrToken });
+    let visit: any = null;
+    if (visitId) {
+      visit = await Visit.findById(visitId);
+    } else if (qrData && typeof qrData === 'object') {
+      visit = await Visit.findOne({ _id: qrData.visitId, ...(qrData.token ? { qrToken: qrData.token } : {}) });
+    } else if (qrToken) {
+      visit = await Visit.findOne({ qrToken });
+    }
     if (!visit) { res.status(404).json({ message: 'QR code not found or invalid' }); return; }
     if (visit.status !== 'Approved') { res.status(400).json({ message: `Visit is ${visit.status}, cannot check in` }); return; }
     visit.status = 'CheckedIn';
@@ -47,11 +68,16 @@ router.post('/checkin', protect, authorize('Admin', 'Security'), async (req: any
 });
 
 router.post('/checkout', protect, authorize('Admin', 'Security'), async (req: any, res: Response): Promise<void> => {
-  const { qrToken, visitId } = req.body;
+  const { qrToken, visitId, qrData } = req.body;
   try {
-    const visit = qrToken
-      ? await Visit.findOne({ qrToken })
-      : await Visit.findById(visitId);
+    let visit: any = null;
+    if (visitId) {
+      visit = await Visit.findById(visitId);
+    } else if (qrData && typeof qrData === 'object') {
+      visit = await Visit.findOne({ _id: qrData.visitId });
+    } else if (qrToken) {
+      visit = await Visit.findOne({ qrToken });
+    }
     if (!visit) { res.status(404).json({ message: 'Visit not found' }); return; }
     visit.status = 'CheckedOut';
     visit.checkoutTime = new Date();
@@ -76,9 +102,9 @@ router.get('/status/:visitId', protect, async (req: Request, res: Response): Pro
   }
 });
 
-router.get('/gate-pass/:visitId', protect, async (req: Request, res: Response): Promise<void> => {
+async function gatePassHandler(req: Request, res: Response): Promise<void> {
   try {
-    const visit = await Visit.findById(req.params.visitId)
+    const visit = await Visit.findById(req.params.id || req.params.visitId)
       .populate('visitor', 'name phone email imageUrl aadhar gender address')
       .populate('meetWith', 'name email');
     if (!visit) { res.status(404).json({ message: 'Visit not found' }); return; }
@@ -97,7 +123,10 @@ router.get('/gate-pass/:visitId', protect, async (req: Request, res: Response): 
   } catch (err: any) {
     res.status(500).json({ message: 'Server error', error: err.message });
   }
-});
+}
+
+router.get('/gate-pass/:visitId', protect, gatePassHandler);
+router.get('/pass/:id', protect, gatePassHandler);
 
 router.get('/visitor/:phone', async (req: Request, res: Response): Promise<void> => {
   try {

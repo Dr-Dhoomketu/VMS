@@ -20,7 +20,7 @@ export interface IVisit extends Document {
 }
 const VisitSchema = new Schema<IVisit>({
   visitor: { type: Schema.Types.ObjectId, ref: 'Visitor', required: true },
-  meetWith: { type: Schema.Types.ObjectId, ref: 'VmsUser', required: true },
+  meetWith: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   purpose: { type: String, required: true },
   status: { type: String, default: 'Pending', enum: ['Pending','Approved','Rejected','CheckedIn','CheckedOut'] },
   scheduledTime: Date, fromTime: String, toTime: String,
@@ -37,13 +37,13 @@ export interface IVmsUser extends Document {
 const VmsUserSchema = new Schema<IVmsUser>({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
+  password: { type: String, required: true, select: false },
   role: { type: String, default: 'Employee', enum: ['Admin','Employee','Security'] },
   isActive: { type: Boolean, default: true },
   department: { type: Schema.Types.ObjectId, ref: 'Department' },
   designation: { type: Schema.Types.ObjectId, ref: 'Designation' },
 }, { timestamps: true });
-export const VmsUser = mongoose.model<IVmsUser>('VmsUser', VmsUserSchema);
+export const VmsUser = mongoose.model<IVmsUser>('User', VmsUserSchema, 'users');
 
 export interface IDepartment extends Document { name: string; code?: string; }
 const DepartmentSchema = new Schema<IDepartment>({ name: { type: String, required: true }, code: String }, { timestamps: true });
