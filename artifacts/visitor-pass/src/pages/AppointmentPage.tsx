@@ -222,6 +222,23 @@ export default function AppointmentPage() {
     if (img) { setRawPhoto(img); setShowCamera(false); setCameraError(''); setBlinkDetected(false); lastBrightnessRef.current = []; }
   }, []);
 
+  const openCamera = useCallback(async () => {
+    setCameraError('');
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      setCameraError('Camera API not supported in this browser.');
+      setShowCamera(true);
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      stream.getTracks().forEach(t => t.stop());
+      setShowCamera(true);
+    } catch (err: any) {
+      setCameraError(String(err));
+      setShowCamera(true);
+    }
+  }, []);
+
   useEffect(() => {
     fetch(`${API_URL}/api/v1/users/employees`).then(r => r.json()).then(d => setEmployees(d)).catch(console.error);
   }, []);
@@ -271,7 +288,7 @@ export default function AppointmentPage() {
                 </div>
                 <p style={{ color: '#fff', fontWeight: 700, fontSize: '0.95rem', marginBottom: '8px' }}>Camera access denied</p>
                 <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem', lineHeight: 1.6, marginBottom: '28px' }}>Please allow camera access in your browser settings.</p>
-                <button onClick={() => { setCameraError(''); setShowCamera(true); }} className="btn-vp-primary" style={{ width: '100%', justifyContent: 'center', marginBottom: '10px' }}>Try Again</button>
+                <button onClick={openCamera} className="btn-vp-primary" style={{ width: '100%', justifyContent: 'center', marginBottom: '10px' }}>Try Again</button>
                 <button onClick={() => { setShowCamera(false); setCameraError(''); }} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'transparent', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', fontSize: '0.75rem' }}>Cancel</button>
               </div>
             ) : (
@@ -285,7 +302,7 @@ export default function AppointmentPage() {
                   </div>
                 </div>
                 <div style={{ borderRadius: '16px', overflow: 'hidden', border: blinkDetected ? '2px solid rgba(34,197,94,0.5)' : '2px solid rgba(255,255,255,0.1)', position: 'relative', transition: 'border-color 0.3s' }}>
-                  <Webcam ref={webcamRef} audio={false} screenshotFormat="image/jpeg" videoConstraints={{ facingMode: 'user', width: 440, height: 440 }} style={{ width: '100%', display: 'block' }} onUserMediaError={(err) => { setCameraError(String(err)); }}/>
+                  <Webcam ref={webcamRef} audio={false} screenshotFormat="image/jpeg" videoConstraints={{ facingMode: 'user' }} style={{ width: '100%', display: 'block' }} onUserMediaError={(err) => { setCameraError(String(err)); }}/>
                   <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
                     <div style={{ width: '200px', height: '200px', borderRadius: '50%', border: `2px solid ${blinkDetected ? 'rgba(34,197,94,0.6)' : 'rgba(255,255,255,0.5)'}`, transition: 'border-color 0.3s' }}/>
                   </div>
@@ -373,7 +390,7 @@ export default function AppointmentPage() {
               {/* Live Photo with blink detection */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '24px', paddingBottom: '24px', borderBottom: '1px solid rgba(10,31,68,0.06)' }}>
                 <div
-                  onClick={() => { setCameraError(''); setShowCamera(true); }}
+                  onClick={openCamera}
                   style={{
                     width: '80px', height: '80px', borderRadius: '50%', overflow: 'hidden', flexShrink: 0,
                     border: croppedPhotoUrl ? '2px solid #2F5DAA' : '2px dashed rgba(47,93,170,0.25)',
@@ -397,7 +414,7 @@ export default function AppointmentPage() {
                     Camera required — blink detection verifies liveness.
                   </p>
                   <div style={{ display: 'flex', gap: '8px' }}>
-                    <button type="button" onClick={() => { setCameraError(''); setShowCamera(true); }} style={{
+                    <button type="button" onClick={openCamera} style={{
                       display: 'inline-flex', alignItems: 'center', gap: '5px',
                       padding: '7px 14px', borderRadius: '8px', border: '1.5px solid rgba(47,93,170,0.2)',
                       background: 'rgba(47,93,170,0.05)', cursor: 'pointer', fontSize: '0.68rem', fontWeight: 700, color: '#2F5DAA',

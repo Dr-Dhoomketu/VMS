@@ -428,6 +428,23 @@ export default function CheckInPage() {
     if (img) { setPhoto(img); setShowCamera(false); setCameraError(''); setBlinkDetected(false); lastBrightnessRef.current = []; }
   }, []);
 
+  const openCamera = useCallback(async () => {
+    setCameraError('');
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      setCameraError('Camera API not supported in this browser.');
+      setShowCamera(true);
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      stream.getTracks().forEach(t => t.stop());
+      setShowCamera(true);
+    } catch (err: any) {
+      setCameraError(String(err));
+      setShowCamera(true);
+    }
+  }, []);
+
   const resetRecaptcha = () => {
     try { recaptchaVerifierRef.current?.clear(); } catch {}
     recaptchaVerifierRef.current = null;
@@ -647,7 +664,7 @@ export default function CheckInPage() {
                   <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem', lineHeight: 1.6, marginBottom: '28px' }}>
                     Please allow camera access in your browser settings and try again. Camera is required for walk-in check-in.
                   </p>
-                  <button onClick={() => { setCameraError(''); setShowCamera(true); }} className="btn-vp-primary" style={{ width: '100%', justifyContent: 'center', marginBottom: '10px' }}>Try Again</button>
+                  <button onClick={openCamera} className="btn-vp-primary" style={{ width: '100%', justifyContent: 'center', marginBottom: '10px' }}>Try Again</button>
                   <button onClick={() => { setShowCamera(false); setCameraError(''); }} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'transparent', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', fontSize: '0.75rem' }}>Cancel</button>
                 </div>
               ) : (
@@ -678,7 +695,7 @@ export default function CheckInPage() {
                       ref={webcamRef}
                       audio={false}
                       screenshotFormat="image/jpeg"
-                      videoConstraints={{ facingMode: 'user', width: 440, height: 440 }}
+                      videoConstraints={{ facingMode: 'user' }}
                       style={{ width: '100%', display: 'block' }}
                       onUserMediaError={(err) => { console.error('Camera error:', err); setCameraError(String(err)); }}
                     />
@@ -740,7 +757,7 @@ export default function CheckInPage() {
                   border: croppedPhotoUrl ? '2px solid #2F5DAA' : '2px dashed rgba(47,93,170,0.25)',
                   background: 'rgba(47,93,170,0.04)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-                }} onClick={() => { setCameraError(''); setShowCamera(true); }}>
+                }} onClick={openCamera}>
                   {croppedPhotoUrl
                     ? <img src={croppedPhotoUrl} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }}/>
                     : <svg style={{ width: '24px', height: '24px', color: '#A0AEC0' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
@@ -751,7 +768,7 @@ export default function CheckInPage() {
                   <input required name="name" value={formData.name} onChange={handleChange} type="text" placeholder="John Doe"/>
                 </div>
                 <div>
-                  <button type="button" onClick={() => { setCameraError(''); setShowCamera(true); }} style={{
+                  <button type="button" onClick={openCamera} style={{
                     display: 'flex', alignItems: 'center', gap: '5px', marginTop: '18px',
                     padding: '8px 14px', borderRadius: '8px', border: '1.5px solid rgba(47,93,170,0.2)',
                     background: 'rgba(47,93,170,0.05)', cursor: 'pointer', fontSize: '0.68rem', fontWeight: 700, color: '#2F5DAA', whiteSpace: 'nowrap',
