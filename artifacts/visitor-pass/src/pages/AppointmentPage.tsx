@@ -139,9 +139,8 @@ export default function AppointmentPage() {
   const [formData, setFormData] = useState({
     name: '', email: '', phone: '', gender: '', address: '',
     meetWith: '', purpose: '', scheduledTime: '', visitorStatus: '',
-    fromTime: '', toTime: '', duration: '',
+    fromTime: '', duration: '',
   });
-  const [flexibleEnd, setFlexibleEnd] = useState(false);
   const [rawPhoto, setRawPhoto] = useState<string | null>(null);
   const [croppedPhoto, setCroppedPhoto] = useState<File | null>(null);
   const [croppedPhotoUrl, setCroppedPhotoUrl] = useState<string | null>(null);
@@ -246,20 +245,12 @@ export default function AppointmentPage() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
-  const handleFlexibleToggle = () => {
-    setFlexibleEnd(prev => {
-      if (!prev) setFormData(f => ({ ...f, toTime: 'Flexible' }));
-      else setFormData(f => ({ ...f, toTime: '' }));
-      return !prev;
-    });
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); setError(''); setIsSubmitting(true);
     try {
       const payload = new FormData();
-      const fields = { ...formData, toTime: flexibleEnd ? 'Flexible / Open-ended' : formData.toTime };
-      Object.entries(fields).forEach(([k, v]) => payload.append(k, v));
+      Object.entries(formData).forEach(([k, v]) => payload.append(k, v));
       if (croppedPhoto) payload.append('photo', croppedPhoto);
       const res = await fetch(`${API_URL}/api/v1/visits/request`, { method: 'POST', body: payload });
       if (res.ok) setStep(2);
@@ -504,55 +495,6 @@ export default function AppointmentPage() {
                   />
                 </div>
 
-                {/* To Time with flexible toggle */}
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-                    <label className="vp-label" style={{ margin: 0 }}>To Time</label>
-                    <button
-                      type="button"
-                      onClick={handleFlexibleToggle}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: '5px',
-                        padding: '3px 10px', borderRadius: '20px', cursor: 'pointer', fontSize: '0.62rem', fontWeight: 700,
-                        border: `1.5px solid ${flexibleEnd ? '#0A1F44' : '#E2E8F0'}`,
-                        background: flexibleEnd ? '#0A1F44' : 'transparent',
-                        color: flexibleEnd ? '#fff' : '#6B7FA3',
-                        transition: 'all 0.2s',
-                      }}
-                    >
-                      <svg style={{ width: '10px', height: '10px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                      </svg>
-                      Flexible end
-                    </button>
-                  </div>
-
-                  {flexibleEnd ? (
-                    <div style={{
-                      display: 'flex', alignItems: 'center', gap: '10px',
-                      padding: '11px 14px', borderRadius: '10px',
-                      border: '1.5px solid rgba(10,31,68,0.15)', background: 'rgba(10,31,68,0.03)',
-                    }}>
-                      <svg style={{ width: '14px', height: '14px', color: '#0A1F44', flexShrink: 0 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                      </svg>
-                      <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#0A1F44' }}>Open / Flexible end time</span>
-                    </div>
-                  ) : (
-                    <QuickTimePicker
-                      value={formData.toTime}
-                      onChange={v => setFormData(f => ({ ...f, toTime: v }))}
-                      placeholder="End time"
-                    />
-                  )}
-
-                  {!flexibleEnd && (
-                    <p style={{ fontSize: '0.6rem', color: '#A0AEC0', marginTop: '6px', fontStyle: 'italic' }}>
-                      Toggle "Flexible end" if the meeting may run over
-                    </p>
-                  )}
-                </div>
-
                 <div>
                   <label className="vp-label">Purpose of Visit <span style={{ color: '#ef4444' }}>*</span></label>
                   <input required name="purpose" value={formData.purpose} onChange={handleChange} type="text" placeholder="Interview, Meeting, etc."/>
@@ -583,7 +525,7 @@ export default function AppointmentPage() {
                 {isSubmitting ? 'Requesting...' : 'Confirm Appointment →'}
               </button>
               <button type="button"
-                onClick={() => { setFormData({ name:'',email:'',phone:'',gender:'',address:'',meetWith:'',purpose:'',scheduledTime:'',visitorStatus:'',fromTime:'',toTime:'',duration:'' }); setFlexibleEnd(false); }}
+                onClick={() => setFormData({ name:'',email:'',phone:'',gender:'',address:'',meetWith:'',purpose:'',scheduledTime:'',visitorStatus:'',fromTime:'',duration:'' })}
                 className="btn-vp-secondary" style={{ padding: '14px 28px', fontSize: '0.72rem' }}>
                 Clear
               </button>

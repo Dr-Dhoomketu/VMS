@@ -328,7 +328,7 @@ export default function CheckInPage() {
   const [badgeColor, setBadgeColor] = useState('#2F5DAA');
   const [formData, setFormData] = useState({
     name: '', email: '', phone: '', gender: '', address: '', nationality: '',
-    aadhar: '', meetWith: '', purpose: '', fromTime: '', toTime: '', duration: '',
+    aadhar: '', meetWith: '', purpose: '', fromTime: '', duration: '',
   });
   const [photo, setPhoto] = useState<string | null>(null);
   const [croppedPhoto, setCroppedPhoto] = useState<File | null>(null);
@@ -923,10 +923,6 @@ export default function CheckInPage() {
                 <div>
                   <label className="vp-label">Check-In Time</label>
                   <QuickTimePicker value={formData.fromTime} onChange={v => setFormData(f => ({ ...f, fromTime: v }))} placeholder="Select time"/>
-                </div>
-                <div>
-                  <label className="vp-label">Expected Check-Out Time</label>
-                  <QuickTimePicker value={formData.toTime} onChange={v => setFormData(f => ({ ...f, toTime: v }))} placeholder="Select time"/>
                 </div>
                 <div style={{ gridColumn: '1/-1' }}>
                   <label className="vp-label">Expected Duration</label>

@@ -8,7 +8,7 @@ interface Visit {
   createdAt: string;
   updatedAt: string;
   fromTime?: string;
-  toTime?: string;
+
   duration?: string;
   qrToken?: string;
   visitor?: { name: string; phone: string; email?: string; imageUrl?: string };
@@ -65,15 +65,11 @@ function VisitorPass({ visit }: { visit: Visit }) {
               </div>
             ))}
           </div>
-          {(visit.fromTime || visit.toTime) && (
+          {(visit.fromTime || visit.duration) && (
             <div style={{ marginTop:12, display:'flex', gap:8 }}>
               {visit.fromTime && <div style={{ background:'#F8FAFC', border:'1px solid #E2E8F0', borderRadius:8, padding:'5px 10px', flex:1 }}>
                 <div style={{ fontSize:'0.45rem', letterSpacing:'0.2em', color:'#6B7FA3', textTransform:'uppercase', fontWeight:800 }}>From</div>
                 <div style={{ fontSize:'0.75rem', fontWeight:700, color:'#0A1F44' }}>{fmt12(visit.fromTime)}</div>
-              </div>}
-              {visit.toTime && <div style={{ background:'#F8FAFC', border:'1px solid #E2E8F0', borderRadius:8, padding:'5px 10px', flex:1 }}>
-                <div style={{ fontSize:'0.45rem', letterSpacing:'0.2em', color:'#6B7FA3', textTransform:'uppercase', fontWeight:800 }}>To</div>
-                <div style={{ fontSize:'0.75rem', fontWeight:700, color:'#0A1F44' }}>{fmt12(visit.toTime)}</div>
               </div>}
               {visit.duration && <div style={{ background:'#F8FAFC', border:'1px solid #E2E8F0', borderRadius:8, padding:'5px 10px', flex:1 }}>
                 <div style={{ fontSize:'0.45rem', letterSpacing:'0.2em', color:'#6B7FA3', textTransform:'uppercase', fontWeight:800 }}>Duration</div>
