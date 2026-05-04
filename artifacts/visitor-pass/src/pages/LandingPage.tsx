@@ -282,7 +282,7 @@ export default function LandingPage() {
               <span style={{
                 background: 'linear-gradient(135deg, #2F5DAA 0%, #4A7FD4 60%, #6fa0e8 100%)',
                 WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
-              }}>SERVICE</span>
+              }}>SYSTEM</span>
             </h1>
 
             <p className="hero-line" style={{
