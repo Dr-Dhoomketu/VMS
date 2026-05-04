@@ -184,7 +184,7 @@ export default function LandingPage() {
       gsap.from('.hero-cards-wrap', { x: 48, opacity: 0, duration: 1.1, ease: 'power3.out', delay: 0.2 });
       gsap.fromTo('.feat-card',
         { y: 24, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.6, stagger: 0.08, ease: 'power3.out', clearProps: 'all',
+        { y: 0, opacity: 1, duration: 0.6, stagger: 0.08, ease: 'power3.out',
           scrollTrigger: { trigger: cardsRef.current, start: 'top bottom', once: true } }
       );
     });
@@ -329,12 +329,13 @@ export default function LandingPage() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px' }}>
             {features.map((f, i) => (
               <div key={i} className="feat-card" style={{
+                opacity: 0,
                 background: '#fff',
                 border: '1px solid rgba(47,93,170,0.1)',
                 borderRadius: '20px',
                 padding: '36px',
                 boxShadow: '0 2px 20px rgba(10,31,68,0.05)',
-                transition: 'all 0.3s cubic-bezier(0.16,1,0.3,1)',
+                transition: 'box-shadow 0.3s cubic-bezier(0.16,1,0.3,1), border-color 0.3s cubic-bezier(0.16,1,0.3,1), transform 0.3s cubic-bezier(0.16,1,0.3,1)',
                 cursor: 'default',
                 position: 'relative', overflow: 'hidden',
               }}
