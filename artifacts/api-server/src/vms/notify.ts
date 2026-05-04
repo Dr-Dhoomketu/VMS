@@ -22,19 +22,28 @@ async function sendViaResend(to: string, subject: string, html: string, text: st
   }
 }
 
-// ── SMTP fallback (nodemailer) ──
+// ── SMTP (nodemailer) ──
 function createSmtpTransport() {
   const host = process.env['SMTP_HOST'];
-  const port = Number(process.env['SMTP_PORT'] || '587');
   const user = process.env['SMTP_USER'];
   const pass = process.env['SMTP_PASS'];
   if (!user || !pass) return null;
+  const domain = user.split('@')[1]?.toLowerCase() ?? '';
   if (!host) {
-    const domain = user.split('@')[1]?.toLowerCase() ?? '';
-    if (domain === 'gmail.com') return nodemailer.createTransport({ service: 'gmail', auth: { user, pass } });
-    if (domain === 'outlook.com' || domain === 'hotmail.com' || domain === 'live.com') return nodemailer.createTransport({ service: 'hotmail', auth: { user, pass } });
+    if (domain === 'gmail.com') {
+      return nodemailer.createTransport({
+        host: 'smtp.gmail.com',
+        port: 465,
+        secure: true,
+        auth: { user, pass },
+      });
+    }
+    if (domain === 'outlook.com' || domain === 'hotmail.com' || domain === 'live.com') {
+      return nodemailer.createTransport({ service: 'hotmail', auth: { user, pass } });
+    }
     return null;
   }
+  const port = Number(process.env['SMTP_PORT'] || '465');
   return nodemailer.createTransport({ host, port, secure: port === 465, auth: { user, pass } });
 }
 
@@ -53,10 +62,10 @@ async function sendViaSmtp(to: string, subject: string, html: string, text: stri
   }
 }
 
-// ── Unified send: Resend first, SMTP fallback ──
+// ── Unified send: SMTP first, Resend fallback ──
 async function sendEmail(to: string, subject: string, html: string, text: string): Promise<boolean> {
-  if (await sendViaResend(to, subject, html, text)) return true;
-  return sendViaSmtp(to, subject, html, text);
+  if (await sendViaSmtp(to, subject, html, text)) return true;
+  return sendViaResend(to, subject, html, text);
 }
 
 export async function sendOtpEmail(to: string, otp: string): Promise<boolean> {
