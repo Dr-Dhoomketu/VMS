@@ -182,10 +182,11 @@ export default function LandingPage() {
     const ctx = gsap.context(() => {
       gsap.from('.hero-line', { y: 36, opacity: 0, duration: 0.9, stagger: 0.1, ease: 'power3.out', delay: 0.05 });
       gsap.from('.hero-cards-wrap', { x: 48, opacity: 0, duration: 1.1, ease: 'power3.out', delay: 0.2 });
-      gsap.from('.feat-card', {
-        scrollTrigger: { trigger: cardsRef.current, start: 'top 95%' },
-        y: 24, opacity: 0, duration: 0.6, stagger: 0.08, ease: 'power3.out',
-      });
+      gsap.fromTo('.feat-card',
+        { y: 24, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.6, stagger: 0.08, ease: 'power3.out', clearProps: 'all',
+          scrollTrigger: { trigger: cardsRef.current, start: 'top bottom', once: true } }
+      );
     });
     return () => ctx.revert();
   }, []);
@@ -325,9 +326,11 @@ export default function LandingPage() {
             <h2 style={{ fontSize: '2.2rem', fontWeight: 900, letterSpacing: '-0.04em', color: '#0A1F44', lineHeight: 1.1 }}>Built for enterprise security</h2>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', justifyContent: 'center' }}>
             {features.map((f, i) => (
               <div key={i} className="feat-card" style={{
+                flex: '1 1 240px',
+                maxWidth: '300px',
                 background: '#fff',
                 border: '1px solid rgba(47,93,170,0.1)',
                 borderRadius: '20px',
