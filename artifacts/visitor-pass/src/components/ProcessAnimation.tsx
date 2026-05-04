@@ -276,15 +276,36 @@ const screenComponents = [PhoneInviteScreen, PhoneQRScreen, PhoneScanScreen, Pho
 
 export default function ProcessAnimation() {
   const [phase, setPhase] = useState(0);
+  const [hoveredStep, setHoveredStep] = useState<number | null>(null);
   const sectionRef = useRef<HTMLElement>(null);
   const isInView = useInView(sectionRef, { once: true, margin: '-80px' });
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
+  const startInterval = () => {
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    intervalRef.current = setInterval(() => {
       setPhase(p => (p + 1) % TOTAL_PHASES);
     }, PHASE_DURATION);
-    return () => clearInterval(interval);
+  };
+
+  useEffect(() => {
+    startInterval();
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
   }, []);
+
+  const handleStepEnter = (i: number) => {
+    setHoveredStep(i);
+    setPhase(i);
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+  };
+
+  const handleStepLeave = () => {
+    setHoveredStep(null);
+    startInterval();
+  };
 
   const ScreenComponent = screenComponents[phase];
 
@@ -378,10 +399,13 @@ export default function ProcessAnimation() {
           >
             {phases.map((p, i) => {
               const active = i === phase;
+              const isHovered = hoveredStep === i;
               return (
                 <motion.div
                   key={i}
                   onClick={() => setPhase(i)}
+                  onMouseEnter={() => handleStepEnter(i)}
+                  onMouseLeave={handleStepLeave}
                   animate={{
                     background: active ? '#fff' : 'transparent',
                     borderColor: active ? 'rgba(47,93,170,0.25)' : 'rgba(47,93,170,0.08)',
@@ -397,8 +421,8 @@ export default function ProcessAnimation() {
                     position: 'relative', overflow: 'hidden',
                   }}
                 >
-                  {/* Progress bar on active */}
-                  {active && (
+                  {/* Progress bar on active — paused when hovered */}
+                  {active && !isHovered && (
                     <motion.div
                       key={`bar-${phase}`}
                       initial={{ width: '0%' }}
@@ -410,6 +434,14 @@ export default function ProcessAnimation() {
                         borderRadius: '0 0 0 16px',
                       }}
                     />
+                  )}
+                  {/* Full bar when hovered/paused */}
+                  {active && isHovered && (
+                    <div style={{
+                      position: 'absolute', bottom: 0, left: 0, height: '2px', width: '100%',
+                      background: 'linear-gradient(90deg, #2F5DAA, #4A7FD4)',
+                      borderRadius: '0 0 0 16px',
+                    }}/>
                   )}
 
                   {/* Icon */}

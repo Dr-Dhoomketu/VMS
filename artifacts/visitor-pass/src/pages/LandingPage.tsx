@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { Link } from 'wouter';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -36,116 +36,142 @@ function GridBackground() {
   );
 }
 
+const cardInfos = [
+  {
+    label: 'VISITOR ID',
+    title: 'Visitor ID',
+    desc: 'Every visitor receives a unique digital ID upon check-in — photo-verified and timestamped for a complete audit trail.',
+    detail: 'Includes name, photo, purpose of visit, host, and time of entry.',
+    icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z',
+    g1: '#0A1F44', g2: '#1e3a7a',
+    iconG1: '#2F5DAA', iconG2: '#4A7FD4',
+    rotate: -10, top: 0, right: 60, delay: 0,
+    w: 158, h: 188,
+    infoSide: 'left' as const,
+  },
+  {
+    label: 'VERIFIED',
+    title: 'Identity Verified',
+    desc: 'Multi-factor identity verification using OTP (SMS + email) and live photo liveness detection before access is granted.',
+    detail: 'Biometric blink detection prevents spoofing or fake check-ins.',
+    icon: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z',
+    g1: '#152c6b', g2: '#2a4d9e',
+    iconG1: '#4A7FD4', iconG2: '#6fa0e8',
+    rotate: 7, top: 165, right: -15, delay: 1.2,
+    w: 158, h: 188,
+    infoSide: 'left' as const,
+  },
+  {
+    label: 'GATE PASS',
+    title: 'Digital Gate Pass',
+    desc: 'Upon host approval, a QR-coded gate pass is issued instantly — scannable at any entry or exit point without paper.',
+    detail: 'Pass includes access zone, valid time window, and real-time host notification.',
+    icon: 'M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z',
+    g1: '#0d2550', g2: '#173776',
+    iconG1: '#3b6dc0', iconG2: '#2F5DAA',
+    rotate: -5, top: 342, right: 80, delay: 2.2,
+    w: 140, h: 168,
+    infoSide: 'left' as const,
+  },
+];
+
 function FloatingCards() {
-  const icons = [
-    {
-      path: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z',
-      label: 'VISITOR ID',
-      g1: '#0A1F44', g2: '#1e3a7a',
-      iconG1: '#2F5DAA', iconG2: '#4A7FD4',
-      rotate: -10, top: 0, right: 60, delay: 0,
-      w: 158, h: 188,
-    },
-    {
-      path: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z',
-      label: 'VERIFIED',
-      g1: '#152c6b', g2: '#2a4d9e',
-      iconG1: '#4A7FD4', iconG2: '#6fa0e8',
-      rotate: 7, top: 165, right: -15, delay: 1.2,
-      w: 158, h: 188,
-    },
-    {
-      path: 'M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z',
-      label: 'GATE PASS',
-      g1: '#0d2550', g2: '#173776',
-      iconG1: '#3b6dc0', iconG2: '#2F5DAA',
-      rotate: -5, top: 342, right: 80, delay: 2.2,
-      w: 140, h: 168,
-    },
-  ];
+  const [hoveredCard, setHoveredCard] = useState<number | null>(null);
 
   return (
     <div style={{ position: 'relative', width: '460px', height: '560px', flexShrink: 0 }}>
-      {icons.map((card, i) => (
-        <div key={i} style={{
-          position: 'absolute',
-          top: card.top,
-          right: card.right,
-          width: card.w,
-          height: card.h,
-          borderRadius: '28px',
-          background: `linear-gradient(145deg, ${card.g1} 0%, ${card.g2} 100%)`,
-          boxShadow: `0 40px 100px rgba(10,31,68,0.35), 0 12px 32px rgba(10,31,68,0.2), inset 0 1px 0 rgba(255,255,255,0.08)`,
-          border: '1px solid rgba(255,255,255,0.08)',
-          display: 'flex', flexDirection: 'column',
-          alignItems: 'center', justifyContent: 'center', gap: '14px',
-          transform: `rotate(${card.rotate}deg)`,
-          animation: `cardFloat${i + 1} ${5.5 + i}s ease-in-out ${card.delay}s infinite`,
-        }}>
+      {cardInfos.map((card, i) => (
+        <div key={i} style={{ position: 'absolute', top: card.top, right: card.right }}>
+          {/* Info card tooltip */}
           <div style={{
-            width: '72px', height: '72px', borderRadius: '20px',
-            background: `linear-gradient(135deg, ${card.iconG1}, ${card.iconG2})`,
-            boxShadow: `0 8px 24px rgba(47,93,170,0.4)`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            position: 'absolute',
+            right: card.w + 16,
+            top: '50%',
+            transform: 'translateY(-50%)',
+            width: '220px',
+            background: '#fff',
+            borderRadius: '16px',
+            padding: '18px 20px',
+            boxShadow: '0 20px 60px rgba(10,31,68,0.18), 0 4px 16px rgba(10,31,68,0.08)',
+            border: '1px solid rgba(47,93,170,0.12)',
+            opacity: hoveredCard === i ? 1 : 0,
+            pointerEvents: 'none',
+            transition: 'opacity 0.22s ease, transform 0.22s ease',
+            transform: `translateY(-50%) translateX(${hoveredCard === i ? '0px' : '8px'})`,
+            zIndex: 50,
           }}>
-            <svg style={{ width: '34px', height: '34px', color: '#fff' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.6" d={card.path}/>
-            </svg>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+              <div style={{
+                width: '36px', height: '36px', borderRadius: '10px', flexShrink: 0,
+                background: `linear-gradient(135deg, ${card.iconG1}, ${card.iconG2})`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <svg style={{ width: '18px', height: '18px', color: '#fff' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d={card.icon}/>
+                </svg>
+              </div>
+              <span style={{ fontSize: '0.82rem', fontWeight: 800, color: '#0A1F44', letterSpacing: '-0.02em' }}>{card.title}</span>
+            </div>
+            <p style={{ fontSize: '0.72rem', color: '#6B7FA3', lineHeight: 1.65, marginBottom: '8px' }}>{card.desc}</p>
+            <p style={{ fontSize: '0.65rem', color: '#4A7FD4', lineHeight: 1.55, fontWeight: 600 }}>{card.detail}</p>
+            {/* Arrow pointing right */}
+            <div style={{
+              position: 'absolute', right: '-8px', top: '50%', transform: 'translateY(-50%)',
+              width: 0, height: 0,
+              borderTop: '8px solid transparent',
+              borderBottom: '8px solid transparent',
+              borderLeft: '8px solid #fff',
+              filter: 'drop-shadow(2px 0 2px rgba(10,31,68,0.06))',
+            }}/>
           </div>
-          <span style={{
-            fontSize: '0.55rem', fontWeight: 800, letterSpacing: '0.2em',
-            color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase',
-          }}>{card.label}</span>
-          <div style={{
-            width: '40px', height: '3px', borderRadius: '2px',
-            background: `linear-gradient(90deg, ${card.iconG1}, ${card.iconG2})`,
-            opacity: 0.6,
-          }}/>
+
+          {/* Blue card */}
+          <div
+            onMouseEnter={() => setHoveredCard(i)}
+            onMouseLeave={() => setHoveredCard(null)}
+            style={{
+              width: card.w,
+              height: card.h,
+              borderRadius: '28px',
+              background: `linear-gradient(145deg, ${card.g1} 0%, ${card.g2} 100%)`,
+              boxShadow: hoveredCard === i
+                ? `0 50px 120px rgba(10,31,68,0.45), 0 16px 40px rgba(10,31,68,0.25), inset 0 1px 0 rgba(255,255,255,0.12)`
+                : `0 40px 100px rgba(10,31,68,0.35), 0 12px 32px rgba(10,31,68,0.2), inset 0 1px 0 rgba(255,255,255,0.08)`,
+              border: hoveredCard === i ? '1px solid rgba(255,255,255,0.18)' : '1px solid rgba(255,255,255,0.08)',
+              display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center', gap: '14px',
+              transform: `rotate(${card.rotate}deg)`,
+              animation: hoveredCard === i ? 'none' : `cardFloat${i + 1} ${5.5 + i}s ease-in-out ${card.delay}s infinite`,
+              cursor: 'default',
+              transition: 'box-shadow 0.25s ease, border 0.25s ease',
+            }}>
+            <div style={{
+              width: '72px', height: '72px', borderRadius: '20px',
+              background: `linear-gradient(135deg, ${card.iconG1}, ${card.iconG2})`,
+              boxShadow: `0 8px 24px rgba(47,93,170,0.4)`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <svg style={{ width: '34px', height: '34px', color: '#fff' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.6" d={card.icon}/>
+              </svg>
+            </div>
+            <span style={{
+              fontSize: '0.55rem', fontWeight: 800, letterSpacing: '0.2em',
+              color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase',
+            }}>{card.label}</span>
+            <div style={{
+              width: '40px', height: '3px', borderRadius: '2px',
+              background: `linear-gradient(90deg, ${card.iconG1}, ${card.iconG2})`,
+              opacity: 0.6,
+            }}/>
+          </div>
         </div>
       ))}
-
-      {/* Floating status chips */}
-      <div style={{
-        position: 'absolute', top: 68, left: -30,
-        background: '#fff', borderRadius: '999px',
-        padding: '10px 18px', boxShadow: '0 8px 32px rgba(10,31,68,0.14)',
-        border: '1px solid rgba(47,93,170,0.12)',
-        display: 'flex', alignItems: 'center', gap: '8px',
-        animation: 'chipFloat 5s ease-in-out infinite',
-      }}>
-        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 8px rgba(34,197,94,0.6)' }}/>
-        <span style={{ fontSize: '0.65rem', fontWeight: 800, color: '#0A1F44', letterSpacing: '0.08em' }}>APPROVED</span>
-      </div>
-
-      <div style={{
-        position: 'absolute', top: 278, left: -50,
-        background: '#fff', borderRadius: '14px',
-        padding: '12px 16px', boxShadow: '0 8px 32px rgba(10,31,68,0.12)',
-        border: '1px solid rgba(47,93,170,0.1)',
-        animation: 'chipFloat 6s ease-in-out 1s infinite',
-      }}>
-        <div style={{ fontSize: '0.55rem', fontWeight: 700, color: '#6B7FA3', letterSpacing: '0.1em', marginBottom: '3px' }}>CHECK-IN TIME</div>
-        <div style={{ fontSize: '1rem', fontWeight: 900, color: '#0A1F44', letterSpacing: '-0.02em' }}>09:42 AM</div>
-      </div>
-
-      <div style={{
-        position: 'absolute', bottom: 60, left: -20,
-        background: 'rgba(47,93,170,0.06)', borderRadius: '999px',
-        padding: '9px 16px', border: '1px solid rgba(47,93,170,0.15)',
-        display: 'flex', alignItems: 'center', gap: '6px',
-        animation: 'chipFloat 7s ease-in-out 2s infinite',
-      }}>
-        <svg style={{ width: '12px', height: '12px', color: '#2F5DAA' }} fill="currentColor" viewBox="0 0 24 24">
-          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/>
-        </svg>
-        <span style={{ fontSize: '0.62rem', fontWeight: 800, color: '#2F5DAA', letterSpacing: '0.08em' }}>LIVE SCAN</span>
-      </div>
 
       <style>{`
         @keyframes cardFloat1 { 0%,100%{transform:rotate(-10deg) translateY(0px)} 50%{transform:rotate(-10deg) translateY(-14px)} }
         @keyframes cardFloat2 { 0%,100%{transform:rotate(7deg) translateY(0px)} 50%{transform:rotate(7deg) translateY(-10px)} }
         @keyframes cardFloat3 { 0%,100%{transform:rotate(-5deg) translateY(0px)} 50%{transform:rotate(-5deg) translateY(-16px)} }
-        @keyframes chipFloat  { 0%,100%{transform:translateY(0px)} 50%{transform:translateY(-6px)} }
       `}</style>
     </div>
   );
@@ -266,7 +292,7 @@ export default function LandingPage() {
               Secure, intelligent visitor management for modern enterprises. Instant check-in, biometric verification, and real-time host notifications.
             </p>
 
-            <div className="hero-line" style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '52px' }}>
+            <div className="hero-line" style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
               <Link href="/check-in">
                 <button style={{
                   padding: '15px 32px', borderRadius: '10px', border: 'none',
@@ -295,19 +321,6 @@ export default function LandingPage() {
                   letterSpacing: '0.08em', textTransform: 'uppercase', transition: 'all 0.2s',
                 }}>Pre-Book</button>
               </Link>
-            </div>
-
-            <div className="hero-line" style={{ display: 'flex', gap: '40px' }}>
-              {[
-                { value: '99.9%', label: 'Uptime' },
-                { value: '<3s',   label: 'Check-in' },
-                { value: 'AES-256', label: 'Encryption' },
-              ].map(({ value, label }) => (
-                <div key={label}>
-                  <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#0A1F44', letterSpacing: '-0.03em', lineHeight: 1 }}>{value}</div>
-                  <div style={{ fontSize: '0.55rem', fontWeight: 700, color: '#A0AEC0', letterSpacing: '0.18em', textTransform: 'uppercase', marginTop: '6px' }}>{label}</div>
-                </div>
-              ))}
             </div>
           </div>
 
