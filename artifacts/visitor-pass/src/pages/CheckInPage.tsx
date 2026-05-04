@@ -775,6 +775,7 @@ export default function CheckInPage() {
                     : <svg style={{ width: '24px', height: '24px', color: '#A0AEC0' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                   }
                 </div>
+                <div style={{ fontSize: '0.5rem', fontWeight: 800, textAlign: 'center', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#6B7FA3', marginTop: 4 }}>Photo <span style={{ color: '#ef4444' }}>*</span></div>
                 <div style={{ flex: 1 }}>
                   <label className="vp-label">Full Name *</label>
                   <input required name="name" value={formData.name} onChange={handleChange} type="text" placeholder="John Doe"/>
@@ -796,7 +797,7 @@ export default function CheckInPage() {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
                 <div>
-                  <label className="vp-label">Email</label>
+                  <label className="vp-label">Email <span style={{ color: '#ef4444' }}>*</span></label>
                   <input name="email" value={formData.email} onChange={handleChange} type="email" placeholder="you@example.com"/>
                 </div>
                 <div>

@@ -413,7 +413,7 @@ export default function AppointmentPage() {
                 </div>
                 <div>
                   <p style={{ fontSize: '0.72rem', fontWeight: 700, color: '#0A1F44', marginBottom: '4px' }}>
-                    Live Photo <span style={{ color: '#6B7FA3', fontWeight: 500 }}>(optional)</span>
+                    Live Photo <span style={{ color: '#ef4444' }}>*</span>
                   </p>
                   <p style={{ fontSize: '0.67rem', color: '#6B7FA3', marginBottom: '10px', lineHeight: 1.5 }}>
                     Camera required — blink detection verifies liveness.
@@ -446,7 +446,7 @@ export default function AppointmentPage() {
                   <input required name="name" value={formData.name} onChange={handleChange} type="text" placeholder="John Doe"/>
                 </div>
                 <div>
-                  <label className="vp-label">Email Address</label>
+                  <label className="vp-label">Email Address <span style={{ color: '#ef4444' }}>*</span></label>
                   <input name="email" value={formData.email} onChange={handleChange} type="email" placeholder="you@example.com"/>
                 </div>
                 <div>
