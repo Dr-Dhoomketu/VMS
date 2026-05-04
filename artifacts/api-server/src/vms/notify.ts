@@ -330,49 +330,29 @@ export async function notifyVisitStatus(opts: {
   visitId: string;
   qrToken?: string;
 }) {
-  const transport = createTransport();
-  if (!transport) {
-    logger.info(
-      { visitId: opts.visitId, status: opts.status },
-      'Email notifications not configured (set SMTP_HOST, SMTP_USER, SMTP_PASS to enable). Visit status update logged only.'
-    );
-    return;
-  }
-
-  const from = `"VISITORPASS" <${process.env['SMTP_FROM'] || process.env['SMTP_USER'] || 'noreply@visitorpass.com'}>`;
+  const approved = opts.status === 'Approved';
 
   if (opts.visitorEmail) {
-    try {
-      const approved = opts.status === 'Approved';
-      await transport.sendMail({
-        from,
-        to: opts.visitorEmail,
-        subject: approved
-          ? `Your visit is approved — here's your QR code`
-          : `Update on your visit request`,
-        html: approved
-          ? visitorApprovedHtml(opts.visitorName, opts.qrToken ?? '', opts.visitId)
-          : visitorRejectedHtml(opts.visitorName, opts.visitId),
-        text: approved
-          ? `Hi ${opts.visitorName}, your visit has been approved. QR Token: ${opts.qrToken}`
-          : `Hi ${opts.visitorName}, your visit request was not approved. Please contact your host to reschedule.`,
-      });
-    } catch (err) {
-      logger.warn({ err, email: opts.visitorEmail }, 'Failed to send visitor notification email');
-    }
+    const ok = await sendEmail(
+      opts.visitorEmail,
+      approved ? `Your visit is approved — here's your QR code` : `Update on your visit request`,
+      approved
+        ? visitorApprovedHtml(opts.visitorName, opts.qrToken ?? '', opts.visitId)
+        : visitorRejectedHtml(opts.visitorName, opts.visitId),
+      approved
+        ? `Hi ${opts.visitorName}, your visit has been approved. QR Token: ${opts.qrToken}`
+        : `Hi ${opts.visitorName}, your visit request was not approved. Please contact your host to reschedule.`,
+    );
+    if (!ok) logger.warn({ email: opts.visitorEmail }, 'Failed to send visitor notification email');
   }
 
   if (opts.hostEmail) {
-    try {
-      await transport.sendMail({
-        from,
-        to: opts.hostEmail,
-        subject: `You ${opts.status === 'Approved' ? 'approved' : 'declined'} a visitor — ${opts.visitorName}`,
-        html: hostNotifyHtml(opts.visitorName, opts.status, opts.visitId),
-        text: `Visit for ${opts.visitorName} (ref: ${opts.visitId}) has been ${opts.status.toLowerCase()}.`,
-      });
-    } catch (err) {
-      logger.warn({ err, email: opts.hostEmail }, 'Failed to send host notification email');
-    }
+    const ok = await sendEmail(
+      opts.hostEmail,
+      `You ${approved ? 'approved' : 'declined'} a visitor — ${opts.visitorName}`,
+      hostNotifyHtml(opts.visitorName, opts.status, opts.visitId),
+      `Visit for ${opts.visitorName} (ref: ${opts.visitId}) has been ${opts.status.toLowerCase()}.`,
+    );
+    if (!ok) logger.warn({ email: opts.hostEmail }, 'Failed to send host notification email');
   }
 }
