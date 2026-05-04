@@ -278,7 +278,7 @@ export default function LandingPage() {
               fontWeight: 900, lineHeight: 0.92, letterSpacing: '-0.04em',
               textTransform: 'uppercase', color: '#0A1F44', marginBottom: '28px',
             }}>
-              VALUE MANGEMENT<br/>
+              VALUE MANAGEMENT<br/>
               <span style={{
                 background: 'linear-gradient(135deg, #2F5DAA 0%, #4A7FD4 60%, #6fa0e8 100%)',
                 WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
