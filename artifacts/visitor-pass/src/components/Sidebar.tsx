@@ -16,35 +16,19 @@ const navLinks = [
 
 function VTSLogo() {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-      {/* Icon mark */}
-      <div style={{
-        width: '36px', height: '36px', flexShrink: 0,
-        background: 'linear-gradient(135deg, #4A7FD4 0%, #2F5DAA 100%)',
-        borderRadius: '10px',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        boxShadow: '0 2px 8px rgba(47,93,170,0.45)',
-        position: 'relative', overflow: 'hidden',
-      }}>
-        <div style={{
-          position: 'absolute', inset: 0,
-          background: 'linear-gradient(135deg, rgba(255,255,255,0.18) 0%, transparent 60%)',
-        }}/>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-          <path d="M4 4L12 20L20 4" stroke="white" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round"/>
-          <path d="M8 4H16" stroke="white" strokeWidth="2.8" strokeLinecap="round"/>
-        </svg>
-      </div>
-      {/* Text */}
-      <div style={{ lineHeight: 1 }}>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
-          <span style={{ fontSize: '1rem', fontWeight: 900, color: '#ffffff', letterSpacing: '-0.01em' }}>VTS</span>
-          <span style={{ fontSize: '0.7rem', fontWeight: 500, color: 'rgba(255,255,255,0.55)', letterSpacing: '0.08em', marginLeft: '3px' }}>INFOSOFT</span>
-        </div>
-        <div style={{ fontSize: '0.42rem', fontWeight: 700, letterSpacing: '0.28em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.28)', marginTop: '3px' }}>
-          Management Portal
-        </div>
-      </div>
+    <div style={{
+      background: 'linear-gradient(135deg, #ffffff 0%, #e8eef8 100%)',
+      borderRadius: '10px',
+      padding: '6px 10px',
+      display: 'inline-flex',
+      alignItems: 'center',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.18)',
+    }}>
+      <img
+        src="/vts-logo.png"
+        alt="VTS Infosoft"
+        style={{ height: '38px', width: 'auto', objectFit: 'contain', display: 'block' }}
+      />
     </div>
   );
 }
@@ -52,21 +36,21 @@ function VTSLogo() {
 function VTSLogoMini() {
   return (
     <div style={{
-      width: '36px', height: '36px', flexShrink: 0,
-      background: 'linear-gradient(135deg, #4A7FD4 0%, #2F5DAA 100%)',
-      borderRadius: '10px',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      boxShadow: '0 2px 8px rgba(47,93,170,0.45)',
-      position: 'relative', overflow: 'hidden',
+      background: 'linear-gradient(135deg, #ffffff 0%, #dce6f5 100%)',
+      borderRadius: '8px',
+      padding: '4px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      boxShadow: '0 2px 6px rgba(0,0,0,0.18)',
+      width: '40px',
+      height: '40px',
     }}>
-      <div style={{
-        position: 'absolute', inset: 0,
-        background: 'linear-gradient(135deg, rgba(255,255,255,0.18) 0%, transparent 60%)',
-      }}/>
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-        <path d="M4 4L12 20L20 4" stroke="white" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M8 4H16" stroke="white" strokeWidth="2.8" strokeLinecap="round"/>
-      </svg>
+      <img
+        src="/vts-logo.png"
+        alt="VTS"
+        style={{ height: '28px', width: 'auto', objectFit: 'contain', display: 'block' }}
+      />
     </div>
   );
 }
@@ -263,40 +247,40 @@ export default function Sidebar() {
         </button>
       </div>
 
-      {/* Floating expand tab — only visible when collapsed */}
+      {/* Fixed expand button — always on screen when collapsed, avoids overflow clipping */}
       {collapsed && (
         <button
           onClick={toggleCollapse}
           title="Expand sidebar"
           style={{
-            position: 'absolute',
+            position: 'fixed',
             top: '50%',
-            right: '-16px',
+            left: '64px',
             transform: 'translateY(-50%)',
-            width: '16px',
-            height: '48px',
-            background: 'linear-gradient(180deg, #1a3a6e 0%, #0d2552 100%)',
-            border: '1px solid rgba(74,127,212,0.35)',
+            width: '18px',
+            height: '52px',
+            background: 'linear-gradient(180deg, #1e3f75 0%, #0d2552 100%)',
+            border: '1px solid rgba(74,127,212,0.4)',
             borderLeft: 'none',
             borderRadius: '0 8px 8px 0',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            zIndex: 70,
-            boxShadow: '3px 0 12px rgba(0,0,0,0.25)',
+            zIndex: 200,
+            boxShadow: '4px 0 14px rgba(0,0,0,0.3)',
             transition: 'background 0.2s, width 0.2s',
           }}
           onMouseEnter={e => {
             (e.currentTarget as HTMLElement).style.background = 'linear-gradient(180deg, #2F5DAA 0%, #1a3a6e 100%)';
-            (e.currentTarget as HTMLElement).style.width = '20px';
+            (e.currentTarget as HTMLElement).style.width = '22px';
           }}
           onMouseLeave={e => {
-            (e.currentTarget as HTMLElement).style.background = 'linear-gradient(180deg, #1a3a6e 0%, #0d2552 100%)';
-            (e.currentTarget as HTMLElement).style.width = '16px';
+            (e.currentTarget as HTMLElement).style.background = 'linear-gradient(180deg, #1e3f75 0%, #0d2552 100%)';
+            (e.currentTarget as HTMLElement).style.width = '18px';
           }}
         >
-          <svg style={{ width: '10px', height: '10px', color: 'rgba(255,255,255,0.7)', flexShrink: 0 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg style={{ width: '10px', height: '10px', color: 'rgba(255,255,255,0.85)', flexShrink: 0 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7"/>
           </svg>
         </button>
