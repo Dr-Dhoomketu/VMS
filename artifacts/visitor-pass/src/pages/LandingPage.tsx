@@ -326,11 +326,9 @@ export default function LandingPage() {
             <h2 style={{ fontSize: '2.2rem', fontWeight: 900, letterSpacing: '-0.04em', color: '#0A1F44', lineHeight: 1.1 }}>Built for enterprise security</h2>
           </div>
 
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', justifyContent: 'center' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px' }}>
             {features.map((f, i) => (
               <div key={i} className="feat-card" style={{
-                flex: '1 1 240px',
-                maxWidth: '300px',
                 background: '#fff',
                 border: '1px solid rgba(47,93,170,0.1)',
                 borderRadius: '20px',
