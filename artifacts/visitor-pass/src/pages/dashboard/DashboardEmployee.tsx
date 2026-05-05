@@ -68,12 +68,12 @@ export default function DashboardEmployee() {
 
   return (
     <div className="fade-up w-full">
-      <div className="flex justify-between items-center mb-12">
+      <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-4xl font-black tracking-tighter uppercase mb-2 text-[#0A1F44]">Employees</h1>
-          <p className="text-[#6B7FA3] text-sm">Monitor and manage the active team directory.</p>
+          <h1 className="text-2xl font-black tracking-tighter uppercase mb-1 text-[#0A1F44]">Employees</h1>
+          <p className="text-[#6B7FA3] text-xs">Monitor and manage the active team directory.</p>
         </div>
-        <button onClick={() => handleOpenModal()} className="btn-primary px-8 py-4 rounded-2xl font-bold flex items-center gap-2">
+        <button onClick={() => handleOpenModal()} className="btn-primary px-4 py-2.5 rounded-xl font-bold flex items-center gap-2 text-sm">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"/></svg>
           ADD EMPLOYEE
         </button>

@@ -31,7 +31,7 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
     <div ref={overlayRef} className="fixed inset-0 z-[100] flex items-center justify-center"
       style={{ background: 'rgba(10,31,68,0.35)', backdropFilter: 'blur(4px)' }}
       onClick={(e) => { if (e.target === overlayRef.current) onClose(); }}>
-      <div ref={modalRef} className="vp-modal fixed top-1/2 left-1/2 w-full max-w-lg mx-4 p-8 max-h-[85vh] overflow-y-auto"
+      <div ref={modalRef} className="vp-modal fixed top-1/2 left-1/2 w-full max-w-md mx-4 p-5 max-h-[88vh] overflow-y-auto"
         style={{ transform: 'translate(-50%, -50%)' }}>
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-black text-[#0A1F44] tracking-tight">{title}</h2>

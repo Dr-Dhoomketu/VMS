@@ -39,10 +39,10 @@ export default function DashboardVisitor() {
 
   return (
     <div className="fade-up w-full">
-      <div className="flex justify-between items-center mb-12">
+      <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-4xl font-black tracking-tighter uppercase mb-2 text-[#0A1F44]">Visitor Log</h1>
-          <p className="text-[#6B7FA3] text-sm">Comprehensive logs of all entry and exit events.</p>
+          <h1 className="text-2xl font-black tracking-tighter uppercase mb-1 text-[#0A1F44]">Visitor Log</h1>
+          <p className="text-[#6B7FA3] text-xs">Comprehensive logs of all entry and exit events.</p>
         </div>
         <div className="flex gap-4">
           <div className="flex flex-col gap-1">

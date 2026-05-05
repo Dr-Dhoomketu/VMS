@@ -38,10 +38,10 @@ export default function DashboardPreVisitor() {
 
   return (
     <div className="fade-up w-full">
-      <div className="flex justify-between items-center mb-12">
+      <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-4xl font-black tracking-tighter uppercase mb-2 text-[#0A1F44]">Appointments</h1>
-          <p className="text-[#6B7FA3] text-sm">Manage pre-scheduled visits and upcoming appointments.</p>
+          <h1 className="text-2xl font-black tracking-tighter uppercase mb-1 text-[#0A1F44]">Appointments</h1>
+          <p className="text-[#6B7FA3] text-xs">Manage pre-scheduled visits and upcoming appointments.</p>
         </div>
         <div className="flex items-center gap-4">
           <span className="text-[10px] uppercase tracking-widest text-[#6B7FA3] font-bold">Filter:</span>
