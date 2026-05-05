@@ -1,71 +1,30 @@
 import nodemailer from 'nodemailer';
 import { logger } from '../lib/logger.js';
 
-// ── Resend HTTP API (preferred — works on Render free tier, no SMTP port blocking) ──
-async function sendViaResend(to: string, subject: string, html: string, text: string): Promise<boolean> {
-  const apiKey = process.env['RESEND_API_KEY'];
-  if (!apiKey) return false;
-  const from = process.env['RESEND_FROM'] || 'VISITORPASS <onboarding@resend.dev>';
-  try {
-    const res = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ from, to, subject, html, text }),
-    });
-    const data: any = await res.json();
-    if (!res.ok) { logger.error({ data, to }, 'Resend API error'); return false; }
-    logger.info({ id: data.id, to }, 'Email sent via Resend');
-    return true;
-  } catch (err: any) {
-    logger.error({ err: err?.message, to }, 'Resend fetch failed');
+const SMTP_USER = process.env['SMTP_USER'] || '';
+const SMTP_PASS = process.env['SMTP_PASS'] || '';
+
+const transport = nodemailer.createTransport({
+  host: 'smtp.gmail.com',
+  port: 465,
+  secure: true,
+  auth: { user: SMTP_USER, pass: SMTP_PASS },
+});
+
+async function sendEmail(to: string, subject: string, html: string, text: string): Promise<boolean> {
+  if (!SMTP_USER || !SMTP_PASS) {
+    logger.error('SMTP_USER or SMTP_PASS not set — cannot send email');
     return false;
   }
-}
-
-// ── SMTP (nodemailer) ──
-function createSmtpTransport() {
-  const host = process.env['SMTP_HOST'];
-  const user = process.env['SMTP_USER'];
-  const pass = process.env['SMTP_PASS'];
-  if (!user || !pass) return null;
-  const domain = user.split('@')[1]?.toLowerCase() ?? '';
-  if (!host) {
-    if (domain === 'gmail.com') {
-      return nodemailer.createTransport({
-        host: 'smtp.gmail.com',
-        port: 465,
-        secure: true,
-        auth: { user, pass },
-      });
-    }
-    if (domain === 'outlook.com' || domain === 'hotmail.com' || domain === 'live.com') {
-      return nodemailer.createTransport({ service: 'hotmail', auth: { user, pass } });
-    }
-    return null;
-  }
-  const port = Number(process.env['SMTP_PORT'] || '465');
-  return nodemailer.createTransport({ host, port, secure: port === 465, auth: { user, pass } });
-}
-
-async function sendViaSmtp(to: string, subject: string, html: string, text: string): Promise<boolean> {
-  const transport = createSmtpTransport();
-  if (!transport) return false;
-  const from = `"VISITORPASS" <${process.env['SMTP_FROM'] || process.env['SMTP_USER']}>`;
   try {
     const timeout = new Promise<never>((_, reject) => setTimeout(() => reject(new Error('SMTP timeout')), 10000));
-    await Promise.race([timeout, transport.sendMail({ from, to, subject, html, text })]);
-    logger.info({ to }, 'Email sent via SMTP');
+    await Promise.race([timeout, transport.sendMail({ from: `"VISITORPASS" <${SMTP_USER}>`, to, subject, html, text })]);
+    logger.info({ to }, 'Email sent via Gmail SMTP');
     return true;
   } catch (err: any) {
-    logger.error({ err: { message: err?.message, code: err?.code }, to }, 'SMTP send failed');
+    logger.error({ err: { message: err?.message, code: err?.code }, to }, 'Gmail SMTP send failed');
     return false;
   }
-}
-
-// ── Unified send: SMTP first, Resend fallback ──
-async function sendEmail(to: string, subject: string, html: string, text: string): Promise<boolean> {
-  if (await sendViaSmtp(to, subject, html, text)) return true;
-  return sendViaResend(to, subject, html, text);
 }
 
 export async function sendOtpEmail(to: string, otp: string): Promise<boolean> {

@@ -71,4 +71,3 @@ externalPort = 3000
 [userenv]
 
 [userenv.shared]
-RESEND_FROM = "VISITORPASS <shauryaujjwal102@gmail.com>"
