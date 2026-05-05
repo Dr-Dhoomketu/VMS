@@ -351,9 +351,16 @@ export default function CheckInPage() {
   const [phoneOtpVerified, setPhoneOtpVerified] = useState(false);
   const [emailOtpVerified, setEmailOtpVerified] = useState(false);
   const [otpVerified, setOtpVerified] = useState(false);
+  const [resendCountdown, setResendCountdown] = useState(0);
   const confirmationResultRef = useRef<ConfirmationResult | null>(null);
   const recaptchaVerifierRef = useRef<RecaptchaVerifier | null>(null);
   const [recaptchaKey, setRecaptchaKey] = useState(0);
+
+  useEffect(() => {
+    if (resendCountdown <= 0) return;
+    const timer = setTimeout(() => setResendCountdown(c => c - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [resendCountdown]);
 
   // Blink detection state
   const [blinkDetected, setBlinkDetected] = useState(false);
@@ -480,6 +487,7 @@ export default function CheckInPage() {
       const confirmation = await signInWithPhoneNumber(auth, fullPhone, recaptchaVerifierRef.current);
       confirmationResultRef.current = confirmation;
       setOtpSent(true);
+      setResendCountdown(60);
     } catch (err: any) {
       console.error('Firebase OTP error:', err);
       resetRecaptcha();
@@ -876,10 +884,35 @@ export default function CheckInPage() {
                     {otpLoading ? 'Verifying…' : 'Verify & Continue →'}
                   </button>
                 </div>
-                <p style={{ textAlign: 'center', fontSize: '0.65rem', color: '#A0AEC0', marginTop: '12px' }}>
-                  Didn't receive?{' '}
-                  <button type="button" onClick={() => { setOtpSent(false); setPhoneOtp(''); setEmailOtp(''); confirmationResultRef.current = null; resetRecaptcha(); setTimeout(sendOtp, 150); }} style={{ background: 'none', border: 'none', color: '#2F5DAA', cursor: 'pointer', fontSize: '0.65rem', fontWeight: 700, padding: 0 }}>Resend OTP</button>
-                </p>
+                <div style={{ textAlign: 'center', marginTop: '16px' }}>
+                  {resendCountdown > 0 ? (
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '8px 16px', borderRadius: '20px', background: 'rgba(10,31,68,0.04)', border: '1px solid rgba(10,31,68,0.08)' }}>
+                      <svg style={{ width: '12px', height: '12px', color: '#6B7FA3' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                      </svg>
+                      <span style={{ fontSize: '0.65rem', color: '#6B7FA3', fontWeight: 600 }}>
+                        Resend available in <strong style={{ color: '#0A1F44', fontVariantNumeric: 'tabular-nums' }}>{resendCountdown}s</strong>
+                      </span>
+                    </div>
+                  ) : (
+                    <div style={{ fontSize: '0.65rem', color: '#A0AEC0' }}>
+                      Didn't receive?{' '}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPhoneOtp(''); setEmailOtp(''); setOtpError('');
+                          confirmationResultRef.current = null;
+                          resetRecaptcha();
+                          setOtpSent(false);
+                          setTimeout(sendOtp, 150);
+                        }}
+                        style={{ background: 'none', border: 'none', color: '#2F5DAA', cursor: 'pointer', fontSize: '0.65rem', fontWeight: 700, padding: 0, textDecoration: 'underline' }}
+                      >
+                        Resend OTP
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             ) : !otpVerified ? (
               <button
