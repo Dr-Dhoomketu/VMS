@@ -124,11 +124,11 @@ export default function LoginPage() {
             fontSize: '3.8rem', fontWeight: 900, color: '#fff',
             lineHeight: 0.92, letterSpacing: '-0.04em', textTransform: 'uppercase', marginBottom: '24px',
           }}>
-            VISITOR<br/>
+            VALUE MANAGEMENT<br/>
             <span style={{
               background: 'linear-gradient(135deg, #4A7FD4, #7ab0f0)',
               WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
-            }}>PASS</span>
+            }}>SYSTEM</span>
           </h2>
 
           <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.9rem', lineHeight: 1.75, marginBottom: '48px' }}>
