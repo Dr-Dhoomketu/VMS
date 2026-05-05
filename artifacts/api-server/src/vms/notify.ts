@@ -1,69 +1,59 @@
 import nodemailer from 'nodemailer';
 import { logger } from '../lib/logger.js';
 
-// Brevo SMTP — works on Render (their port 587 is not blocked unlike Gmail's).
-// Fallback to Gmail SMTP for local dev where Brevo creds may not be set.
-function createTransport() {
-  const brevoUser = process.env['BREVO_USER'] || '';
-  const brevoPass = process.env['BREVO_PASS'] || '';
-  const gmailUser = process.env['SMTP_USER'] || '';
-  const gmailPass = (process.env['SMTP_PASS'] || '').replace(/\s/g, '');
-
-  if (brevoUser && brevoPass) {
-    return {
-      transport: nodemailer.createTransport({
-        host: 'smtp-relay.brevo.com',
-        port: 587,
-        secure: false,
-        auth: { user: brevoUser, pass: brevoPass },
-        family: 4, // force IPv4 — Render free tier does not route IPv6
-        connectionTimeout: 20000,
-        greetingTimeout: 15000,
-        socketTimeout: 20000,
-      }),
-      from: `"VISITORPASS" <${brevoUser}>`,
-      method: 'brevo',
-    };
-  }
-
-  return {
-    transport: nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 587,
-      secure: false,
-      auth: { user: gmailUser, pass: gmailPass },
-      family: 4, // force IPv4 — Render free tier does not route IPv6
-      connectionTimeout: 20000,
-      greetingTimeout: 15000,
-      socketTimeout: 20000,
-    }),
-    from: `"VISITORPASS" <${gmailUser}>`,
-    method: 'gmail',
-  };
-}
-
+// Strategy:
+//   1. Brevo HTTP API  (BREVO_API_KEY set) — HTTPS port 443, never blocked by any host
+//   2. Gmail SMTP      (SMTP_USER+SMTP_PASS set) — local dev fallback
 async function sendEmail(to: string, subject: string, html: string, text: string): Promise<boolean> {
-  const brevoUser = process.env['BREVO_USER'] || '';
-  const brevoPass = process.env['BREVO_PASS'] || '';
-  const gmailUser = process.env['SMTP_USER'] || '';
-  const gmailPass = process.env['SMTP_PASS'] || '';
+  const brevoApiKey = process.env['BREVO_API_KEY'] || '';
+  const brevoSender = process.env['BREVO_USER'] || '';      // verified sender email in Brevo
+  const gmailUser   = process.env['SMTP_USER'] || '';
+  const gmailPass   = (process.env['SMTP_PASS'] || '').replace(/\s/g, '');
 
-  if (!brevoUser && !gmailUser) {
-    logger.error('No email credentials set — configure BREVO_USER+BREVO_PASS or SMTP_USER+SMTP_PASS');
+  // ── 1. Brevo HTTP API ──────────────────────────────────────────────────────
+  if (brevoApiKey && brevoSender) {
+    try {
+      const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'api-key': brevoApiKey },
+        body: JSON.stringify({
+          sender:      { name: 'VISITORPASS', email: brevoSender },
+          to:          [{ email: to }],
+          subject,
+          htmlContent: html,
+          textContent: text,
+        }),
+      });
+      if (res.ok) {
+        logger.info({ to, method: 'brevo-api' }, 'Email sent successfully');
+        return true;
+      }
+      const errBody = await res.text().catch(() => '');
+      logger.error({ status: res.status, body: errBody, to }, 'Brevo API returned error');
+      return false;
+    } catch (err: any) {
+      logger.error({ err: { message: err?.message }, to }, 'Brevo API request failed');
+      return false;
+    }
+  }
+
+  // ── 2. Gmail SMTP fallback (local dev) ────────────────────────────────────
+  if (!gmailUser || !gmailPass) {
+    logger.error('No email credentials — set BREVO_API_KEY+BREVO_USER on Render, or SMTP_USER+SMTP_PASS locally');
     return false;
   }
-  if (!brevoUser && !gmailPass) {
-    logger.error('SMTP_PASS not set — cannot send email');
-    return false;
-  }
-
-  const { transport, from, method } = createTransport();
   try {
-    await transport.sendMail({ from, to, subject, html, text });
-    logger.info({ to, method }, 'Email sent successfully');
+    const transport = nodemailer.createTransport({
+      host: 'smtp.gmail.com', port: 587, secure: false,
+      auth: { user: gmailUser, pass: gmailPass },
+      family: 4,
+      connectionTimeout: 20000, greetingTimeout: 15000, socketTimeout: 20000,
+    });
+    await transport.sendMail({ from: `"VISITORPASS" <${gmailUser}>`, to, subject, html, text });
+    logger.info({ to, method: 'gmail-smtp' }, 'Email sent successfully');
     return true;
   } catch (err: any) {
-    logger.error({ err: { message: err?.message, code: err?.code, command: err?.command }, to, method }, 'Email send failed');
+    logger.error({ err: { message: err?.message, code: err?.code }, to }, 'Gmail SMTP send failed');
     return false;
   }
 }

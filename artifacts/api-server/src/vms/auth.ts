@@ -73,9 +73,11 @@ router.post('/send-otp', async (req: Request, res: Response): Promise<void> => {
   const { email, phone } = req.body;
   if (!email && !phone) { res.status(400).json({ message: 'Email or phone required' }); return; }
 
-  // Fail fast if SMTP is not configured — gives a visible error on both client and server logs
-  if (email && (!process.env['SMTP_USER'] || !process.env['SMTP_PASS'])) {
-    res.status(503).json({ message: 'Email service is not configured on the server. Set SMTP_USER and SMTP_PASS environment variables.' });
+  // Fail fast if no email provider is configured
+  const hasBrevo = process.env['BREVO_API_KEY'] && process.env['BREVO_USER'];
+  const hasGmail = process.env['SMTP_USER'] && process.env['SMTP_PASS'];
+  if (email && !hasBrevo && !hasGmail) {
+    res.status(503).json({ message: 'Email service not configured. Set BREVO_API_KEY + BREVO_USER on the server.' });
     return;
   }
 
@@ -119,7 +121,7 @@ router.post('/verify-otp', async (req: Request, res: Response): Promise<void> =>
 router.get('/test-email', async (req: Request, res: Response): Promise<void> => {
   const to = req.query['to'] as string || process.env['SMTP_USER'] || '';
   if (!to) { res.status(400).json({ error: 'Provide ?to=your@email.com as query param' }); return; }
-  const method = process.env['BREVO_USER'] ? 'brevo' : 'gmail-smtp';
+  const method = process.env['BREVO_API_KEY'] ? 'brevo-api' : 'gmail-smtp';
   const ok = await sendOtpEmail(to, '123456');
   res.json({
     success: ok,
