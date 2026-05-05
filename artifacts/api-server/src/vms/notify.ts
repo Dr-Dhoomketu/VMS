@@ -16,6 +16,7 @@ function createTransport() {
         port: 587,
         secure: false,
         auth: { user: brevoUser, pass: brevoPass },
+        family: 4, // force IPv4 — Render free tier does not route IPv6
         connectionTimeout: 20000,
         greetingTimeout: 15000,
         socketTimeout: 20000,
@@ -31,6 +32,7 @@ function createTransport() {
       port: 587,
       secure: false,
       auth: { user: gmailUser, pass: gmailPass },
+      family: 4, // force IPv4 — Render free tier does not route IPv6
       connectionTimeout: 20000,
       greetingTimeout: 15000,
       socketTimeout: 20000,
