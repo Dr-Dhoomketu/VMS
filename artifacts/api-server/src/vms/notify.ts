@@ -1,37 +1,67 @@
 import nodemailer from 'nodemailer';
 import { logger } from '../lib/logger.js';
 
-// Transport is created lazily per-send so it always picks up the latest env vars
-// and a fresh TCP connection — avoids stale socket issues on long-running Render instances.
+// Brevo SMTP — works on Render (their port 587 is not blocked unlike Gmail's).
+// Fallback to Gmail SMTP for local dev where Brevo creds may not be set.
 function createTransport() {
-  const user = process.env['SMTP_USER'] || '';
-  const pass = (process.env['SMTP_PASS'] || '').replace(/\s/g, ''); // strip spaces from App Password
-  return nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,        // STARTTLS — more reliable on cloud VMs than port 465
-    secure: false,
-    auth: { user, pass },
-    tls: { rejectUnauthorized: true },
-    connectionTimeout: 30000,  // 30 s to allow for cold-start latency
-    greetingTimeout: 20000,
-    socketTimeout: 30000,
-  });
+  const brevoUser = process.env['BREVO_USER'] || '';
+  const brevoPass = process.env['BREVO_PASS'] || '';
+  const gmailUser = process.env['SMTP_USER'] || '';
+  const gmailPass = (process.env['SMTP_PASS'] || '').replace(/\s/g, '');
+
+  if (brevoUser && brevoPass) {
+    return {
+      transport: nodemailer.createTransport({
+        host: 'smtp-relay.brevo.com',
+        port: 587,
+        secure: false,
+        auth: { user: brevoUser, pass: brevoPass },
+        connectionTimeout: 20000,
+        greetingTimeout: 15000,
+        socketTimeout: 20000,
+      }),
+      from: `"VISITORPASS" <${brevoUser}>`,
+      method: 'brevo',
+    };
+  }
+
+  return {
+    transport: nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+      port: 587,
+      secure: false,
+      auth: { user: gmailUser, pass: gmailPass },
+      connectionTimeout: 20000,
+      greetingTimeout: 15000,
+      socketTimeout: 20000,
+    }),
+    from: `"VISITORPASS" <${gmailUser}>`,
+    method: 'gmail',
+  };
 }
 
 async function sendEmail(to: string, subject: string, html: string, text: string): Promise<boolean> {
-  const user = process.env['SMTP_USER'] || '';
-  const pass = process.env['SMTP_PASS'] || '';
-  if (!user || !pass) {
-    logger.error('SMTP_USER or SMTP_PASS not set — cannot send email');
+  const brevoUser = process.env['BREVO_USER'] || '';
+  const brevoPass = process.env['BREVO_PASS'] || '';
+  const gmailUser = process.env['SMTP_USER'] || '';
+  const gmailPass = process.env['SMTP_PASS'] || '';
+
+  if (!brevoUser && !gmailUser) {
+    logger.error('No email credentials set — configure BREVO_USER+BREVO_PASS or SMTP_USER+SMTP_PASS');
     return false;
   }
+  if (!brevoUser && !gmailPass) {
+    logger.error('SMTP_PASS not set — cannot send email');
+    return false;
+  }
+
+  const { transport, from, method } = createTransport();
   try {
-    const transport = createTransport();
-    await transport.sendMail({ from: `"VISITORPASS" <${user}>`, to, subject, html, text });
-    logger.info({ to }, 'Email sent via Gmail SMTP');
+    await transport.sendMail({ from, to, subject, html, text });
+    logger.info({ to, method }, 'Email sent successfully');
     return true;
   } catch (err: any) {
-    logger.error({ err: { message: err?.message, code: err?.code, command: err?.command }, to }, 'Gmail SMTP send failed');
+    logger.error({ err: { message: err?.message, code: err?.code, command: err?.command }, to, method }, 'Email send failed');
     return false;
   }
 }

@@ -119,13 +119,13 @@ router.post('/verify-otp', async (req: Request, res: Response): Promise<void> =>
 router.get('/test-email', async (req: Request, res: Response): Promise<void> => {
   const to = req.query['to'] as string || process.env['SMTP_USER'] || '';
   if (!to) { res.status(400).json({ error: 'Provide ?to=your@email.com as query param' }); return; }
-  const resendKey = process.env['RESEND_API_KEY'];
+  const method = process.env['BREVO_USER'] ? 'brevo' : 'gmail-smtp';
   const ok = await sendOtpEmail(to, '123456');
   res.json({
     success: ok,
-    method: resendKey ? 'resend' : 'smtp',
+    method,
     to,
-    tip: ok ? 'Check your inbox (and spam folder)' : 'Check Render logs for the error',
+    tip: ok ? 'Check your inbox (and spam folder)' : 'Check server logs for the exact error',
   });
 });
 
