@@ -1,28 +1,37 @@
 import nodemailer from 'nodemailer';
 import { logger } from '../lib/logger.js';
 
-const SMTP_USER = process.env['SMTP_USER'] || '';
-const SMTP_PASS = process.env['SMTP_PASS'] || '';
-
-const transport = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 465,
-  secure: true,
-  auth: { user: SMTP_USER, pass: SMTP_PASS },
-});
+// Transport is created lazily per-send so it always picks up the latest env vars
+// and a fresh TCP connection — avoids stale socket issues on long-running Render instances.
+function createTransport() {
+  const user = process.env['SMTP_USER'] || '';
+  const pass = (process.env['SMTP_PASS'] || '').replace(/\s/g, ''); // strip spaces from App Password
+  return nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 587,        // STARTTLS — more reliable on cloud VMs than port 465
+    secure: false,
+    auth: { user, pass },
+    tls: { rejectUnauthorized: true },
+    connectionTimeout: 30000,  // 30 s to allow for cold-start latency
+    greetingTimeout: 20000,
+    socketTimeout: 30000,
+  });
+}
 
 async function sendEmail(to: string, subject: string, html: string, text: string): Promise<boolean> {
-  if (!SMTP_USER || !SMTP_PASS) {
+  const user = process.env['SMTP_USER'] || '';
+  const pass = process.env['SMTP_PASS'] || '';
+  if (!user || !pass) {
     logger.error('SMTP_USER or SMTP_PASS not set — cannot send email');
     return false;
   }
   try {
-    const timeout = new Promise<never>((_, reject) => setTimeout(() => reject(new Error('SMTP timeout')), 10000));
-    await Promise.race([timeout, transport.sendMail({ from: `"VISITORPASS" <${SMTP_USER}>`, to, subject, html, text })]);
+    const transport = createTransport();
+    await transport.sendMail({ from: `"VISITORPASS" <${user}>`, to, subject, html, text });
     logger.info({ to }, 'Email sent via Gmail SMTP');
     return true;
   } catch (err: any) {
-    logger.error({ err: { message: err?.message, code: err?.code }, to }, 'Gmail SMTP send failed');
+    logger.error({ err: { message: err?.message, code: err?.code, command: err?.command }, to }, 'Gmail SMTP send failed');
     return false;
   }
 }
