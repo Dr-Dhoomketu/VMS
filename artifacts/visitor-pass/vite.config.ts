@@ -38,6 +38,15 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          "vendor-react": ["react", "react-dom"],
+          "vendor-firebase": ["firebase/app", "firebase/auth"],
+          "vendor-ui": ["react-easy-crop", "react-webcam"],
+        },
+      },
+    },
   },
   server: {
     port,

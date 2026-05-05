@@ -87,7 +87,6 @@ function FloatingCards() {
             position: 'absolute',
             right: card.w + 16,
             top: '50%',
-            transform: 'translateY(-50%)',
             width: '220px',
             background: '#fff',
             borderRadius: '16px',
