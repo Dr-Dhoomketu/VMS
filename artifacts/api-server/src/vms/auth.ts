@@ -72,23 +72,31 @@ async function sendSmsOtp(phone: string, otp: string): Promise<boolean> {
 router.post('/send-otp', async (req: Request, res: Response): Promise<void> => {
   const { email, phone } = req.body;
   if (!email && !phone) { res.status(400).json({ message: 'Email or phone required' }); return; }
-  const result: any = { message: 'OTP sent' };
+
+  // Fail fast if SMTP is not configured — gives a visible error on both client and server logs
+  if (email && (!process.env['SMTP_USER'] || !process.env['SMTP_PASS'])) {
+    res.status(503).json({ message: 'Email service is not configured on the server. Set SMTP_USER and SMTP_PASS environment variables.' });
+    return;
+  }
 
   if (email) {
     const otp = generateOTP();
     otpStore.set(`email:${email}`, { otp, expires: Date.now() + 10 * 60 * 1000 });
-    // Fire and forget — don't block the response waiting for email delivery
-    sendOtpEmail(email, otp).catch(() => {});
+    const ok = await sendOtpEmail(email, otp);
+    if (!ok) {
+      otpStore.delete(`email:${email}`);
+      res.status(502).json({ message: 'Failed to send OTP email. Check server SMTP configuration.' });
+      return;
+    }
   }
 
   if (phone) {
     const otp = generateOTP();
     otpStore.set(`phone:${phone}`, { otp, expires: Date.now() + 10 * 60 * 1000 });
-    // Fire and forget — don't block the response waiting for SMS delivery
     sendSmsOtp(phone, otp).catch(() => {});
   }
 
-  res.json(result);
+  res.json({ message: 'OTP sent' });
 });
 
 router.post('/verify-otp', async (req: Request, res: Response): Promise<void> => {

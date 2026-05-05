@@ -467,13 +467,15 @@ export default function CheckInPage() {
 
       // Send email OTP via backend if email is provided
       if (formData.email) {
-        try {
-          await fetch(`${API_URL}/api/v1/auth/send-otp`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: formData.email }),
-          });
-        } catch { /* non-fatal */ }
+        const emailRes = await fetch(`${API_URL}/api/v1/auth/send-otp`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: formData.email }),
+        });
+        if (!emailRes.ok) {
+          const d = await emailRes.json().catch(() => ({}));
+          throw new Error(d.message || 'Failed to send email OTP. Please try again.');
+        }
       }
 
       // Send phone OTP via Firebase
