@@ -1,10 +1,12 @@
 import { io } from 'socket.io-client';
 import { API_URL } from '@/lib/api';
 
+const socketPath = import.meta.env.PROD ? '/api/socket.io' : '/socket.io';
+
 const socket = io(API_URL, {
   autoConnect: false,
   withCredentials: true,
-  path: '/socket.io',
+  path: socketPath,
 });
 
 export const connectSocket = (user: { _id: string; role: string }) => {

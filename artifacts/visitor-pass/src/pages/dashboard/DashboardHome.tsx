@@ -138,7 +138,7 @@ export default function DashboardHome() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <div style={{ width: '34px', height: '34px', borderRadius: '50%', overflow: 'hidden', background: 'rgba(47,93,170,0.08)', flexShrink: 0 }}>
                       {v.visitor?.imageUrl
-                        ? <img src={`${API_URL}${v.visitor.imageUrl}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt=""/>
+                        ? <img src={v.visitor.imageUrl.startsWith('data:') ? v.visitor.imageUrl : `${API_URL}${v.visitor.imageUrl}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt=""/>
                         : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#2F5DAA', fontSize: '0.75rem', fontWeight: 800 }}>{v.visitor?.name?.charAt(0)}</div>
                       }
                     </div>

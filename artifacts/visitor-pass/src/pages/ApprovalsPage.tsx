@@ -81,7 +81,9 @@ export default function ApprovalsPage() {
               <div key={visit._id} className="vp-card p-6">
                 <div className="flex items-center gap-4 mb-5">
                   <div className="w-14 h-14 rounded-xl overflow-hidden border border-[#E2E8F0] shrink-0">
-                    <img src={visit.visitor?.imageUrl ? `${API_URL}${visit.visitor.imageUrl}` : 'https://via.placeholder.com/150'}
+                    <img src={visit.visitor?.imageUrl
+                        ? (visit.visitor.imageUrl.startsWith('data:') ? visit.visitor.imageUrl : `${API_URL}${visit.visitor.imageUrl}`)
+                        : 'https://via.placeholder.com/150'}
                       alt="avatar" className="w-full h-full object-cover"/>
                   </div>
                   <div>
