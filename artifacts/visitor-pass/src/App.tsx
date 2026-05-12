@@ -11,6 +11,7 @@ import AppointmentPage from "@/pages/AppointmentPage";
 import ReturningPage from "@/pages/ReturningPage";
 import ApprovalsPage from "@/pages/ApprovalsPage";
 import VideoPage from "@/pages/VideoPage";
+import ScanPage from "@/pages/ScanPage";
 
 import DashboardLayout from "@/pages/dashboard/DashboardLayout";
 import DashboardHome from "@/pages/dashboard/DashboardHome";
@@ -51,6 +52,7 @@ function Router() {
       <Route path="/returning" component={ReturningPage} />
       <Route path="/approvals" component={ApprovalsPage} />
       <Route path="/video" component={VideoPage} />
+      <Route path="/scan/:token" component={ScanPage} />
 
       {/* Dashboard home */}
       <Route path="/dashboard">{() => <DashboardRoute component={DashboardHome} />}</Route>

@@ -30,14 +30,15 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-y-auto"
+      className="fixed inset-0 z-[100] overflow-y-auto"
       style={{ background: 'rgba(10,31,68,0.35)', backdropFilter: 'blur(4px)' }}
       onClick={(e) => { if (e.target === overlayRef.current) onClose(); }}
     >
+      <div className="flex min-h-full items-center justify-center p-4">
       <div
         ref={modalRef}
-        className="vp-modal relative w-full my-auto"
-        style={{ maxWidth: '420px', padding: '20px', maxHeight: 'calc(100vh - 48px)', overflowY: 'auto' }}
+        className="vp-modal relative w-full"
+        style={{ maxWidth: '460px', padding: '28px' }}
       >
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-base font-black text-[#0A1F44] tracking-tight">{title}</h2>
@@ -52,6 +53,7 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
         </div>
         <div className="h-px bg-[#E2E8F0] mb-4"/>
         {children}
+      </div>
       </div>
     </div>
   );

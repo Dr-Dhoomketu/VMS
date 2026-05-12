@@ -68,11 +68,21 @@ router.get('/approved', protect, async (req: any, res: Response): Promise<void> 
   } catch { res.status(500).json({ message: 'Server error' }); }
 });
 
+router.get('/scan/:token', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const visit = await Visit.findOne({ qrToken: req.params.token })
+      .populate('visitor', 'name phone email imageUrl aadhar gender')
+      .populate('meetWith', 'name email');
+    if (!visit) { res.status(404).json({ message: 'Invalid or expired QR token' }); return; }
+    res.json(visit);
+  } catch { res.status(500).json({ message: 'Server error' }); }
+});
+
 router.get('/history', async (req: Request, res: Response): Promise<void> => {
   const { phone } = req.query;
   if (!phone) { res.status(400).json({ message: 'Phone required' }); return; }
   try {
-    const rawPhone = String(phone);
+    const rawPhone = String(phone).trim();
     let visitor: any = await Visitor.findOne({ phone: rawPhone });
 
     if (!visitor) {
@@ -88,6 +98,14 @@ router.get('/history', async (req: Request, res: Response): Promise<void> => {
           phone: { $regex: suffix + '$' }
         });
         visitor = candidates[0] || null;
+      }
+    }
+
+    if (!visitor) {
+      const digits = rawPhone.replace(/\D/g, '');
+      if (digits.length >= 7) {
+        const withPlus91 = '+91' + digits.slice(-10);
+        visitor = await Visitor.findOne({ phone: withPlus91 });
       }
     }
 

@@ -10,7 +10,10 @@ import { auth } from '@/lib/firebase';
 function OtpInput({ value, onChange, label, hint, autoFocus: autoFocusOtp }: { value: string; onChange: (v: string) => void; label: string; hint?: string; autoFocus?: boolean }) {
   const inputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
-    if (autoFocusOtp) inputRef.current?.focus();
+    if (autoFocusOtp) {
+      const t = setTimeout(() => inputRef.current?.focus(), 80);
+      return () => clearTimeout(t);
+    }
   }, []);
   return (
     <div>
@@ -25,8 +28,9 @@ function OtpInput({ value, onChange, label, hint, autoFocus: autoFocusOtp }: { v
           value={value}
           onChange={e => onChange(e.target.value.replace(/\D/g, '').slice(0, 6))}
           style={{
-            position: 'absolute', opacity: 0, pointerEvents: 'none',
-            width: '1px', height: '1px', top: 0, left: 0,
+            position: 'absolute', opacity: 0,
+            width: '100%', height: '100%', top: 0, left: 0,
+            cursor: 'text', zIndex: 1,
           }}
         />
         {Array.from({ length: 6 }).map((_, i) => {
@@ -35,7 +39,11 @@ function OtpInput({ value, onChange, label, hint, autoFocus: autoFocusOtp }: { v
           return (
             <div
               key={i}
-              onClick={() => inputRef.current?.focus()}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (value.length > i) onChange(value.slice(0, i));
+                inputRef.current?.focus();
+              }}
               style={{
                 width: '46px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: '1.4rem', fontWeight: 800, color: '#0A1F44',
@@ -43,7 +51,7 @@ function OtpInput({ value, onChange, label, hint, autoFocus: autoFocusOtp }: { v
                 borderRadius: '12px',
                 background: filled ? 'rgba(47,93,170,0.06)' : '#fff',
                 boxShadow: active ? '0 0 0 3px rgba(47,93,170,0.12)' : 'none',
-                transition: 'all 0.15s', cursor: 'text', userSelect: 'none',
+                transition: 'all 0.15s', cursor: 'text', userSelect: 'none', position: 'relative', zIndex: 2,
               }}
             >
               {filled ? value[i] : (active ? <span style={{ width: 2, height: 22, background: '#2F5DAA', display: 'inline-block', animation: 'blink 1s step-end infinite' }} /> : null)}
