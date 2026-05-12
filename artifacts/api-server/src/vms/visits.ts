@@ -1,7 +1,5 @@
 import { Router, Request, Response } from 'express';
 import multer from 'multer';
-import path from 'path';
-import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import { Visit, Visitor, VmsUser } from './models.js';
 import { protect, authorize } from './auth.js';
@@ -9,24 +7,27 @@ import { notifyVisitStatus } from './notify.js';
 
 const router = Router();
 
-const uploadDir = 'public/uploads/';
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => cb(null, uploadDir),
-  filename: (_req, file, cb) => cb(null, `${Date.now()}${path.extname(file.originalname)}`),
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 },
 });
-const upload = multer({ storage });
 
 router.post('/request', upload.single('photo'), async (req: any, res: Response): Promise<void> => {
   const { name, aadhar, phone, email, address, gender, meetWith, purpose, scheduledTime, fromTime, toTime, duration } = req.body;
   try {
+    let imageUrl: string | undefined;
+    if (req.file) {
+      const b64 = req.file.buffer.toString('base64');
+      const mime = req.file.mimetype || 'image/jpeg';
+      imageUrl = `data:${mime};base64,${b64}`;
+    }
+
     let visitor: any = aadhar ? await Visitor.findOne({ aadhar }) : null;
     if (!visitor) {
       visitor = await Visitor.create({
         name, phone, email, address, gender,
         aadhar: aadhar || undefined,
-        imageUrl: req.file ? `/public/uploads/${req.file.filename}` : undefined,
+        imageUrl,
       });
     }
     const visit: any = await Visit.create({
