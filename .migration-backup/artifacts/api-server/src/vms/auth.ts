@@ -2,6 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { VmsUser } from './models.js';
+import { sendOtpEmail } from './notify.js';
 
 const router = Router();
 
@@ -71,27 +72,33 @@ async function sendSmsOtp(phone: string, otp: string): Promise<boolean> {
 router.post('/send-otp', async (req: Request, res: Response): Promise<void> => {
   const { email, phone } = req.body;
   if (!email && !phone) { res.status(400).json({ message: 'Email or phone required' }); return; }
-  const result: any = { message: 'OTP sent' };
+
+  // Fail fast if no email provider is configured
+  const hasBrevo = process.env['BREVO_API_KEY'] && process.env['BREVO_USER'];
+  const hasGmail = process.env['SMTP_USER'] && process.env['SMTP_PASS'];
+  if (email && !hasBrevo && !hasGmail) {
+    res.status(503).json({ message: 'Email service not configured. Set BREVO_API_KEY + BREVO_USER on the server.' });
+    return;
+  }
 
   if (email) {
     const otp = generateOTP();
     otpStore.set(`email:${email}`, { otp, expires: Date.now() + 10 * 60 * 1000 });
-    // Always return email OTP in result (no email service configured by default)
-    result.emailOtp = otp;
+    const ok = await sendOtpEmail(email, otp);
+    if (!ok) {
+      otpStore.delete(`email:${email}`);
+      res.status(502).json({ message: 'Failed to send OTP email. Check server SMTP configuration.' });
+      return;
+    }
   }
 
   if (phone) {
     const otp = generateOTP();
     otpStore.set(`phone:${phone}`, { otp, expires: Date.now() + 10 * 60 * 1000 });
-    const smsSent = await sendSmsOtp(phone, otp);
-    if (!smsSent) {
-      // Dev mode — return OTP in response if SMS not configured
-      result.phoneOtp = otp;
-    }
-    // smsSent=true means real SMS was delivered, don't expose OTP in response
+    sendSmsOtp(phone, otp).catch(() => {});
   }
 
-  res.json(result);
+  res.json({ message: 'OTP sent' });
 });
 
 router.post('/verify-otp', async (req: Request, res: Response): Promise<void> => {
@@ -109,6 +116,19 @@ router.post('/verify-otp', async (req: Request, res: Response): Promise<void> =>
   }
   if (errors.length > 0) { res.status(400).json({ message: errors.join('. ') }); return; }
   res.json({ message: 'OTP verified' });
+});
+
+router.get('/test-email', async (req: Request, res: Response): Promise<void> => {
+  const to = req.query['to'] as string || process.env['SMTP_USER'] || '';
+  if (!to) { res.status(400).json({ error: 'Provide ?to=your@email.com as query param' }); return; }
+  const method = process.env['BREVO_API_KEY'] ? 'brevo-api' : 'gmail-smtp';
+  const ok = await sendOtpEmail(to, '123456');
+  res.json({
+    success: ok,
+    method,
+    to,
+    tip: ok ? 'Check your inbox (and spam folder)' : 'Check server logs for the exact error',
+  });
 });
 
 router.get('/me', protect, async (req: any, res: Response): Promise<void> => {

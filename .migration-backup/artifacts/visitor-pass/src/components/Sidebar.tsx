@@ -14,6 +14,47 @@ const navLinks = [
   { name: 'Permissions',  path: '/dashboard/permissions',  icon: 'M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z', roles: ['Admin'] }
 ];
 
+function VTSLogo() {
+  return (
+    <div style={{
+      background: 'linear-gradient(135deg, #ffffff 0%, #e8eef8 100%)',
+      borderRadius: '10px',
+      padding: '6px 10px',
+      display: 'inline-flex',
+      alignItems: 'center',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.18)',
+    }}>
+      <img
+        src="/vts-logo.png"
+        alt="VTS Infosoft"
+        style={{ height: '38px', width: 'auto', objectFit: 'contain', display: 'block' }}
+      />
+    </div>
+  );
+}
+
+function VTSLogoMini() {
+  return (
+    <div style={{
+      background: 'linear-gradient(135deg, #ffffff 0%, #dce6f5 100%)',
+      borderRadius: '8px',
+      padding: '4px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      boxShadow: '0 2px 6px rgba(0,0,0,0.18)',
+      width: '40px',
+      height: '40px',
+    }}>
+      <img
+        src="/vts-logo.png"
+        alt="VTS"
+        style={{ height: '28px', width: 'auto', objectFit: 'contain', display: 'block' }}
+      />
+    </div>
+  );
+}
+
 export default function Sidebar() {
   const [location, navigate] = useLocation();
   const [user, setUser] = useState<{ name: string; role: string } | null>(null);
@@ -52,11 +93,12 @@ export default function Sidebar() {
       flexShrink: 0,
       zIndex: 60,
       position: 'relative',
-      overflow: 'hidden',
+      overflow: 'visible',
       transition: 'width 0.25s cubic-bezier(0.4,0,0.2,1)',
     }}>
+      {/* Background grid */}
       <div style={{
-        position: 'absolute', inset: 0, pointerEvents: 'none',
+        position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden', borderRadius: 0,
         backgroundImage: 'radial-gradient(circle, rgba(47,93,170,0.06) 1px, transparent 1px)',
         backgroundSize: '24px 24px',
       }}/>
@@ -64,73 +106,51 @@ export default function Sidebar() {
         position: 'absolute', top: '-60px', right: '-60px',
         width: '180px', height: '180px',
         background: 'radial-gradient(circle, rgba(47,93,170,0.15) 0%, transparent 70%)',
-        borderRadius: '50%', pointerEvents: 'none',
+        borderRadius: '50%', pointerEvents: 'none', overflow: 'hidden',
       }}/>
 
       {/* Logo + collapse toggle */}
       <div style={{
-        padding: collapsed ? '20px 0' : '20px 16px 20px 24px',
+        padding: '0 12px',
         borderBottom: '1px solid rgba(255,255,255,0.07)',
         position: 'relative', zIndex: 1,
         display: 'flex', alignItems: 'center',
-        justifyContent: collapsed ? 'center' : 'space-between',
+        justifyContent: 'space-between',
         minHeight: '68px',
-        transition: 'padding 0.25s ease',
+        gap: '8px',
+        overflow: 'hidden',
       }}>
         {!collapsed && (
-          <div style={{ overflow: 'hidden', whiteSpace: 'nowrap' }}>
-            <img src="/vts-logo.png" alt="VISITORPASS" style={{ height: '30px', width: 'auto', objectFit: 'contain', filter: 'brightness(0) invert(1)', display: 'block' }}/>
-            <p style={{ fontSize: '0.45rem', fontWeight: 800, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', marginTop: '6px' }}>Management Portal</p>
+          <div style={{ overflow: 'hidden', flex: 1 }}>
+            <VTSLogo />
           </div>
         )}
         {collapsed && (
-          <div style={{ width: '30px', height: '30px', borderRadius: '8px', background: 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <svg style={{ width: '14px', height: '14px', color: 'rgba(255,255,255,0.6)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"/>
-            </svg>
+          <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+            <VTSLogoMini />
           </div>
         )}
-        <button
-          onClick={toggleCollapse}
-          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          style={{
-            width: '28px', height: '28px', borderRadius: '8px',
-            background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', flexShrink: 0,
-            position: collapsed ? 'absolute' : 'relative',
-            right: collapsed ? '-100px' : undefined,
-            opacity: collapsed ? 0 : 1,
-            transition: 'opacity 0.2s',
-          }}
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.12)'; }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.06)'; }}
-        >
-          <svg style={{ width: '13px', height: '13px', color: 'rgba(255,255,255,0.5)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/>
-          </svg>
-        </button>
-      </div>
 
-      {/* Expand button when collapsed */}
-      {collapsed && (
-        <button
-          onClick={toggleCollapse}
-          title="Expand sidebar"
-          style={{
-            margin: '12px auto 0', width: '40px', height: '40px', borderRadius: '10px',
-            background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', flexShrink: 0, position: 'relative', zIndex: 1,
-          }}
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.12)'; }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.06)'; }}
-        >
-          <svg style={{ width: '14px', height: '14px', color: 'rgba(255,255,255,0.6)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"/>
-          </svg>
-        </button>
-      )}
+        {/* Collapse button — only visible when expanded */}
+        {!collapsed && (
+          <button
+            onClick={toggleCollapse}
+            title="Collapse sidebar"
+            style={{
+              width: '28px', height: '28px', borderRadius: '8px', flexShrink: 0,
+              background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer',
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.14)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.06)'; }}
+          >
+            <svg style={{ width: '12px', height: '12px', color: 'rgba(255,255,255,0.6)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/>
+            </svg>
+          </button>
+        )}
+      </div>
 
       <nav style={{ flex: 1, padding: collapsed ? '12px 8px' : '16px 12px', display: 'flex', flexDirection: 'column', gap: '2px', overflowY: 'auto', position: 'relative', zIndex: 1, transition: 'padding 0.25s ease' }}>
         {!collapsed && (
@@ -226,6 +246,45 @@ export default function Sidebar() {
           {!collapsed && <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>Sign Out</span>}
         </button>
       </div>
+
+      {/* Fixed expand button — always on screen when collapsed, avoids overflow clipping */}
+      {collapsed && (
+        <button
+          onClick={toggleCollapse}
+          title="Expand sidebar"
+          style={{
+            position: 'fixed',
+            top: '50%',
+            left: '64px',
+            transform: 'translateY(-50%)',
+            width: '18px',
+            height: '52px',
+            background: 'linear-gradient(180deg, #1e3f75 0%, #0d2552 100%)',
+            border: '1px solid rgba(74,127,212,0.4)',
+            borderLeft: 'none',
+            borderRadius: '0 8px 8px 0',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 200,
+            boxShadow: '4px 0 14px rgba(0,0,0,0.3)',
+            transition: 'background 0.2s, width 0.2s',
+          }}
+          onMouseEnter={e => {
+            (e.currentTarget as HTMLElement).style.background = 'linear-gradient(180deg, #2F5DAA 0%, #1a3a6e 100%)';
+            (e.currentTarget as HTMLElement).style.width = '22px';
+          }}
+          onMouseLeave={e => {
+            (e.currentTarget as HTMLElement).style.background = 'linear-gradient(180deg, #1e3f75 0%, #0d2552 100%)';
+            (e.currentTarget as HTMLElement).style.width = '18px';
+          }}
+        >
+          <svg style={{ width: '10px', height: '10px', color: 'rgba(255,255,255,0.85)', flexShrink: 0 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7"/>
+          </svg>
+        </button>
+      )}
     </aside>
   );
 }

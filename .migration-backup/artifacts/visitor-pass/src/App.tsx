@@ -10,6 +10,7 @@ import CheckInPage from "@/pages/CheckInPage";
 import AppointmentPage from "@/pages/AppointmentPage";
 import ReturningPage from "@/pages/ReturningPage";
 import ApprovalsPage from "@/pages/ApprovalsPage";
+import VideoPage from "@/pages/VideoPage";
 
 import DashboardLayout from "@/pages/dashboard/DashboardLayout";
 import DashboardHome from "@/pages/dashboard/DashboardHome";
@@ -49,6 +50,7 @@ function Router() {
       <Route path="/appointment" component={AppointmentPage} />
       <Route path="/returning" component={ReturningPage} />
       <Route path="/approvals" component={ApprovalsPage} />
+      <Route path="/video" component={VideoPage} />
 
       {/* Dashboard home */}
       <Route path="/dashboard">{() => <DashboardRoute component={DashboardHome} />}</Route>

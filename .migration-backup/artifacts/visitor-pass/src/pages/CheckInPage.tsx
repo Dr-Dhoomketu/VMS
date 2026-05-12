@@ -7,8 +7,11 @@ import GeoBackground from '@/components/GeoBackground';
 import { signInWithPhoneNumber, RecaptchaVerifier, ConfirmationResult } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 
-function OtpInput({ value, onChange, label, hint }: { value: string; onChange: (v: string) => void; label: string; hint?: string }) {
+function OtpInput({ value, onChange, label, hint, autoFocus: autoFocusOtp }: { value: string; onChange: (v: string) => void; label: string; hint?: string; autoFocus?: boolean }) {
   const inputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (autoFocusOtp) inputRef.current?.focus();
+  }, []);
   return (
     <div>
       <label style={{ display: 'block', fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#6B7FA3', marginBottom: '12px' }}>{label}</label>
@@ -20,7 +23,6 @@ function OtpInput({ value, onChange, label, hint }: { value: string; onChange: (
           inputMode="numeric"
           maxLength={6}
           value={value}
-          autoFocus
           onChange={e => onChange(e.target.value.replace(/\D/g, '').slice(0, 6))}
           style={{
             position: 'absolute', opacity: 0, pointerEvents: 'none',
@@ -33,6 +35,7 @@ function OtpInput({ value, onChange, label, hint }: { value: string; onChange: (
           return (
             <div
               key={i}
+              onClick={() => inputRef.current?.focus()}
               style={{
                 width: '46px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: '1.4rem', fontWeight: 800, color: '#0A1F44',
@@ -347,10 +350,20 @@ export default function CheckInPage() {
   const [otpLoading, setOtpLoading] = useState(false);
   const [otpError, setOtpError] = useState('');
   const [phoneOtp, setPhoneOtp] = useState('');
+  const [emailOtp, setEmailOtp] = useState('');
+  const [phoneOtpVerified, setPhoneOtpVerified] = useState(false);
+  const [emailOtpVerified, setEmailOtpVerified] = useState(false);
   const [otpVerified, setOtpVerified] = useState(false);
+  const [resendCountdown, setResendCountdown] = useState(0);
   const confirmationResultRef = useRef<ConfirmationResult | null>(null);
   const recaptchaVerifierRef = useRef<RecaptchaVerifier | null>(null);
   const [recaptchaKey, setRecaptchaKey] = useState(0);
+
+  useEffect(() => {
+    if (resendCountdown <= 0) return;
+    const timer = setTimeout(() => setResendCountdown(c => c - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [resendCountdown]);
 
   // Blink detection state
   const [blinkDetected, setBlinkDetected] = useState(false);
@@ -425,6 +438,23 @@ export default function CheckInPage() {
     if (img) { setPhoto(img); setShowCamera(false); setCameraError(''); setBlinkDetected(false); lastBrightnessRef.current = []; }
   }, []);
 
+  const openCamera = useCallback(async () => {
+    setCameraError('');
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      setCameraError('Camera API not supported in this browser.');
+      setShowCamera(true);
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      stream.getTracks().forEach(t => t.stop());
+      setShowCamera(true);
+    } catch (err: any) {
+      setCameraError(String(err));
+      setShowCamera(true);
+    }
+  }, []);
+
   const resetRecaptcha = () => {
     try { recaptchaVerifierRef.current?.clear(); } catch {}
     recaptchaVerifierRef.current = null;
@@ -438,7 +468,20 @@ export default function CheckInPage() {
     try {
       const fullPhone = `${countryCode}${formData.phone}`;
 
-      // Create verifier only if one doesn't already exist — avoids "already rendered" error
+      // Send email OTP via backend if email is provided
+      if (formData.email) {
+        const emailRes = await fetch(`${API_URL}/api/v1/auth/send-otp`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: formData.email }),
+        });
+        if (!emailRes.ok) {
+          const d = await emailRes.json().catch(() => ({}));
+          throw new Error(d.message || 'Failed to send email OTP. Please try again.');
+        }
+      }
+
+      // Send phone OTP via Firebase
       if (!recaptchaVerifierRef.current) {
         recaptchaVerifierRef.current = new RecaptchaVerifier(auth, 'recaptcha-container', {
           size: 'invisible',
@@ -449,9 +492,9 @@ export default function CheckInPage() {
       const confirmation = await signInWithPhoneNumber(auth, fullPhone, recaptchaVerifierRef.current);
       confirmationResultRef.current = confirmation;
       setOtpSent(true);
+      setResendCountdown(60);
     } catch (err: any) {
       console.error('Firebase OTP error:', err);
-      // Reset on error so the next attempt gets a completely fresh verifier + DOM node
       resetRecaptcha();
       if (err.code === 'auth/billing-not-enabled') {
         setOtpError('Firebase billing not enabled. Add your number as a test number in Firebase Console → Authentication → Sign-in method → Phone → "Phone numbers for testing".');
@@ -471,13 +514,36 @@ export default function CheckInPage() {
     if (!confirmationResultRef.current) { setOtpError('Please request OTP first.'); return; }
     setOtpLoading(true); setOtpError('');
     try {
+      // Verify phone OTP via Firebase
       await confirmationResultRef.current.confirm(phoneOtp);
+      setPhoneOtpVerified(true);
+
+      // Verify email OTP via backend if email was provided
+      if (formData.email && emailOtp) {
+        const res = await fetch(`${API_URL}/api/v1/auth/verify-otp`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: formData.email, emailOtp }),
+        });
+        if (!res.ok) {
+          const d = await res.json();
+          setOtpError(d.message || 'Email OTP verification failed.');
+          setOtpLoading(false);
+          return;
+        }
+        setEmailOtpVerified(true);
+      } else if (formData.email && !emailOtp) {
+        setOtpError('Please enter the OTP sent to your email.');
+        setOtpLoading(false);
+        return;
+      }
+
       setOtpVerified(true);
       setStep(2);
     } catch (err: any) {
       console.error('Firebase verify error:', err);
       if (err.code === 'auth/invalid-verification-code') {
-        setOtpError('Incorrect OTP. Please check and try again.');
+        setOtpError('Incorrect mobile OTP. Please check and try again.');
       } else if (err.code === 'auth/code-expired') {
         setOtpError('OTP has expired. Please request a new one.');
         setOtpSent(false);
@@ -607,11 +673,23 @@ export default function CheckInPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
                     </svg>
                   </div>
-                  <p style={{ color: '#fff', fontWeight: 700, fontSize: '0.95rem', marginBottom: '8px' }}>Camera access denied</p>
-                  <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem', lineHeight: 1.6, marginBottom: '28px' }}>
-                    Please allow camera access in your browser settings and try again. Camera is required for walk-in check-in.
+                  <p style={{ color: '#fff', fontWeight: 700, fontSize: '0.95rem', marginBottom: '8px' }}>
+                    {cameraError.includes('NotFoundError') || cameraError.includes('DevicesNotFound') ? 'No camera found' :
+                     cameraError.includes('NotReadableError') || cameraError.includes('TrackStartError') ? 'Camera in use' :
+                     cameraError.includes('not supported') ? 'Camera not supported' :
+                     'Camera access denied'}
                   </p>
-                  <button onClick={() => { setCameraError(''); setShowCamera(true); }} className="btn-vp-primary" style={{ width: '100%', justifyContent: 'center', marginBottom: '10px' }}>Try Again</button>
+                  <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem', lineHeight: 1.6, marginBottom: '8px' }}>
+                    {cameraError.includes('NotFoundError') || cameraError.includes('DevicesNotFound')
+                      ? 'No camera was detected. Make sure your camera is connected and not in use by another app.'
+                      : cameraError.includes('NotReadableError') || cameraError.includes('TrackStartError')
+                      ? 'Your camera is being used by another app. Close it and try again.'
+                      : cameraError.includes('not supported')
+                      ? 'This browser does not support camera access. Please use Chrome or Firefox.'
+                      : 'Please allow camera access in your browser settings and try again.'}
+                  </p>
+                  <p style={{ color: 'rgba(255,255,255,0.25)', fontSize: '0.65rem', marginBottom: '24px', fontFamily: 'monospace', wordBreak: 'break-all' }}>{cameraError}</p>
+                  <button onClick={openCamera} className="btn-vp-primary" style={{ width: '100%', justifyContent: 'center', marginBottom: '10px' }}>Try Again</button>
                   <button onClick={() => { setShowCamera(false); setCameraError(''); }} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'transparent', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', fontSize: '0.75rem' }}>Cancel</button>
                 </div>
               ) : (
@@ -642,7 +720,7 @@ export default function CheckInPage() {
                       ref={webcamRef}
                       audio={false}
                       screenshotFormat="image/jpeg"
-                      videoConstraints={{ facingMode: 'user', width: 440, height: 440 }}
+                      videoConstraints={{ facingMode: 'user' }}
                       style={{ width: '100%', display: 'block' }}
                       onUserMediaError={(err) => { console.error('Camera error:', err); setCameraError(String(err)); }}
                     />
@@ -704,18 +782,19 @@ export default function CheckInPage() {
                   border: croppedPhotoUrl ? '2px solid #2F5DAA' : '2px dashed rgba(47,93,170,0.25)',
                   background: 'rgba(47,93,170,0.04)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-                }} onClick={() => { setCameraError(''); setShowCamera(true); }}>
+                }} onClick={openCamera}>
                   {croppedPhotoUrl
                     ? <img src={croppedPhotoUrl} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }}/>
                     : <svg style={{ width: '24px', height: '24px', color: '#A0AEC0' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                   }
                 </div>
+                <div style={{ fontSize: '0.5rem', fontWeight: 800, textAlign: 'center', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#6B7FA3', marginTop: 4 }}>Photo <span style={{ color: '#ef4444' }}>*</span></div>
                 <div style={{ flex: 1 }}>
                   <label className="vp-label">Full Name *</label>
                   <input required name="name" value={formData.name} onChange={handleChange} type="text" placeholder="John Doe"/>
                 </div>
                 <div>
-                  <button type="button" onClick={() => { setCameraError(''); setShowCamera(true); }} style={{
+                  <button type="button" onClick={openCamera} style={{
                     display: 'flex', alignItems: 'center', gap: '5px', marginTop: '18px',
                     padding: '8px 14px', borderRadius: '8px', border: '1.5px solid rgba(47,93,170,0.2)',
                     background: 'rgba(47,93,170,0.05)', cursor: 'pointer', fontSize: '0.68rem', fontWeight: 700, color: '#2F5DAA', whiteSpace: 'nowrap',
@@ -731,7 +810,7 @@ export default function CheckInPage() {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
                 <div>
-                  <label className="vp-label">Email</label>
+                  <label className="vp-label">Email <span style={{ color: '#ef4444' }}>*</span></label>
                   <input name="email" value={formData.email} onChange={handleChange} type="email" placeholder="you@example.com"/>
                 </div>
                 <div>
@@ -774,34 +853,71 @@ export default function CheckInPage() {
                   <p style={{ fontSize: '0.75rem', color: '#6B7FA3' }}>Enter the 6-digit codes sent to your phone{formData.email ? ' and email' : ''}</p>
                 </div>
 
-                {/* Firebase badge */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center', marginBottom: '20px' }}>
-                  <svg style={{ width: '14px', height: '14px', color: '#22c55e' }} fill="currentColor" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
-                  <span style={{ fontSize: '0.6rem', fontWeight: 700, color: '#6B7FA3', letterSpacing: '0.08em' }}>
-                    OTP sent via <strong style={{ color: '#0A1F44' }}>Firebase</strong> to {countryCode}{formData.phone}
-                  </span>
+                {/* OTP channels info */}
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center', marginBottom: '20px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '5px 12px', borderRadius: '20px', background: 'rgba(47,93,170,0.06)', border: '1px solid rgba(47,93,170,0.15)' }}>
+                    <svg style={{ width: '12px', height: '12px', color: '#22c55e' }} fill="currentColor" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+                    <span style={{ fontSize: '0.6rem', fontWeight: 700, color: '#6B7FA3' }}>SMS → <strong style={{ color: '#0A1F44' }}>{countryCode}{formData.phone}</strong></span>
+                  </div>
+                  {formData.email && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '5px 12px', borderRadius: '20px', background: 'rgba(47,93,170,0.06)', border: '1px solid rgba(47,93,170,0.15)' }}>
+                      <svg style={{ width: '12px', height: '12px', color: '#2F5DAA' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                      <span style={{ fontSize: '0.6rem', fontWeight: 700, color: '#6B7FA3' }}>Email → <strong style={{ color: '#0A1F44' }}>{formData.email}</strong></span>
+                    </div>
+                  )}
                 </div>
 
-                <OtpInput value={phoneOtp} onChange={setPhoneOtp} label="Enter 6-digit OTP" hint="Check your SMS messages"/>
+                <OtpInput value={phoneOtp} onChange={setPhoneOtp} label="Mobile OTP (SMS)" hint="Check your SMS messages" autoFocus />
+
+                {formData.email && (
+                  <div style={{ marginTop: '20px' }}>
+                    <OtpInput value={emailOtp} onChange={setEmailOtp} label="Email OTP" hint={`Check your inbox at ${formData.email}`}/>
+                  </div>
+                )}
 
                 {otpError && <div style={{ padding: '10px 14px', background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '10px', color: '#dc2626', fontSize: '0.75rem', marginTop: '16px', textAlign: 'center' }}>{otpError}</div>}
 
                 <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
-                  <button type="button" onClick={() => { setOtpSent(false); setOtpError(''); setPhoneOtp(''); confirmationResultRef.current = null; resetRecaptcha(); }} style={{ flex: 1, padding: '13px', borderRadius: '10px', border: '1.5px solid rgba(10,31,68,0.12)', background: 'transparent', color: '#0A1F44', cursor: 'pointer', fontSize: '0.72rem', fontWeight: 700 }}>← Back</button>
+                  <button type="button" onClick={() => { setOtpSent(false); setOtpError(''); setPhoneOtp(''); setEmailOtp(''); confirmationResultRef.current = null; resetRecaptcha(); }} style={{ flex: 1, padding: '13px', borderRadius: '10px', border: '1.5px solid rgba(10,31,68,0.12)', background: 'transparent', color: '#0A1F44', cursor: 'pointer', fontSize: '0.72rem', fontWeight: 700 }}>← Back</button>
                   <button
                     type="button"
                     onClick={verifyOtp}
-                    disabled={otpLoading || phoneOtp.length < 6}
+                    disabled={otpLoading || phoneOtp.length < 6 || (!!formData.email && emailOtp.length < 6)}
                     className="btn-vp-primary"
-                    style={{ flex: 2, justifyContent: 'center', opacity: phoneOtp.length < 6 ? 0.5 : 1 }}
+                    style={{ flex: 2, justifyContent: 'center', opacity: (phoneOtp.length < 6 || (!!formData.email && emailOtp.length < 6)) ? 0.5 : 1 }}
                   >
                     {otpLoading ? 'Verifying…' : 'Verify & Continue →'}
                   </button>
                 </div>
-                <p style={{ textAlign: 'center', fontSize: '0.65rem', color: '#A0AEC0', marginTop: '12px' }}>
-                  Didn't receive?{' '}
-                  <button type="button" onClick={() => { setOtpSent(false); setPhoneOtp(''); confirmationResultRef.current = null; resetRecaptcha(); setTimeout(sendOtp, 150); }} style={{ background: 'none', border: 'none', color: '#2F5DAA', cursor: 'pointer', fontSize: '0.65rem', fontWeight: 700, padding: 0 }}>Resend OTP</button>
-                </p>
+                <div style={{ textAlign: 'center', marginTop: '16px' }}>
+                  {resendCountdown > 0 ? (
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '8px 16px', borderRadius: '20px', background: 'rgba(10,31,68,0.04)', border: '1px solid rgba(10,31,68,0.08)' }}>
+                      <svg style={{ width: '12px', height: '12px', color: '#6B7FA3' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                      </svg>
+                      <span style={{ fontSize: '0.65rem', color: '#6B7FA3', fontWeight: 600 }}>
+                        Resend available in <strong style={{ color: '#0A1F44', fontVariantNumeric: 'tabular-nums' }}>{resendCountdown}s</strong>
+                      </span>
+                    </div>
+                  ) : (
+                    <div style={{ fontSize: '0.65rem', color: '#A0AEC0' }}>
+                      Didn't receive?{' '}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPhoneOtp(''); setEmailOtp(''); setOtpError('');
+                          confirmationResultRef.current = null;
+                          resetRecaptcha();
+                          setOtpSent(false);
+                          setTimeout(sendOtp, 150);
+                        }}
+                        style={{ background: 'none', border: 'none', color: '#2F5DAA', cursor: 'pointer', fontSize: '0.65rem', fontWeight: 700, padding: 0, textDecoration: 'underline' }}
+                      >
+                        Resend OTP
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             ) : !otpVerified ? (
               <button
@@ -847,7 +963,7 @@ export default function CheckInPage() {
                   <label className="vp-label">Check-In Time</label>
                   <QuickTimePicker value={formData.fromTime} onChange={v => setFormData(f => ({ ...f, fromTime: v }))} placeholder="Select time"/>
                 </div>
-                <div>
+                <div style={{ gridColumn: '1/-1' }}>
                   <label className="vp-label">Expected Duration</label>
                   <DurationPicker value={formData.duration} onChange={v => setFormData(f => ({ ...f, duration: v }))}/>
                 </div>

@@ -51,13 +51,13 @@ export default function DashboardDesignation() {
 
   return (
     <div className="fade-up w-full">
-      <div className="flex justify-between items-end mb-12 pb-6 border-b border-[#E2E8F0]">
+      <div className="flex justify-between items-end mb-6 pb-4 border-b border-[#E2E8F0]">
         <div>
-          <p className="vp-caption mb-2">Management Console</p>
-          <h1 className="text-4xl font-black tracking-tighter uppercase mb-2 text-[#0A1F44]">Designations</h1>
-          <p className="text-[#6B7FA3] text-xs mt-1">Configure employee hierarchical roles and access levels.</p>
+          <p className="vp-caption mb-1">Management Console</p>
+          <h1 className="text-2xl font-black tracking-tighter uppercase mb-1 text-[#0A1F44]">Designations</h1>
+          <p className="text-[#6B7FA3] text-xs">Configure employee hierarchical roles and access levels.</p>
         </div>
-        <button onClick={() => handleOpenModal()} className="btn-primary px-8 py-4 rounded-2xl font-bold flex items-center gap-2">
+        <button onClick={() => handleOpenModal()} className="btn-primary px-4 py-2.5 rounded-xl font-bold flex items-center gap-2 text-sm">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"/></svg>
           ADD ROLE
         </button>

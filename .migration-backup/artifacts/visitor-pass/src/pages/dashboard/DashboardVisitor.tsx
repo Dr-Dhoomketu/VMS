@@ -4,6 +4,8 @@ import { API_URL } from '@/lib/api';
 
 interface Visit {
   _id: string; purpose: string; createdAt: string; status: string;
+  checkoutTime?: string;
+  scheduledTime?: string;
   visitor?: { name: string; aadhar?: string; imageUrl?: string; };
   meetWith?: { name: string; };
 }
@@ -38,10 +40,10 @@ export default function DashboardVisitor() {
 
   return (
     <div className="fade-up w-full">
-      <div className="flex justify-between items-center mb-12">
+      <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-4xl font-black tracking-tighter uppercase mb-2 text-[#0A1F44]">Visitor Log</h1>
-          <p className="text-[#6B7FA3] text-sm">Comprehensive logs of all entry and exit events.</p>
+          <h1 className="text-2xl font-black tracking-tighter uppercase mb-1 text-[#0A1F44]">Visitor Log</h1>
+          <p className="text-[#6B7FA3] text-xs">Comprehensive logs of all entry and exit events.</p>
         </div>
         <div className="flex gap-4">
           <div className="flex flex-col gap-1">
@@ -61,13 +63,14 @@ export default function DashboardVisitor() {
             <th className="px-6 py-4 text-left">Identity</th>
             <th className="px-6 py-4 text-left">Meeting With</th>
             <th className="px-6 py-4 text-left">Purpose</th>
-            <th className="px-6 py-4 text-left">Time Recorded</th>
+            <th className="px-6 py-4 text-left">Check-In</th>
+            <th className="px-6 py-4 text-left">Check-Out</th>
             <th className="px-6 py-4 text-left">Status</th>
             <th className="px-6 py-4 text-center">Action</th>
           </tr></thead>
           <tbody>
-            {loading ? <tr><td colSpan={7} className="py-12 text-center text-gray-500 italic">Accessing archives...</td></tr>
-            : visitors.length === 0 ? <tr><td colSpan={7} className="py-12 text-center text-gray-500 italic">No visitor records found.</td></tr>
+            {loading ? <tr><td colSpan={8} className="py-12 text-center text-gray-500 italic">Accessing archives...</td></tr>
+            : visitors.length === 0 ? <tr><td colSpan={8} className="py-12 text-center text-gray-500 italic">No visitor records found.</td></tr>
             : visitors.map(v => (
               <tr key={v._id} className="group hover:bg-[#F8FAFC] transition-colors">
                 <td className="px-6 py-4">
@@ -84,7 +87,8 @@ export default function DashboardVisitor() {
                 <td className="px-6 py-4 text-[#6B7FA3] text-[10px] font-mono">{v.visitor?.aadhar || '—'}</td>
                 <td className="px-6 py-4 text-[#6B7FA3] text-sm">{v.meetWith?.name}</td>
                 <td className="px-6 py-4 text-[#6B7FA3] text-xs uppercase tracking-widest">{v.purpose}</td>
-                <td className="px-6 py-4 text-[#6B7FA3] text-[10px]">{new Date(v.createdAt).toLocaleString()}</td>
+                <td className="px-6 py-4 text-[#6B7FA3] text-[10px]">{new Date(v.scheduledTime || v.createdAt).toLocaleString()}</td>
+                <td className="px-6 py-4 text-[#6B7FA3] text-[10px]">{v.checkoutTime ? new Date(v.checkoutTime).toLocaleString() : <span className="text-[#C4C9D4]">—</span>}</td>
                 <td className="px-6 py-4">
                   <span className={`badge ${v.status==='CheckedOut'?'badge-checkedout':v.status==='Approved'?'badge-approved':v.status==='Rejected'?'badge-rejected':'badge-pending'}`}>
                     {v.status === 'Approved' ? 'Active' : v.status}

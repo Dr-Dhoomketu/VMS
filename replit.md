@@ -1,67 +1,45 @@
-# Enterprise Visitor Management System (VMS)
+# [Project name]
 
-## Overview
-A full-stack Enterprise Visitor Management System built as a pnpm monorepo. Manages visitor check-ins, approvals, employee notifications, and administrative tasks.
+_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
 
-## Architecture
+## Run & Operate
 
-### Monorepo Structure
-- `artifacts/api-server` — Express.js backend (port 8080)
-- `artifacts/visitor-pass` — React + Vite frontend (port 25678)
-- `artifacts/mockup-sandbox` — UI prototyping sandbox
-- `lib/api-spec` — OpenAPI 3.1 spec (source of truth)
-- `lib/api-zod` — Zod schemas generated from OpenAPI spec
-- `lib/api-client-react` — React Query hooks generated from OpenAPI spec
-- `lib/db` — PostgreSQL layer via Drizzle ORM (for future use)
+- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- `pnpm run typecheck` — full typecheck across all packages
+- `pnpm run build` — typecheck + build all packages
+- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
+- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
+- Required env: `DATABASE_URL` — Postgres connection string
 
-### Tech Stack
-| Layer | Tech |
-|---|---|
-| Frontend | React 19, Vite 7, Tailwind CSS 4, Radix UI, Wouter, GSAP, Framer Motion |
-| Backend | Node.js, Express 5, Socket.io, Mongoose (MongoDB), Pino logging |
-| Database | MongoDB (primary, via Mongoose + in-memory fallback for dev) |
-| Auth | JWT-based (bcryptjs), own login system |
-| Real-time | Socket.io for host notifications |
-| API Contract | OpenAPI → Orval codegen → Zod + React Query |
+## Stack
 
-## Running the Project
-Two workflows run in parallel:
-- **Start API Server**: builds and runs the Express backend on port 8080
-- **Start Frontend**: runs Vite dev server on port 25678
+- pnpm workspaces, Node.js 24, TypeScript 5.9
+- API: Express 5
+- DB: PostgreSQL + Drizzle ORM
+- Validation: Zod (`zod/v4`), `drizzle-zod`
+- API codegen: Orval (from OpenAPI spec)
+- Build: esbuild (CJS bundle)
 
-## Authentication
-- Admin/Employee login: JWT-based, stored in `localStorage` as `token`
-- Visitor OTP: Firebase Phone Auth (for phone verification during check-in)
-- Test credentials:
-  - Admin: `admin@visitorpass.com` / `admin123`
-  - Admin: `admin@vms.com` / `password123`
-  - Employee: `employee@visitorpass.com` / `employee123`
+## Where things live
 
-## Environment Variables / Secrets
-- `MONGODB_URI` — MongoDB connection string (falls back to in-memory MongoDB if not set)
-- `JWT_SECRET` — JWT signing secret (has dev fallback, required in production)
-- `FAST2SMS_API_KEY` — Optional: for SMS OTP delivery via Fast2SMS
-- Firebase config is hardcoded in `artifacts/visitor-pass/src/lib/firebase.ts`
+_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
 
-## Database
-- Uses MongoDB via Mongoose for all VMS data (visitors, visits, users, departments, designations)
-- Auto-seeds on startup in development (departments, designations, and default users)
-- In-memory MongoDB (`mongodb-memory-server`) used when `MONGODB_URI` is not set
+## Architecture decisions
 
-## Key API Routes
-- `POST /api/v1/auth/login` — Admin/Employee login
-- `GET /api/v1/users/employees` — List employees (for visitor check-in)
-- `POST /api/v1/visits/request` — New visitor request
-- `GET /api/v1/visits` — List visits (protected)
-- `POST /api/v1/auth/send-otp` — Send email OTP
-- `POST /api/v1/auth/verify-otp` — Verify OTP
-- `GET /api/healthz` — Health check
+_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
 
-## Frontend Pages
-- `/` — Landing page
-- `/login` — Admin/Employee login
-- `/check-in` — Visitor check-in with webcam, OTP verification
-- `/appointment` — Pre-scheduled appointment form
-- `/returning` — Returning visitor form
-- `/approvals` — Visit approval page
-- `/dashboard/*` — Protected admin dashboard (visitors, approvals, employees, departments, designations, administrators, permissions)
+## Product
+
+_Describe the high-level user-facing capabilities of this app once they exist._
+
+## User preferences
+
+_Populate as you build — explicit user instructions worth remembering across sessions._
+
+## Gotchas
+
+_Populate as you build — sharp edges, "always run X before Y" rules._
+
+## Pointers
+
+- See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details

@@ -68,12 +68,12 @@ export default function DashboardEmployee() {
 
   return (
     <div className="fade-up w-full">
-      <div className="flex justify-between items-center mb-12">
+      <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-4xl font-black tracking-tighter uppercase mb-2 text-[#0A1F44]">Employees</h1>
-          <p className="text-[#6B7FA3] text-sm">Monitor and manage the active team directory.</p>
+          <h1 className="text-2xl font-black tracking-tighter uppercase mb-1 text-[#0A1F44]">Employees</h1>
+          <p className="text-[#6B7FA3] text-xs">Monitor and manage the active team directory.</p>
         </div>
-        <button onClick={() => handleOpenModal()} className="btn-primary px-8 py-4 rounded-2xl font-bold flex items-center gap-2">
+        <button onClick={() => handleOpenModal()} className="btn-primary px-4 py-2.5 rounded-xl font-bold flex items-center gap-2 text-sm">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"/></svg>
           ADD EMPLOYEE
         </button>
@@ -118,24 +118,24 @@ export default function DashboardEmployee() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Full Name</label>
-              <input required type="text" value={newEmp.name} onChange={e => setNewEmp({...newEmp,name:e.target.value})}/>
+              <input required type="text" value={newEmp.name} onChange={e => setNewEmp({...newEmp,name:e.target.value})} style={{ width:'100%', padding:'10px 14px', border:'1.5px solid #E2E8F0', borderRadius:'10px', fontSize:'0.875rem', color:'#0A1F44', background:'#fff', outline:'none', boxSizing:'border-box' }}/>
             </div>
             <div>
               <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Email Address</label>
-              <input required type="email" value={newEmp.email} onChange={e => setNewEmp({...newEmp,email:e.target.value})}/>
+              <input required type="email" value={newEmp.email} onChange={e => setNewEmp({...newEmp,email:e.target.value})} style={{ width:'100%', padding:'10px 14px', border:'1.5px solid #E2E8F0', borderRadius:'10px', fontSize:'0.875rem', color:'#0A1F44', background:'#fff', outline:'none', boxSizing:'border-box' }}/>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Department</label>
-              <select required value={newEmp.department} onChange={e => setNewEmp({...newEmp,department:e.target.value})}>
+              <select required value={newEmp.department} onChange={e => setNewEmp({...newEmp,department:e.target.value})} style={{ width:'100%', padding:'10px 14px', border:'1.5px solid #E2E8F0', borderRadius:'10px', fontSize:'0.875rem', color:'#0A1F44', background:'#fff', outline:'none', boxSizing:'border-box' }}>
                 <option value="">Select Dept</option>
                 {departments.map(d => <option key={d._id} value={d._id}>{d.name}</option>)}
               </select>
             </div>
             <div>
               <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Designation</label>
-              <select required value={newEmp.designation} onChange={e => setNewEmp({...newEmp,designation:e.target.value})}>
+              <select required value={newEmp.designation} onChange={e => setNewEmp({...newEmp,designation:e.target.value})} style={{ width:'100%', padding:'10px 14px', border:'1.5px solid #E2E8F0', borderRadius:'10px', fontSize:'0.875rem', color:'#0A1F44', background:'#fff', outline:'none', boxSizing:'border-box' }}>
                 <option value="">Select Role</option>
                 {designations.map(d => <option key={d._id} value={d._id}>{d.name}</option>)}
               </select>

@@ -51,12 +51,12 @@ export default function DashboardAdministrator() {
 
   return (
     <div className="fade-up w-full">
-      <div className="flex justify-between items-center mb-12">
+      <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-4xl font-black tracking-tighter uppercase mb-2 text-[#0A1F44]">Admins</h1>
-          <p className="text-[#6B7FA3] text-sm">Manage privileged accounts and access controls.</p>
+          <h1 className="text-2xl font-black tracking-tighter uppercase mb-1 text-[#0A1F44]">Admins</h1>
+          <p className="text-[#6B7FA3] text-xs">Manage privileged accounts and access controls.</p>
         </div>
-        <button onClick={() => handleOpenModal()} className="btn-primary px-8 py-4 rounded-2xl font-bold flex items-center gap-2">
+        <button onClick={() => handleOpenModal()} className="btn-primary px-4 py-2.5 rounded-xl font-bold flex items-center gap-2 text-sm">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"/></svg>
           ADD ADMIN
         </button>
@@ -92,15 +92,15 @@ export default function DashboardAdministrator() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Full Name</label>
-            <input required type="text" value={formData.name} onChange={e => setFormData({...formData,name:e.target.value})}/>
+            <input required type="text" value={formData.name} onChange={e => setFormData({...formData,name:e.target.value})} style={{ width:'100%', padding:'10px 14px', border:'1.5px solid #E2E8F0', borderRadius:'10px', fontSize:'0.875rem', color:'#0A1F44', background:'#fff', outline:'none', boxSizing:'border-box' }}/>
           </div>
           <div>
             <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Email Address</label>
-            <input required type="email" value={formData.email} onChange={e => setFormData({...formData,email:e.target.value})}/>
+            <input required type="email" value={formData.email} onChange={e => setFormData({...formData,email:e.target.value})} style={{ width:'100%', padding:'10px 14px', border:'1.5px solid #E2E8F0', borderRadius:'10px', fontSize:'0.875rem', color:'#0A1F44', background:'#fff', outline:'none', boxSizing:'border-box' }}/>
           </div>
           <div>
             <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Password</label>
-            <input required={!currentUser} type="password" placeholder={currentUser?"(Unchanged)":""} value={formData.password} onChange={e => setFormData({...formData,password:e.target.value})}/>
+            <input required={!currentUser} type="password" placeholder={currentUser?"(Unchanged)":""} value={formData.password} onChange={e => setFormData({...formData,password:e.target.value})} style={{ width:'100%', padding:'10px 14px', border:'1.5px solid #E2E8F0', borderRadius:'10px', fontSize:'0.875rem', color:'#0A1F44', background:'#fff', outline:'none', boxSizing:'border-box' }}/>
           </div>
           <div className="pt-2">
             <button type="submit" className="w-full btn-primary py-3.5 rounded-xl font-black tracking-widest uppercase">{currentUser?'Update Account':'Authorize Admin'}</button>

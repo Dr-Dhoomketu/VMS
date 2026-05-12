@@ -1,153 +1,67 @@
-# VISITORPASS — Visitor Management System
+# Enterprise Visitor Management System (VMS)
 
-## Project Overview
-
-A full-stack enterprise Visitor Management System (VMS) migrated from Next.js/Vercel to Vite + React in the Replit pnpm monorepo. Features real-time visitor approvals, QR digital gate passes, webcam capture, Socket.IO live updates, and a full admin dashboard.
-
----
+## Overview
+A full-stack Enterprise Visitor Management System built as a pnpm monorepo. Manages visitor check-ins, approvals, employee notifications, and administrative tasks.
 
 ## Architecture
 
 ### Monorepo Structure
-```
-artifacts/
-  visitor-pass/     — React + Vite frontend (port 25678, preview path /)
-  api-server/       — Express + MongoDB backend (port 8080, preview path /api)
-lib/
-  db/               — Drizzle/PostgreSQL shared lib (unused by VMS, kept for platform)
-  api-zod/          — Shared Zod schemas
-```
+- `artifacts/api-server` — Express.js backend (port 8080)
+- `artifacts/visitor-pass` — React + Vite frontend (port 25678)
+- `artifacts/mockup-sandbox` — UI prototyping sandbox
+- `lib/api-spec` — OpenAPI 3.1 spec (source of truth)
+- `lib/api-zod` — Zod schemas generated from OpenAPI spec
+- `lib/api-client-react` — React Query hooks generated from OpenAPI spec
+- `lib/db` — PostgreSQL layer via Drizzle ORM (for future use)
 
-### Frontend (`artifacts/visitor-pass`)
-- **Framework**: React 18 + Vite 7 + TypeScript
-- **Routing**: wouter (base `/`)
-- **Styling**: Tailwind CSS v4 + custom VMS design system
-- **Animations**: GSAP + @gsap/react + ScrollTrigger
-- **Webcam**: react-webcam + react-easy-crop
-- **Sockets**: socket.io-client
-- **API base**: Empty string `''` (proxied via Vite `/api/*` → backend)
+### Tech Stack
+| Layer | Tech |
+|---|---|
+| Frontend | React 19, Vite 7, Tailwind CSS 4, Radix UI, Wouter, GSAP, Framer Motion |
+| Backend | Node.js, Express 5, Socket.io, Mongoose (MongoDB), Pino logging |
+| Database | MongoDB (primary, via Mongoose + in-memory fallback for dev) |
+| Auth | JWT-based (bcryptjs), own login system |
+| Real-time | Socket.io for host notifications |
+| API Contract | OpenAPI → Orval codegen → Zod + React Query |
 
-### Backend (`artifacts/api-server`)
-- **Framework**: Express 5 + TypeScript
-- **Database**: MongoDB via Mongoose (MONGODB_URI secret required)
-- **Auth**: JWT (HS256, 30-day tokens), stored as `Bearer` in Authorization header
-- **Sockets**: Socket.IO on `/socket.io` path, rooms: `admin_channel`, `employee_<id>`
-- **File uploads**: Multer → `public/uploads/` directory
-- **Build**: esbuild bundled to `dist/index.mjs`
+## Running the Project
+Two workflows run in parallel:
+- **Start API Server**: builds and runs the Express backend on port 8080
+- **Start Frontend**: runs Vite dev server on port 25678
 
----
-
-## VMS Routes
-
-### Public Routes (no auth)
-- `POST /api/v1/visits/request` — submit a visitor check-in (multipart/form-data with optional webcamImage)
-- `GET  /api/v1/visits/history?phone=XXX` — look up visitor by phone (returning visitors)
-- `GET  /api/v1/users/employees` — list employees for form dropdowns
-
-### Protected Routes (JWT Bearer token required)
-- `POST /api/v1/auth/login` — login (returns token)
-- `GET  /api/v1/auth/me` — current user
-- `GET  /api/v1/visits` — all visits with optional filters (Admin only)
-- `GET  /api/v1/visits/pending` — pending approvals
-- `GET  /api/v1/visits/approved` — approved visits with gate pass data
-- `GET  /api/v1/visits/stats` — dashboard stats (Admin only)
-- `PUT  /api/v1/visits/:id/status` — approve/reject a visit
-- `POST /api/v1/visits/:id/checkout` — check out a visitor
-- `GET/POST/PUT/DELETE /api/v1/departments` — department CRUD
-- `GET/POST/PUT/DELETE /api/v1/designations` — designation CRUD
-- `GET/POST/PUT/DELETE /api/v1/users` — user/employee CRUD (Admin only)
-
----
-
-## Frontend Pages
-
-| Route | Page | Description |
-|-------|------|-------------|
-| `/` | LandingPage | Hero with GSAP animations, SecurityCharacter SVG (eye tracking), GreekSkyline SVG, HowItWorks animated diagram |
-| `/login` | LoginPage | Split-panel employee login |
-| `/check-in` | CheckInPage | 3-step: details → webcam/photo → success |
-| `/appointment` | AppointmentPage | Pre-schedule a visit |
-| `/returning` | ReturningPage | Phone lookup for returning visitors |
-| `/approvals` | ApprovalsPage | Public approval status page |
-| `/dashboard` | DashboardHome | Stats cards + recent visits table |
-| `/dashboard/approvals` | DashboardApprovals | Pending queue + digital gate passes |
-| `/dashboard/visitors` | DashboardVisitor | Full visitor log with filters |
-| `/dashboard/departments` | DashboardDepartment | Department CRUD |
-| `/dashboard/employees` | DashboardEmployee | Employee CRUD |
-| `/dashboard/designations` | DashboardDesignation | Designation CRUD |
-| `/dashboard/administrators` | DashboardAdministrator | Admin account CRUD |
-| `/dashboard/pre-visitors` | DashboardPreVisitor | Pre-scheduled appointments |
-
----
-
-## Key Files
-
-### Frontend
-- `artifacts/visitor-pass/src/App.tsx` — router with all routes + ProtectedRoute guard
-- `artifacts/visitor-pass/src/lib/api.ts` — `API_URL` export (empty string, proxied)
-- `artifacts/visitor-pass/src/utils/socket.ts` — Socket.IO client + connectSocket helper
-- `artifacts/visitor-pass/src/components/Sidebar.tsx` — dashboard sidebar navigation
-- `artifacts/visitor-pass/src/components/Modal.tsx` — reusable modal
-- `artifacts/visitor-pass/src/index.css` — VMS design system (Tailwind + custom classes)
-- `artifacts/visitor-pass/vite.config.ts` — Vite config with `/api`, `/public/uploads`, `/socket.io` proxies
-
-### Backend
-- `artifacts/api-server/src/vms/models.ts` — Mongoose models (Visitor, Visit, VmsUser, Department, Designation)
-- `artifacts/api-server/src/vms/auth.ts` — JWT auth routes + `protect`/`authorize` middleware
-- `artifacts/api-server/src/vms/visits.ts` — all visit routes (request, pending, approved, status, checkout, stats)
-- `artifacts/api-server/src/vms/users.ts` — user/employee CRUD routes
-- `artifacts/api-server/src/vms/departments.ts` — department CRUD
-- `artifacts/api-server/src/vms/designations.ts` — designation CRUD
-- `artifacts/api-server/src/vms/seed.ts` — database seeder (run once to create defaults)
-- `artifacts/api-server/src/app.ts` — Express app + Socket.IO setup + MongoDB connect
-- `artifacts/api-server/src/routes/index.ts` — route registration for all VMS routes
-
----
+## Authentication
+- Admin/Employee login: JWT-based, stored in `localStorage` as `token`
+- Visitor OTP: Firebase Phone Auth (for phone verification during check-in)
+- Test credentials:
+  - Admin: `admin@visitorpass.com` / `admin123`
+  - Admin: `admin@vms.com` / `password123`
+  - Employee: `employee@visitorpass.com` / `employee123`
 
 ## Environment Variables / Secrets
+- `MONGODB_URI` — MongoDB connection string (falls back to in-memory MongoDB if not set)
+- `JWT_SECRET` — JWT signing secret (has dev fallback, required in production)
+- `FAST2SMS_API_KEY` — Optional: for SMS OTP delivery via Fast2SMS
+- Firebase config is hardcoded in `artifacts/visitor-pass/src/lib/firebase.ts`
 
-| Key | Type | Required | Description |
-|-----|------|----------|-------------|
-| `MONGODB_URI` | Secret | Yes | MongoDB Atlas connection string |
-| `JWT_SECRET` | Secret | Optional | JWT signing secret (has fallback) |
-| `VITE_API_URL` | Env | Optional | Override API base URL (defaults to empty = proxied) |
+## Database
+- Uses MongoDB via Mongoose for all VMS data (visitors, visits, users, departments, designations)
+- Auto-seeds on startup in development (departments, designations, and default users)
+- In-memory MongoDB (`mongodb-memory-server`) used when `MONGODB_URI` is not set
 
----
+## Key API Routes
+- `POST /api/v1/auth/login` — Admin/Employee login
+- `GET /api/v1/users/employees` — List employees (for visitor check-in)
+- `POST /api/v1/visits/request` — New visitor request
+- `GET /api/v1/visits` — List visits (protected)
+- `POST /api/v1/auth/send-otp` — Send email OTP
+- `POST /api/v1/auth/verify-otp` — Verify OTP
+- `GET /api/healthz` — Health check
 
-## Default Credentials (seeded)
-
-| Role | Email | Password |
-|------|-------|----------|
-| Admin | admin@visitorpass.com | admin123 |
-| Employee | employee@visitorpass.com | employee123 |
-
-Run seed: `cd artifacts/api-server && pnpm exec tsx src/vms/seed.ts`
-
----
-
-## Design System Classes (index.css)
-
-| Class | Usage |
-|-------|-------|
-| `.btn-primary` / `.btn-vp-primary` | Primary CTA buttons (dark navy) |
-| `.btn-vp-secondary` | Secondary outlined button |
-| `.vp-card` | Standard white card with border + shadow |
-| `.vp-card-feature` | Feature card with hover lift |
-| `.vp-section-card` | Form section card |
-| `.vp-caption` | Uppercase tracking caption text |
-| `.vp-label` | Form field label |
-| `.dark-table-container` / `.dark-table` | Dashboard data table |
-| `.badge` / `.badge-approved` / `.badge-pending` / `.badge-rejected` / `.badge-checkedout` | Status badges |
-| `.fade-up` | GSAP fade-up animation target |
-| `.float-badge` / `.float-anim` | Floating animation elements |
-| `.dot-bg` / `.column-bg` / `.vp-nav` | Background patterns |
-
----
-
-## Vite Proxy (dev only)
-
-```
-/api         → http://localhost:8080
-/public/uploads → http://localhost:8080
-/socket.io   → http://localhost:8080 (ws: true)
-```
+## Frontend Pages
+- `/` — Landing page
+- `/login` — Admin/Employee login
+- `/check-in` — Visitor check-in with webcam, OTP verification
+- `/appointment` — Pre-scheduled appointment form
+- `/returning` — Returning visitor form
+- `/approvals` — Visit approval page
+- `/dashboard/*` — Protected admin dashboard (visitors, approvals, employees, departments, designations, administrators, permissions)

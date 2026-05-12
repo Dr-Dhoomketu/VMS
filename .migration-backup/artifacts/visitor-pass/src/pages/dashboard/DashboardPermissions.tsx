@@ -47,11 +47,11 @@ export default function DashboardPermissions() {
 
   return (
     <div className="fade-up">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '32px', paddingBottom: '24px', borderBottom: '1px solid #E2E8F0' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '20px', paddingBottom: '16px', borderBottom: '1px solid #E2E8F0' }}>
         <div>
-          <p style={{ fontSize: '0.55rem', fontWeight: 800, letterSpacing: '0.35em', textTransform: 'uppercase', color: '#2F5DAA', marginBottom: '6px' }}>Access Control</p>
-          <h1 style={{ fontSize: '1.8rem', fontWeight: 900, letterSpacing: '-0.03em', color: '#0A1F44' }}>Role Permissions</h1>
-          <p style={{ fontSize: '0.82rem', color: '#6B7FA3', marginTop: '4px' }}>Configure which roles can access each feature. Admin permissions cannot be changed.</p>
+          <p style={{ fontSize: '0.55rem', fontWeight: 800, letterSpacing: '0.35em', textTransform: 'uppercase', color: '#2F5DAA', marginBottom: '4px' }}>Access Control</p>
+          <h1 style={{ fontSize: '1.4rem', fontWeight: 900, letterSpacing: '-0.03em', color: '#0A1F44' }}>Role Permissions</h1>
+          <p style={{ fontSize: '0.75rem', color: '#6B7FA3', marginTop: '2px' }}>Configure which roles can access each feature. Admin permissions cannot be changed.</p>
         </div>
         <button onClick={handleSave} style={{
           display: 'flex', alignItems: 'center', gap: '8px',

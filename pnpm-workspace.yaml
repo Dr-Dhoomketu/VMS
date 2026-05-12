@@ -71,7 +71,6 @@ autoInstallPeers: false
 onlyBuiltDependencies:
   - '@swc/core'
   - esbuild
-  - mongodb-memory-server
   - msw
   - unrs-resolver
 

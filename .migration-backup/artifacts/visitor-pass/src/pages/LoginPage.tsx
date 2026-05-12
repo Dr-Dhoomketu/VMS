@@ -11,27 +11,27 @@ function FloatingCard({ icon, label, rotate, top, left, right, bottom, delay, g1
     <div style={{
       position: 'absolute',
       top, left, right, bottom,
-      width: '120px', height: '142px',
-      borderRadius: '22px',
+      width: '190px', height: '224px',
+      borderRadius: '26px',
       background: `linear-gradient(145deg, ${g1}, ${g2})`,
-      boxShadow: `0 28px 64px rgba(10,31,68,0.35), 0 8px 20px rgba(10,31,68,0.2), inset 0 1px 0 rgba(255,255,255,0.08)`,
-      border: '1px solid rgba(255,255,255,0.07)',
+      boxShadow: `0 32px 72px rgba(10,31,68,0.4), 0 10px 24px rgba(10,31,68,0.25), inset 0 1px 0 rgba(255,255,255,0.1)`,
+      border: '1px solid rgba(255,255,255,0.09)',
       display: 'flex', flexDirection: 'column',
-      alignItems: 'center', justifyContent: 'center', gap: '10px',
+      alignItems: 'center', justifyContent: 'center', gap: '14px',
       transform: `rotate(${rotate}deg)`,
       animation: `cardF ${5 + delay}s ease-in-out ${delay}s infinite`,
     }}>
       <div style={{
-        width: '52px', height: '52px', borderRadius: '15px',
+        width: '68px', height: '68px', borderRadius: '20px',
         background: iconG,
-        boxShadow: '0 6px 18px rgba(47,93,170,0.4)',
+        boxShadow: '0 8px 24px rgba(47,93,170,0.45)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>
-        <svg style={{ width: '26px', height: '26px', color: '#fff' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg style={{ width: '34px', height: '34px', color: '#fff' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.6" d={icon}/>
         </svg>
       </div>
-      <span style={{ fontSize: '0.5rem', fontWeight: 800, letterSpacing: '0.18em', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase' }}>{label}</span>
+      <span style={{ fontSize: '0.6rem', fontWeight: 800, letterSpacing: '0.2em', color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase' }}>{label}</span>
     </div>
   );
 }
@@ -72,7 +72,7 @@ export default function LoginPage() {
       {/* ── LEFT PANEL ── */}
       <div className="login-left" style={{
         width: '50%', background: '#0A1F44', position: 'relative',
-        display: 'none', flexDirection: 'column',
+        display: 'flex', flexDirection: 'column',
         alignItems: 'flex-start', justifyContent: 'center',
         padding: '72px 64px', flexShrink: 0, overflow: 'hidden',
       }}>
@@ -124,11 +124,11 @@ export default function LoginPage() {
             fontSize: '3.8rem', fontWeight: 900, color: '#fff',
             lineHeight: 0.92, letterSpacing: '-0.04em', textTransform: 'uppercase', marginBottom: '24px',
           }}>
-            VISITOR<br/>
+            VALUE MANAGEMENT<br/>
             <span style={{
               background: 'linear-gradient(135deg, #4A7FD4, #7ab0f0)',
               WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
-            }}>PASS</span>
+            }}>SYSTEM</span>
           </h2>
 
           <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.9rem', lineHeight: 1.75, marginBottom: '48px' }}>
@@ -280,9 +280,8 @@ export default function LoginPage() {
       </div>
 
       <style>{`
-        .login-left { display: none; }
-        @media (min-width: 1024px) { .login-left { display: flex !important; } }
         @keyframes spin { to { transform: rotate(360deg); } }
+        @media (max-width: 767px) { .login-left { display: none !important; } }
       `}</style>
     </main>
   );

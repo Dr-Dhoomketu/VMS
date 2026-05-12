@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import Webcam from 'react-webcam';
 import Cropper from 'react-easy-crop';
 import { Link } from 'wouter';
 import { API_URL } from '@/lib/api';
@@ -138,9 +139,8 @@ export default function AppointmentPage() {
   const [formData, setFormData] = useState({
     name: '', email: '', phone: '', gender: '', address: '',
     meetWith: '', purpose: '', scheduledTime: '', visitorStatus: '',
-    fromTime: '', toTime: '', duration: '',
+    fromTime: '', duration: '',
   });
-  const [flexibleEnd, setFlexibleEnd] = useState(false);
   const [rawPhoto, setRawPhoto] = useState<string | null>(null);
   const [croppedPhoto, setCroppedPhoto] = useState<File | null>(null);
   const [croppedPhotoUrl, setCroppedPhotoUrl] = useState<string | null>(null);
@@ -149,16 +149,15 @@ export default function AppointmentPage() {
   const [croppedArea, setCroppedArea] = useState<CropArea | null>(null);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = ev => { if (ev.target?.result) setRawPhoto(ev.target.result as string); };
-    reader.readAsDataURL(file);
-    e.target.value = '';
-  };
+  // Webcam + blink detection state
+  const [showCamera, setShowCamera] = useState(false);
+  const [cameraError, setCameraError] = useState('');
+  const [blinkDetected, setBlinkDetected] = useState(false);
+  const webcamRef = useRef<Webcam>(null);
+  const blinkCanvasRef = useRef<HTMLCanvasElement>(null);
+  const blinkIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const lastBrightnessRef = useRef<number[]>([]);
 
   const onCropComplete = useCallback((_: unknown, area: CropArea) => setCroppedArea(area), []);
 
@@ -170,6 +169,75 @@ export default function AppointmentPage() {
     setRawPhoto(null);
   };
 
+  // Blink detection via frame brightness analysis
+  useEffect(() => {
+    if (!showCamera || cameraError) {
+      if (blinkIntervalRef.current) { clearInterval(blinkIntervalRef.current); blinkIntervalRef.current = null; }
+      return;
+    }
+    setBlinkDetected(false);
+    lastBrightnessRef.current = [];
+
+    blinkIntervalRef.current = setInterval(() => {
+      const video = webcamRef.current?.video;
+      const canvas = blinkCanvasRef.current;
+      if (!video || !canvas || video.readyState < 2) return;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      canvas.width = video.videoWidth || 320;
+      canvas.height = video.videoHeight || 240;
+      ctx.drawImage(video, 0, 0);
+      const rx = Math.floor(canvas.width * 0.2);
+      const ry = Math.floor(canvas.height * 0.3);
+      const rw = Math.floor(canvas.width * 0.6);
+      const rh = Math.floor(canvas.height * 0.25);
+      try {
+        const imageData = ctx.getImageData(rx, ry, rw, rh);
+        const data = imageData.data;
+        let brightness = 0;
+        for (let i = 0; i < data.length; i += 4) {
+          brightness += data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
+        }
+        brightness /= data.length / 4;
+        const history = lastBrightnessRef.current;
+        history.push(brightness);
+        if (history.length > 10) history.shift();
+        if (history.length >= 8) {
+          const baseline = history.slice(0, history.length - 2).reduce((a, b) => a + b, 0) / (history.length - 2);
+          const recent = history[history.length - 1];
+          if (baseline > 10 && (baseline - recent) / baseline > 0.10) {
+            setBlinkDetected(true);
+            if (blinkIntervalRef.current) { clearInterval(blinkIntervalRef.current); blinkIntervalRef.current = null; }
+          }
+        }
+      } catch { /* cross-origin guard */ }
+    }, 150);
+
+    return () => { if (blinkIntervalRef.current) { clearInterval(blinkIntervalRef.current); blinkIntervalRef.current = null; } };
+  }, [showCamera, cameraError]);
+
+  const capturePhoto = useCallback(() => {
+    const img = webcamRef.current?.getScreenshot();
+    if (img) { setRawPhoto(img); setShowCamera(false); setCameraError(''); setBlinkDetected(false); lastBrightnessRef.current = []; }
+  }, []);
+
+  const openCamera = useCallback(async () => {
+    setCameraError('');
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      setCameraError('Camera API not supported in this browser.');
+      setShowCamera(true);
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      stream.getTracks().forEach(t => t.stop());
+      setShowCamera(true);
+    } catch (err: any) {
+      setCameraError(String(err));
+      setShowCamera(true);
+    }
+  }, []);
+
   useEffect(() => {
     fetch(`${API_URL}/api/v1/users/employees`).then(r => r.json()).then(d => setEmployees(d)).catch(console.error);
   }, []);
@@ -177,20 +245,12 @@ export default function AppointmentPage() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
-  const handleFlexibleToggle = () => {
-    setFlexibleEnd(prev => {
-      if (!prev) setFormData(f => ({ ...f, toTime: 'Flexible' }));
-      else setFormData(f => ({ ...f, toTime: '' }));
-      return !prev;
-    });
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); setError(''); setIsSubmitting(true);
     try {
       const payload = new FormData();
-      const fields = { ...formData, toTime: flexibleEnd ? 'Flexible / Open-ended' : formData.toTime };
-      Object.entries(fields).forEach(([k, v]) => payload.append(k, v));
+      Object.entries(formData).forEach(([k, v]) => payload.append(k, v));
       if (croppedPhoto) payload.append('photo', croppedPhoto);
       const res = await fetch(`${API_URL}/api/v1/visits/request`, { method: 'POST', body: payload });
       if (res.ok) setStep(2);
@@ -203,8 +263,78 @@ export default function AppointmentPage() {
     <main style={{ minHeight: '100vh', background: '#ffffff', color: '#0A1F44', position: 'relative' }}>
       <GeoBackground />
 
-      {/* Hidden file input */}
-      <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFileUpload} />
+      {/* Hidden canvas for blink detection */}
+      <canvas ref={blinkCanvasRef} style={{ display: 'none' }}/>
+
+      {/* Camera overlay with blink detection */}
+      {showCamera && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 400, background: '#0A1F44', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '20px', padding: '24px' }}>
+          <div style={{ width: '100%', maxWidth: '440px' }}>
+            {cameraError ? (
+              <div style={{ textAlign: 'center', padding: '40px 24px' }}>
+                <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+                  <svg style={{ width: '28px', height: '28px', color: '#ef4444' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                  </svg>
+                </div>
+                <p style={{ color: '#fff', fontWeight: 700, fontSize: '0.95rem', marginBottom: '8px' }}>
+                  {cameraError.includes('NotFoundError') || cameraError.includes('DevicesNotFound') ? 'No camera found' :
+                   cameraError.includes('NotReadableError') || cameraError.includes('TrackStartError') ? 'Camera in use' :
+                   cameraError.includes('not supported') ? 'Camera not supported' :
+                   'Camera access denied'}
+                </p>
+                <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem', lineHeight: 1.6, marginBottom: '8px' }}>
+                  {cameraError.includes('NotFoundError') || cameraError.includes('DevicesNotFound')
+                    ? 'No camera was detected. Make sure your camera is connected and not in use by another app.'
+                    : cameraError.includes('NotReadableError') || cameraError.includes('TrackStartError')
+                    ? 'Your camera is being used by another app. Close it and try again.'
+                    : cameraError.includes('not supported')
+                    ? 'This browser does not support camera access. Please use Chrome or Firefox.'
+                    : 'Please allow camera access in your browser settings and try again.'}
+                </p>
+                <p style={{ color: 'rgba(255,255,255,0.25)', fontSize: '0.65rem', marginBottom: '24px', fontFamily: 'monospace', wordBreak: 'break-all' }}>{cameraError}</p>
+                <button onClick={openCamera} className="btn-vp-primary" style={{ width: '100%', justifyContent: 'center', marginBottom: '10px' }}>Try Again</button>
+                <button onClick={() => { setShowCamera(false); setCameraError(''); }} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'transparent', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', fontSize: '0.75rem' }}>Cancel</button>
+              </div>
+            ) : (
+              <>
+                <div style={{ textAlign: 'center', marginBottom: '12px' }}>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '8px 18px', borderRadius: '999px', background: blinkDetected ? 'rgba(22,163,74,0.15)' : 'rgba(255,255,255,0.06)', border: blinkDetected ? '1px solid rgba(22,163,74,0.4)' : '1px solid rgba(255,255,255,0.12)', transition: 'all 0.3s' }}>
+                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: blinkDetected ? '#22c55e' : '#f59e0b', boxShadow: blinkDetected ? '0 0 8px rgba(34,197,94,0.6)' : '0 0 8px rgba(245,158,11,0.6)', animation: blinkDetected ? 'none' : 'pulse 1.5s infinite' }}/>
+                    <span style={{ fontSize: '0.7rem', fontWeight: 700, color: blinkDetected ? '#22c55e' : 'rgba(255,255,255,0.7)' }}>
+                      {blinkDetected ? 'Liveness Verified ✓' : 'Please blink naturally…'}
+                    </span>
+                  </div>
+                </div>
+                <div style={{ borderRadius: '16px', overflow: 'hidden', border: blinkDetected ? '2px solid rgba(34,197,94,0.5)' : '2px solid rgba(255,255,255,0.1)', position: 'relative', transition: 'border-color 0.3s' }}>
+                  <Webcam ref={webcamRef} audio={false} screenshotFormat="image/jpeg" videoConstraints={{ facingMode: 'user' }} style={{ width: '100%', display: 'block' }} onUserMediaError={(err) => { setCameraError(String(err)); }}/>
+                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
+                    <div style={{ width: '200px', height: '200px', borderRadius: '50%', border: `2px solid ${blinkDetected ? 'rgba(34,197,94,0.6)' : 'rgba(255,255,255,0.5)'}`, transition: 'border-color 0.3s' }}/>
+                  </div>
+                  {!blinkDetected && (
+                    <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <div style={{ width: '200px', height: '200px', borderRadius: '50%', position: 'relative' }}>
+                        <div style={{ position: 'absolute', top: '38%', left: '22%', width: '22%', height: '12%', borderRadius: '50%', border: '1.5px dashed rgba(251,191,36,0.5)' }}/>
+                        <div style={{ position: 'absolute', top: '38%', right: '22%', width: '22%', height: '12%', borderRadius: '50%', border: '1.5px dashed rgba(251,191,36,0.5)' }}/>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.4)', fontSize: '0.72rem', marginTop: '10px' }}>
+                  {blinkDetected ? 'Liveness confirmed — take your photo now' : 'Position face within circle and blink once'}
+                </p>
+                <div style={{ display: 'flex', gap: '10px', marginTop: '16px' }}>
+                  <button onClick={() => { setShowCamera(false); setCameraError(''); setBlinkDetected(false); }} style={{ flex: 1, padding: '13px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'transparent', color: '#fff', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600 }}>Cancel</button>
+                  <button onClick={capturePhoto} disabled={!blinkDetected} className="btn-vp-primary" style={{ flex: 2, justifyContent: 'center', opacity: blinkDetected ? 1 : 0.4, cursor: blinkDetected ? 'pointer' : 'not-allowed' }}>
+                    {blinkDetected ? 'Take Photo' : 'Waiting for blink…'}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+          <style>{`@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }`}</style>
+        </div>
+      )}
 
       {/* Photo crop overlay */}
       {rawPhoto && (
@@ -262,10 +392,10 @@ export default function AppointmentPage() {
             <div className="lux-card" style={{ padding: '36px', marginBottom: '20px' }}>
               <h3 style={{ fontSize: '0.55rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.25em', color: '#6B7FA3', marginBottom: '24px' }}>Personal Information</h3>
 
-              {/* Photo upload */}
+              {/* Live Photo with blink detection */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '24px', paddingBottom: '24px', borderBottom: '1px solid rgba(10,31,68,0.06)' }}>
                 <div
-                  onClick={() => fileInputRef.current?.click()}
+                  onClick={openCamera}
                   style={{
                     width: '80px', height: '80px', borderRadius: '50%', overflow: 'hidden', flexShrink: 0,
                     border: croppedPhotoUrl ? '2px solid #2F5DAA' : '2px dashed rgba(47,93,170,0.25)',
@@ -282,18 +412,23 @@ export default function AppointmentPage() {
                   )}
                 </div>
                 <div>
-                  <p style={{ fontSize: '0.72rem', fontWeight: 700, color: '#0A1F44', marginBottom: '4px' }}>Visitor Photo <span style={{ color: '#6B7FA3', fontWeight: 500 }}>(optional)</span></p>
-                  <p style={{ fontSize: '0.67rem', color: '#6B7FA3', marginBottom: '10px', lineHeight: 1.5 }}>Upload a clear photo for your visitor badge.</p>
+                  <p style={{ fontSize: '0.72rem', fontWeight: 700, color: '#0A1F44', marginBottom: '4px' }}>
+                    Live Photo <span style={{ color: '#ef4444' }}>*</span>
+                  </p>
+                  <p style={{ fontSize: '0.67rem', color: '#6B7FA3', marginBottom: '10px', lineHeight: 1.5 }}>
+                    Camera required — blink detection verifies liveness.
+                  </p>
                   <div style={{ display: 'flex', gap: '8px' }}>
-                    <button type="button" onClick={() => fileInputRef.current?.click()} style={{
+                    <button type="button" onClick={openCamera} style={{
                       display: 'inline-flex', alignItems: 'center', gap: '5px',
                       padding: '7px 14px', borderRadius: '8px', border: '1.5px solid rgba(47,93,170,0.2)',
                       background: 'rgba(47,93,170,0.05)', cursor: 'pointer', fontSize: '0.68rem', fontWeight: 700, color: '#2F5DAA',
                     }}>
                       <svg style={{ width: '11px', height: '11px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
                       </svg>
-                      {croppedPhotoUrl ? 'Change Photo' : 'Upload Photo'}
+                      {croppedPhotoUrl ? 'Retake Photo' : 'Open Camera'}
                     </button>
                     {croppedPhotoUrl && (
                       <button type="button" onClick={() => { setCroppedPhoto(null); setCroppedPhotoUrl(null); }} style={{
@@ -311,7 +446,7 @@ export default function AppointmentPage() {
                   <input required name="name" value={formData.name} onChange={handleChange} type="text" placeholder="John Doe"/>
                 </div>
                 <div>
-                  <label className="vp-label">Email Address</label>
+                  <label className="vp-label">Email Address <span style={{ color: '#ef4444' }}>*</span></label>
                   <input name="email" value={formData.email} onChange={handleChange} type="email" placeholder="you@example.com"/>
                 </div>
                 <div>
@@ -360,55 +495,6 @@ export default function AppointmentPage() {
                   />
                 </div>
 
-                {/* To Time with flexible toggle */}
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-                    <label className="vp-label" style={{ margin: 0 }}>To Time</label>
-                    <button
-                      type="button"
-                      onClick={handleFlexibleToggle}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: '5px',
-                        padding: '3px 10px', borderRadius: '20px', cursor: 'pointer', fontSize: '0.62rem', fontWeight: 700,
-                        border: `1.5px solid ${flexibleEnd ? '#0A1F44' : '#E2E8F0'}`,
-                        background: flexibleEnd ? '#0A1F44' : 'transparent',
-                        color: flexibleEnd ? '#fff' : '#6B7FA3',
-                        transition: 'all 0.2s',
-                      }}
-                    >
-                      <svg style={{ width: '10px', height: '10px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                      </svg>
-                      Flexible end
-                    </button>
-                  </div>
-
-                  {flexibleEnd ? (
-                    <div style={{
-                      display: 'flex', alignItems: 'center', gap: '10px',
-                      padding: '11px 14px', borderRadius: '10px',
-                      border: '1.5px solid rgba(10,31,68,0.15)', background: 'rgba(10,31,68,0.03)',
-                    }}>
-                      <svg style={{ width: '14px', height: '14px', color: '#0A1F44', flexShrink: 0 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                      </svg>
-                      <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#0A1F44' }}>Open / Flexible end time</span>
-                    </div>
-                  ) : (
-                    <QuickTimePicker
-                      value={formData.toTime}
-                      onChange={v => setFormData(f => ({ ...f, toTime: v }))}
-                      placeholder="End time"
-                    />
-                  )}
-
-                  {!flexibleEnd && (
-                    <p style={{ fontSize: '0.6rem', color: '#A0AEC0', marginTop: '6px', fontStyle: 'italic' }}>
-                      Toggle "Flexible end" if the meeting may run over
-                    </p>
-                  )}
-                </div>
-
                 <div>
                   <label className="vp-label">Purpose of Visit <span style={{ color: '#ef4444' }}>*</span></label>
                   <input required name="purpose" value={formData.purpose} onChange={handleChange} type="text" placeholder="Interview, Meeting, etc."/>
@@ -439,7 +525,7 @@ export default function AppointmentPage() {
                 {isSubmitting ? 'Requesting...' : 'Confirm Appointment →'}
               </button>
               <button type="button"
-                onClick={() => { setFormData({ name:'',email:'',phone:'',gender:'',address:'',meetWith:'',purpose:'',scheduledTime:'',visitorStatus:'',fromTime:'',toTime:'',duration:'' }); setFlexibleEnd(false); }}
+                onClick={() => setFormData({ name:'',email:'',phone:'',gender:'',address:'',meetWith:'',purpose:'',scheduledTime:'',visitorStatus:'',fromTime:'',duration:'' })}
                 className="btn-vp-secondary" style={{ padding: '14px 28px', fontSize: '0.72rem' }}>
                 Clear
               </button>
