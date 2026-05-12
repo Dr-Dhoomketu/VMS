@@ -1,36 +1,49 @@
-# [Project name]
+# VISITORPASS — Value Management System
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+A full-stack enterprise visitor management platform with check-in, QR codes, biometric verification, real-time notifications, and an employee dashboard.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- `pnpm --filter @workspace/visitor-pass run dev` — run the frontend (port 25678)
+- `pnpm --filter @workspace/api-server run dev` — run the API server (port 8080)
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
 
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
-- API: Express 5
-- DB: PostgreSQL + Drizzle ORM
-- Validation: Zod (`zod/v4`), `drizzle-zod`
-- API codegen: Orval (from OpenAPI spec)
-- Build: esbuild (CJS bundle)
+- Frontend: React + Vite, Tailwind CSS v4, shadcn/ui, Framer Motion, GSAP, wouter (routing)
+- Backend: Express 5, MongoDB (Mongoose), Socket.IO for real-time events
+- Auth: JWT + Firebase (OTP/phone verification)
+- Realtime: Socket.IO (admin channel + per-employee channels)
+- Build: esbuild (CJS bundle for API server)
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/visitor-pass/` — React + Vite frontend (main web app)
+- `artifacts/api-server/` — Express API server
+- `artifacts/visitor-pass/src/pages/` — All pages (LandingPage, LoginPage, CheckInPage, DashboardHome, etc.)
+- `artifacts/visitor-pass/src/components/` — UI components (GeoBackground, Modal, Sidebar, etc.)
+- `artifacts/visitor-pass/src/lib/firebase.ts` — Firebase config (requires env vars)
+- `artifacts/api-server/src/vms/` — Business logic (auth, visits, users, departments, designations, mobile)
+- `artifacts/api-server/src/app.ts` — Express app + MongoDB connection + Socket.IO setup
+- `lib/api-spec/openapi.yaml` — OpenAPI spec (source of truth for API contracts)
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- MongoDB (Mongoose) is used instead of PostgreSQL/Drizzle — visitor management data is document-oriented
+- In-memory MongoDB (mongodb-memory-server) is auto-started in development when MONGODB_URI is not set
+- Firebase OTP for visitor phone verification (requires FIREBASE_* env vars)
+- JWT-based auth for employee/admin login
+- Socket.IO for real-time visitor approval notifications to employees
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+- **Landing page**: New visitor check-in, returning visitor, and pre-booking flows
+- **Visitor check-in**: Camera capture, QR code generation, host notification
+- **Employee portal**: JWT login, dashboard with visitors, approvals, departments, employees, designations, administrators, pre-visitors, permissions
+- **Admin dashboard**: Full CRUD for all entities, approval workflow, real-time notifications
 
 ## User preferences
 
@@ -38,7 +51,10 @@ _Populate as you build — explicit user instructions worth remembering across s
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- MongoDB runs in-memory (auto-seeded) when MONGODB_URI is not set. Set `MONGODB_URI` as a secret for persistent data.
+- Firebase OTP will fail (503) until `VITE_FIREBASE_*` env vars are configured as Replit secrets.
+- The frontend proxies `/api` and `/socket.io` to the API server at port 8080.
+- Run `pnpm --filter @workspace/api-server run dev` first if the frontend shows API errors.
 
 ## Pointers
 
