@@ -1,10 +1,170 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'wouter';
 import { API_URL } from '@/lib/api';
 import GeoBackground from '@/components/GeoBackground';
 
 interface Employee { _id: string; name: string; }
 interface Visitor { name: string; phone: string; email?: string; aadhar?: string; imageUrl?: string; }
+
+function generateTimeSlots() {
+  const slots: string[] = [];
+  for (let h = 9; h <= 18; h++) {
+    for (const m of [0, 15, 30, 45]) {
+      if (h === 18 && m > 0) break;
+      const hh = String(h).padStart(2, '0');
+      const mm = String(m).padStart(2, '0');
+      slots.push(`${hh}:${mm}`);
+    }
+  }
+  return slots;
+}
+const TIME_SLOTS = generateTimeSlots();
+
+function formatTimeSlot(val: string) {
+  if (!val) return '';
+  const [h, m] = val.split(':').map(Number);
+  const ap = h >= 12 ? 'PM' : 'AM';
+  const h12 = h % 12 || 12;
+  return `${h12}:${String(m).padStart(2, '0')} ${ap}`;
+}
+
+function QuickTimePicker({ value, onChange, placeholder = 'Select time' }: { value: string; onChange: (v: string) => void; placeholder?: string }) {
+  const [open, setOpen] = useState(false);
+  const [customMode, setCustomMode] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false); setCustomMode(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  return (
+    <div ref={ref} style={{ position: 'relative' }}>
+      <div
+        onClick={() => { setOpen(!open); setCustomMode(false); }}
+        style={{
+          display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer',
+          padding: '11px 14px', border: '1.5px solid #E2E8F0', borderRadius: '10px',
+          background: '#fff', fontSize: '0.875rem', color: value ? '#0A1F44' : '#A0AEC0',
+          userSelect: 'none', transition: 'border-color 0.2s',
+        }}
+      >
+        <svg style={{ width: '14px', height: '14px', color: '#6B7FA3', flexShrink: 0 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <span style={{ flex: 1 }}>{value ? formatTimeSlot(value) : placeholder}</span>
+        <svg style={{ width: '12px', height: '12px', color: '#A0AEC0', transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"/>
+        </svg>
+      </div>
+
+      {open && (
+        <div style={{
+          position: 'absolute', top: 'calc(100% + 6px)', left: 0, zIndex: 300, minWidth: '280px',
+          background: '#fff', borderRadius: '16px', border: '1px solid #E2E8F0',
+          boxShadow: '0 20px 60px rgba(10,31,68,0.14)', overflow: 'hidden',
+        }}>
+          {!customMode && (
+            <>
+              <div style={{ padding: '10px 12px 6px', borderBottom: '1px solid #F1F5F9' }}>
+                <span style={{ fontSize: '0.52rem', fontWeight: 800, color: '#6B7FA3', letterSpacing: '0.25em', textTransform: 'uppercase' }}>Quick Select</span>
+              </div>
+              <div style={{ padding: '8px', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px', maxHeight: '220px', overflowY: 'auto' }}>
+                {TIME_SLOTS.map(slot => (
+                  <button
+                    key={slot}
+                    type="button"
+                    onClick={() => { onChange(slot); setOpen(false); }}
+                    style={{
+                      padding: '7px 4px', borderRadius: '8px', border: 'none', cursor: 'pointer',
+                      fontSize: '0.75rem', fontWeight: value === slot ? 800 : 500,
+                      background: value === slot ? '#0A1F44' : 'transparent',
+                      color: value === slot ? '#fff' : '#0A1F44',
+                      transition: 'all 0.15s', whiteSpace: 'nowrap',
+                    }}
+                    onMouseEnter={e => { if (value !== slot) (e.currentTarget as HTMLElement).style.background = '#F4F7FC'; }}
+                    onMouseLeave={e => { if (value !== slot) (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+                  >
+                    {formatTimeSlot(slot)}
+                  </button>
+                ))}
+              </div>
+              <div style={{ padding: '8px 8px 10px', borderTop: '1px solid #F1F5F9' }}>
+                <button
+                  type="button"
+                  onClick={() => setCustomMode(true)}
+                  style={{
+                    width: '100%', padding: '8px', borderRadius: '8px', border: '1px dashed #E2E8F0',
+                    background: 'transparent', cursor: 'pointer', fontSize: '0.72rem', fontWeight: 600, color: '#2F5DAA',
+                  }}
+                >
+                  + Enter custom time
+                </button>
+              </div>
+            </>
+          )}
+          {customMode && (
+            <div style={{ padding: '16px' }}>
+              <div style={{ fontSize: '0.52rem', fontWeight: 800, color: '#6B7FA3', letterSpacing: '0.25em', textTransform: 'uppercase', marginBottom: '10px' }}>Custom Time</div>
+              <input
+                type="time"
+                value={value}
+                autoFocus
+                onChange={e => onChange(e.target.value)}
+                style={{ width: '100%', fontSize: '1rem', fontWeight: 700 }}
+              />
+              <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
+                <button type="button" onClick={() => setCustomMode(false)} style={{ flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid #E2E8F0', background: '#F8FAFC', cursor: 'pointer', fontSize: '0.72rem', fontWeight: 600, color: '#6B7FA3' }}>← Back</button>
+                <button type="button" onClick={() => { setOpen(false); setCustomMode(false); }} style={{ flex: 1, padding: '8px', borderRadius: '8px', border: 'none', background: '#0A1F44', cursor: 'pointer', fontSize: '0.72rem', fontWeight: 700, color: '#fff' }}>Done</button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+const DURATION_OPTIONS = [
+  { label: '30 min', value: '30 min' },
+  { label: '45 min', value: '45 min' },
+  { label: '1 hr',   value: '1 hr' },
+  { label: '1.5 hr', value: '1.5 hr' },
+  { label: '2 hr',   value: '2 hr' },
+  { label: '3 hr',   value: '3 hr' },
+  { label: 'Half day', value: 'Half day' },
+  { label: 'Full day', value: 'Full day' },
+  { label: 'Open-ended', value: 'Open-ended' },
+];
+
+function DurationPicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  return (
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '7px', marginTop: '6px' }}>
+      {DURATION_OPTIONS.map(opt => (
+        <button
+          key={opt.value}
+          type="button"
+          onClick={() => onChange(value === opt.value ? '' : opt.value)}
+          style={{
+            padding: '7px 13px', borderRadius: '20px', border: '1.5px solid',
+            borderColor: value === opt.value ? '#0A1F44' : '#E2E8F0',
+            background: value === opt.value ? '#0A1F44' : '#fff',
+            color: value === opt.value ? '#fff' : '#6B7FA3',
+            fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer',
+            transition: 'all 0.18s',
+          }}
+        >
+          {opt.label}
+        </button>
+      ))}
+    </div>
+  );
+}
 
 export default function ReturningPage() {
   const [phone, setPhone] = useState('');
@@ -76,7 +236,7 @@ export default function ReturningPage() {
       </nav>
 
       <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 24px', minHeight: 'calc(100vh - 64px)' }}>
-        <div style={{ width: '100%', maxWidth: '460px' }}>
+        <div style={{ width: '100%', maxWidth: '480px' }}>
 
           {step === 1 && (
             <div className="fade-up">
@@ -129,20 +289,29 @@ export default function ReturningPage() {
                       {employees.map(emp => <option key={emp._id} value={emp._id}>{emp.name}</option>)}
                     </select>
                   </div>
+
                   <div>
                     <label className="vp-label">Purpose of Visit</label>
                     <input required type="text" value={formData.purpose} onChange={e => setFormData({ ...formData, purpose: e.target.value })} placeholder="Meeting, Interview..."/>
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
-                    <div>
-                      <label className="vp-label">Check-In Time</label>
-                      <input required type="time" value={formData.fromTime} onChange={e => setFormData({ ...formData, fromTime: e.target.value })}/>
-                    </div>
-                    <div>
-                      <label className="vp-label">Duration</label>
-                      <input type="text" value={formData.duration} onChange={e => setFormData({ ...formData, duration: e.target.value })} placeholder="e.g. 1hr"/>
-                    </div>
+
+                  <div>
+                    <label className="vp-label">Check-In Time</label>
+                    <QuickTimePicker
+                      value={formData.fromTime}
+                      onChange={v => setFormData(f => ({ ...f, fromTime: v }))}
+                      placeholder="Select time slot"
+                    />
                   </div>
+
+                  <div>
+                    <label className="vp-label">Duration</label>
+                    <DurationPicker
+                      value={formData.duration}
+                      onChange={v => setFormData(f => ({ ...f, duration: v }))}
+                    />
+                  </div>
+
                   <button type="submit" disabled={isSubmitting} className="btn-vp-primary" style={{ width: '100%', padding: '14px', justifyContent: 'center', fontSize: '0.7rem' }}>
                     {isSubmitting ? 'Submitting...' : 'Submit Request →'}
                   </button>
