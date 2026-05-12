@@ -34,15 +34,18 @@ export default function ReturningPage() {
   };
 
   const handleCheckIn = async (e: React.FormEvent) => {
-    e.preventDefault(); setIsSubmitting(true);
+    e.preventDefault(); setIsSubmitting(true); setError('');
     try {
-      const payload = { name: visitorData?.name, phone: visitorData?.phone, email: visitorData?.email, ...formData };
-      const res = await fetch(`${API_URL}/api/v1/visits/request`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
-      });
+      const fd = new FormData();
+      if (visitorData?.name) fd.append('name', visitorData.name);
+      if (visitorData?.phone) fd.append('phone', visitorData.phone);
+      if (visitorData?.email) fd.append('email', visitorData.email);
+      if (visitorData?.aadhar) fd.append('aadhar', visitorData.aadhar);
+      Object.entries(formData).forEach(([k, v]) => { if (v) fd.append(k, v); });
+      const res = await fetch(`${API_URL}/api/v1/visits/request`, { method: 'POST', body: fd });
       if (res.ok) setStep(3);
-      else setError('Submission failed');
-    } catch { setError('Sync failed'); }
+      else { const d = await res.json().catch(() => ({})); setError(d.message || 'Submission failed'); }
+    } catch { setError('Connection error. Please try again.'); }
     finally { setIsSubmitting(false); }
   };
 
@@ -108,7 +111,10 @@ export default function ReturningPage() {
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: '#F4F7FC', borderRadius: '12px' }}>
                     <div style={{ width: '56px', height: '56px', borderRadius: '50%', overflow: 'hidden', border: '2px solid rgba(47,93,170,0.15)', flexShrink: 0 }}>
-                      <img src={visitorData?.imageUrl ? `${API_URL}${visitorData.imageUrl}` : 'https://via.placeholder.com/80'} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }}/>
+                      {visitorData?.imageUrl
+                        ? <img src={visitorData.imageUrl.startsWith('data:') ? visitorData.imageUrl : `${API_URL}${visitorData.imageUrl}`} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }}/>
+                        : <div style={{ width: '100%', height: '100%', background: 'rgba(47,93,170,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', fontWeight: 800, color: '#2F5DAA' }}>{visitorData?.name?.charAt(0)}</div>
+                      }
                     </div>
                     <div>
                       <h3 style={{ fontSize: '1rem', fontWeight: 800, color: '#0A1F44', letterSpacing: '-0.01em' }}>{visitorData?.name}</h3>

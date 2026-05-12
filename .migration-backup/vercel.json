@@ -2,7 +2,7 @@
   "version": 2,
   "buildCommand": "pnpm --filter @workspace/visitor-pass run build",
   "outputDirectory": "artifacts/visitor-pass/dist/public",
-  "installCommand": "pnpm install",
+  "installCommand": "MMS_DISABLE_POSTINSTALL=1 pnpm install",
   "headers": [
     {
       "source": "/(.*)",

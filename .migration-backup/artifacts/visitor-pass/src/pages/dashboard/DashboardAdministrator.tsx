@@ -92,15 +92,15 @@ export default function DashboardAdministrator() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Full Name</label>
-            <input required type="text" value={formData.name} onChange={e => setFormData({...formData,name:e.target.value})} style={{ width:'100%', padding:'10px 14px', border:'1.5px solid #E2E8F0', borderRadius:'10px', fontSize:'0.875rem', color:'#0A1F44', background:'#fff', outline:'none', boxSizing:'border-box' }}/>
+            <input required type="text" value={formData.name} onChange={e => setFormData({...formData,name:e.target.value})} style={{ width:'100%', padding:'10px 14px', border:'1.5px solid #94A3B8', borderRadius:'10px', fontSize:'0.875rem', color:'#0A1F44', background:'#F8FAFC', outline:'none', boxSizing:'border-box' }}/>
           </div>
           <div>
             <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Email Address</label>
-            <input required type="email" value={formData.email} onChange={e => setFormData({...formData,email:e.target.value})} style={{ width:'100%', padding:'10px 14px', border:'1.5px solid #E2E8F0', borderRadius:'10px', fontSize:'0.875rem', color:'#0A1F44', background:'#fff', outline:'none', boxSizing:'border-box' }}/>
+            <input required type="email" value={formData.email} onChange={e => setFormData({...formData,email:e.target.value})} style={{ width:'100%', padding:'10px 14px', border:'1.5px solid #94A3B8', borderRadius:'10px', fontSize:'0.875rem', color:'#0A1F44', background:'#F8FAFC', outline:'none', boxSizing:'border-box' }}/>
           </div>
           <div>
             <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Password</label>
-            <input required={!currentUser} type="password" placeholder={currentUser?"(Unchanged)":""} value={formData.password} onChange={e => setFormData({...formData,password:e.target.value})} style={{ width:'100%', padding:'10px 14px', border:'1.5px solid #E2E8F0', borderRadius:'10px', fontSize:'0.875rem', color:'#0A1F44', background:'#fff', outline:'none', boxSizing:'border-box' }}/>
+            <input required={!currentUser} type="password" placeholder={currentUser?"(Unchanged)":""} value={formData.password} onChange={e => setFormData({...formData,password:e.target.value})} style={{ width:'100%', padding:'10px 14px', border:'1.5px solid #94A3B8', borderRadius:'10px', fontSize:'0.875rem', color:'#0A1F44', background:'#F8FAFC', outline:'none', boxSizing:'border-box' }}/>
           </div>
           <div className="pt-2">
             <button type="submit" className="w-full btn-primary py-3.5 rounded-xl font-black tracking-widest uppercase">{currentUser?'Update Account':'Authorize Admin'}</button>

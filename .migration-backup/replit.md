@@ -1,67 +1,61 @@
-# Enterprise Visitor Management System (VMS)
+# VISITORPASS — Value Management System
 
-## Overview
-A full-stack Enterprise Visitor Management System built as a pnpm monorepo. Manages visitor check-ins, approvals, employee notifications, and administrative tasks.
+A full-stack enterprise visitor management platform with check-in, QR codes, biometric verification, real-time notifications, and an employee dashboard.
 
-## Architecture
+## Run & Operate
 
-### Monorepo Structure
-- `artifacts/api-server` — Express.js backend (port 8080)
-- `artifacts/visitor-pass` — React + Vite frontend (port 25678)
-- `artifacts/mockup-sandbox` — UI prototyping sandbox
-- `lib/api-spec` — OpenAPI 3.1 spec (source of truth)
-- `lib/api-zod` — Zod schemas generated from OpenAPI spec
-- `lib/api-client-react` — React Query hooks generated from OpenAPI spec
-- `lib/db` — PostgreSQL layer via Drizzle ORM (for future use)
+- `pnpm --filter @workspace/visitor-pass run dev` — run the frontend (port 25678)
+- `pnpm --filter @workspace/api-server run dev` — run the API server (port 8080)
+- `pnpm run typecheck` — full typecheck across all packages
+- `pnpm run build` — typecheck + build all packages
+- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 
-### Tech Stack
-| Layer | Tech |
-|---|---|
-| Frontend | React 19, Vite 7, Tailwind CSS 4, Radix UI, Wouter, GSAP, Framer Motion |
-| Backend | Node.js, Express 5, Socket.io, Mongoose (MongoDB), Pino logging |
-| Database | MongoDB (primary, via Mongoose + in-memory fallback for dev) |
-| Auth | JWT-based (bcryptjs), own login system |
-| Real-time | Socket.io for host notifications |
-| API Contract | OpenAPI → Orval codegen → Zod + React Query |
+## Stack
 
-## Running the Project
-Two workflows run in parallel:
-- **Start API Server**: builds and runs the Express backend on port 8080
-- **Start Frontend**: runs Vite dev server on port 25678
+- pnpm workspaces, Node.js 24, TypeScript 5.9
+- Frontend: React + Vite, Tailwind CSS v4, shadcn/ui, Framer Motion, GSAP, wouter (routing)
+- Backend: Express 5, MongoDB (Mongoose), Socket.IO for real-time events
+- Auth: JWT + Firebase (OTP/phone verification)
+- Realtime: Socket.IO (admin channel + per-employee channels)
+- Build: esbuild (CJS bundle for API server)
 
-## Authentication
-- Admin/Employee login: JWT-based, stored in `localStorage` as `token`
-- Visitor OTP: Firebase Phone Auth (for phone verification during check-in)
-- Test credentials:
-  - Admin: `admin@visitorpass.com` / `admin123`
-  - Admin: `admin@vms.com` / `password123`
-  - Employee: `employee@visitorpass.com` / `employee123`
+## Where things live
 
-## Environment Variables / Secrets
-- `MONGODB_URI` — MongoDB connection string (falls back to in-memory MongoDB if not set)
-- `JWT_SECRET` — JWT signing secret (has dev fallback, required in production)
-- `FAST2SMS_API_KEY` — Optional: for SMS OTP delivery via Fast2SMS
-- Firebase config is hardcoded in `artifacts/visitor-pass/src/lib/firebase.ts`
+- `artifacts/visitor-pass/` — React + Vite frontend (main web app)
+- `artifacts/api-server/` — Express API server
+- `artifacts/visitor-pass/src/pages/` — All pages (LandingPage, LoginPage, CheckInPage, DashboardHome, etc.)
+- `artifacts/visitor-pass/src/components/` — UI components (GeoBackground, Modal, Sidebar, etc.)
+- `artifacts/visitor-pass/src/lib/firebase.ts` — Firebase config (requires env vars)
+- `artifacts/api-server/src/vms/` — Business logic (auth, visits, users, departments, designations, mobile)
+- `artifacts/api-server/src/app.ts` — Express app + MongoDB connection + Socket.IO setup
+- `lib/api-spec/openapi.yaml` — OpenAPI spec (source of truth for API contracts)
 
-## Database
-- Uses MongoDB via Mongoose for all VMS data (visitors, visits, users, departments, designations)
-- Auto-seeds on startup in development (departments, designations, and default users)
-- In-memory MongoDB (`mongodb-memory-server`) used when `MONGODB_URI` is not set
+## Architecture decisions
 
-## Key API Routes
-- `POST /api/v1/auth/login` — Admin/Employee login
-- `GET /api/v1/users/employees` — List employees (for visitor check-in)
-- `POST /api/v1/visits/request` — New visitor request
-- `GET /api/v1/visits` — List visits (protected)
-- `POST /api/v1/auth/send-otp` — Send email OTP
-- `POST /api/v1/auth/verify-otp` — Verify OTP
-- `GET /api/healthz` — Health check
+- MongoDB (Mongoose) is used instead of PostgreSQL/Drizzle — visitor management data is document-oriented
+- In-memory MongoDB (mongodb-memory-server) is auto-started in development when MONGODB_URI is not set
+- Firebase OTP for visitor phone verification (requires FIREBASE_* env vars)
+- JWT-based auth for employee/admin login
+- Socket.IO for real-time visitor approval notifications to employees
 
-## Frontend Pages
-- `/` — Landing page
-- `/login` — Admin/Employee login
-- `/check-in` — Visitor check-in with webcam, OTP verification
-- `/appointment` — Pre-scheduled appointment form
-- `/returning` — Returning visitor form
-- `/approvals` — Visit approval page
-- `/dashboard/*` — Protected admin dashboard (visitors, approvals, employees, departments, designations, administrators, permissions)
+## Product
+
+- **Landing page**: New visitor check-in, returning visitor, and pre-booking flows
+- **Visitor check-in**: Camera capture, QR code generation, host notification
+- **Employee portal**: JWT login, dashboard with visitors, approvals, departments, employees, designations, administrators, pre-visitors, permissions
+- **Admin dashboard**: Full CRUD for all entities, approval workflow, real-time notifications
+
+## User preferences
+
+_Populate as you build — explicit user instructions worth remembering across sessions._
+
+## Gotchas
+
+- MongoDB runs in-memory (auto-seeded) when MONGODB_URI is not set. Set `MONGODB_URI` as a secret for persistent data.
+- Firebase OTP will fail (503) until `VITE_FIREBASE_*` env vars are configured as Replit secrets.
+- The frontend proxies `/api` and `/socket.io` to the API server at port 8080.
+- Run `pnpm --filter @workspace/api-server run dev` first if the frontend shows API errors.
+
+## Pointers
+
+- See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details

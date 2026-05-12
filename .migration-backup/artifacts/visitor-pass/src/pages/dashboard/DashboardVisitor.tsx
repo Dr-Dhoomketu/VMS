@@ -63,7 +63,7 @@ export default function DashboardVisitor() {
             <th className="px-6 py-4 text-left">Identity</th>
             <th className="px-6 py-4 text-left">Meeting With</th>
             <th className="px-6 py-4 text-left">Purpose</th>
-            <th className="px-6 py-4 text-left">Check-In</th>
+            <th className="px-6 py-4 text-left">Appt. / Check-In</th>
             <th className="px-6 py-4 text-left">Check-Out</th>
             <th className="px-6 py-4 text-left">Status</th>
             <th className="px-6 py-4 text-center">Action</th>
@@ -77,7 +77,7 @@ export default function DashboardVisitor() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <div style={{ width: '38px', height: '38px', borderRadius: '50%', overflow: 'hidden', background: 'rgba(47,93,170,0.08)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       {v.visitor?.imageUrl
-                        ? <img src={`${API_URL}${v.visitor.imageUrl}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt=""/>
+                        ? <img src={v.visitor.imageUrl.startsWith('data:') ? v.visitor.imageUrl : `${API_URL}${v.visitor.imageUrl}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt=""/>
                         : <span style={{ color: '#2F5DAA', fontSize: '0.8rem', fontWeight: 800 }}>{v.visitor?.name?.charAt(0)}</span>
                       }
                     </div>
@@ -87,7 +87,12 @@ export default function DashboardVisitor() {
                 <td className="px-6 py-4 text-[#6B7FA3] text-[10px] font-mono">{v.visitor?.aadhar || '—'}</td>
                 <td className="px-6 py-4 text-[#6B7FA3] text-sm">{v.meetWith?.name}</td>
                 <td className="px-6 py-4 text-[#6B7FA3] text-xs uppercase tracking-widest">{v.purpose}</td>
-                <td className="px-6 py-4 text-[#6B7FA3] text-[10px]">{new Date(v.scheduledTime || v.createdAt).toLocaleString()}</td>
+                <td className="px-6 py-4 text-[#6B7FA3] text-[10px]">
+                  {v.scheduledTime
+                    ? <><span style={{ fontSize: '0.55rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#2F5DAA', marginRight: 4 }}>Appt</span>{new Date(v.scheduledTime).toLocaleDateString()}</>
+                    : new Date(v.createdAt).toLocaleString()
+                  }
+                </td>
                 <td className="px-6 py-4 text-[#6B7FA3] text-[10px]">{v.checkoutTime ? new Date(v.checkoutTime).toLocaleString() : <span className="text-[#C4C9D4]">—</span>}</td>
                 <td className="px-6 py-4">
                   <span className={`badge ${v.status==='CheckedOut'?'badge-checkedout':v.status==='Approved'?'badge-approved':v.status==='Rejected'?'badge-rejected':'badge-pending'}`}>

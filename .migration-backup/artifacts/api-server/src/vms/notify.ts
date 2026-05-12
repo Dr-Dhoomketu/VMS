@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+// @ts-ignore — @types/qrcode not available
 import QRCode from 'qrcode';
 import { logger } from '../lib/logger.js';
 
@@ -42,9 +43,8 @@ async function sendEmail(to: string, subject: string, html: string, text: string
     const transport = nodemailer.createTransport({
       host: 'smtp.gmail.com', port: 587, secure: false,
       auth: { user: gmailUser, pass: gmailPass },
-      family: 4,
       connectionTimeout: 20000, greetingTimeout: 15000, socketTimeout: 20000,
-    });
+    } as Parameters<typeof nodemailer.createTransport>[0]);
     await transport.sendMail({ from: `"VISITORPASS" <${gmailUser}>`, to, subject, html, text });
     logger.info({ to, method: 'gmail-smtp' }, 'Email sent successfully');
     return true;
@@ -92,8 +92,9 @@ function visitorApprovedHtml(
 ): string {
   const year = new Date().getFullYear();
 
-  const qrImgSrc = qrDataUri ||
-    `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(qrToken)}&bgcolor=ffffff&color=0A1F44&qzone=3&margin=10`;
+  const frontendUrl = process.env['FRONTEND_URL'] || '';
+  const qrData = frontendUrl ? `${frontendUrl}/scan/${qrToken}` : qrToken;
+  const qrImgSrc = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(qrData)}&bgcolor=ffffff&color=0A1F44&qzone=3&margin=10`;
 
   const meetingDateStr = scheduledTime
     ? new Date(scheduledTime).toLocaleDateString('en-IN', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })
@@ -278,10 +279,10 @@ function visitorRejectedHtml(name: string, visitId: string): string {
 
         <!-- HERO BAND -->
         <tr>
-          <td style="background:linear-gradient(135deg,#FEF2F2 0%,#FEE2E2 100%);padding:44px 40px 40px;text-align:center;">
-            <div style="width:68px;height:68px;background:#FECACA;border:2px solid #FCA5A5;border-radius:50%;margin:0 auto 22px;line-height:68px;font-size:30px;">&#128683;</div>
-            <h1 style="margin:0 0 12px;font-size:24px;font-weight:900;letter-spacing:-0.03em;color:#7F1D1D;">Visit Request Declined</h1>
-            <p style="margin:0;font-size:15px;color:#991B1B;line-height:1.65;">Hi <strong style="color:#7F1D1D;">${name}</strong>, unfortunately your visit request<br/>could not be approved at this time.</p>
+          <td style="background:linear-gradient(135deg,#7F1D1D 0%,#991B1B 60%,#B91C1C 100%);padding:44px 40px 40px;text-align:center;">
+            <div style="width:68px;height:68px;background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.3);border-radius:50%;margin:0 auto 22px;line-height:68px;font-size:30px;">&#128683;</div>
+            <h1 style="margin:0 0 12px;font-size:24px;font-weight:900;letter-spacing:-0.03em;color:#ffffff;">Visit Request Declined</h1>
+            <p style="margin:0;font-size:15px;color:rgba(255,255,255,0.85);line-height:1.65;">Hi <strong style="color:#ffffff;">${name}</strong>, unfortunately your visit request<br/>could not be approved at this time.</p>
           </td>
         </tr>
 

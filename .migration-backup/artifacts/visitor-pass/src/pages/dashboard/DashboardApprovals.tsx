@@ -7,7 +7,8 @@ function QrCodeImage({ token }: { token: string }) {
   const [dataUrl, setDataUrl] = useState('');
   useEffect(() => {
     if (token) {
-      QRCode.toDataURL(token, { width: 220, margin: 2, color: { dark: '#0A1F44', light: '#FFFFFF' } })
+      const scanUrl = `${window.location.origin}/scan/${token}`;
+      QRCode.toDataURL(scanUrl, { width: 220, margin: 2, color: { dark: '#0A1F44', light: '#FFFFFF' } })
         .then(setDataUrl)
         .catch(() => {});
     }
@@ -80,7 +81,7 @@ function VisitorPass({ visit, past }: { visit: Visit; past?: boolean }) {
         <div style={{ flexShrink: 0 }}>
           <div style={{ width: 90, height: 110, borderRadius: 12, border: '1px solid #E2E8F0', overflow: 'hidden', background: '#F8FAFC', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             {visit.visitor?.imageUrl
-              ? <img src={`${API_URL}${visit.visitor.imageUrl}`} alt="visitor" style={{ width: '100%', height: '100%', objectFit: 'cover' }}/>
+              ? <img src={visit.visitor.imageUrl.startsWith('data:') ? visit.visitor.imageUrl : `${API_URL}${visit.visitor.imageUrl}`} alt="visitor" style={{ width: '100%', height: '100%', objectFit: 'cover' }}/>
               : <div style={{ textAlign: 'center', padding: 8 }}><div style={{ fontSize: '1.8rem', marginBottom: 4 }}>👤</div><div style={{ fontSize: '0.45rem', color: '#555', letterSpacing: '0.1em', textTransform: 'uppercase' }}>No Photo</div></div>
             }
           </div>
@@ -255,7 +256,7 @@ export default function DashboardApprovals() {
                 <div className="flex gap-5">
                   <div className="w-16 h-16 rounded-2xl overflow-hidden border border-[#E2E8F0] shrink-0">
                     {visit.visitor?.imageUrl
-                      ? <img src={`${API_URL}${visit.visitor.imageUrl}`} className="w-full h-full object-cover" alt="visitor"/>
+                      ? <img src={visit.visitor.imageUrl.startsWith('data:') ? visit.visitor.imageUrl : `${API_URL}${visit.visitor.imageUrl}`} className="w-full h-full object-cover" alt="visitor"/>
                       : <div className="w-full h-full bg-[#EEF3FB] flex items-center justify-center text-[#2F5DAA] text-sm font-black">{visit.visitor?.name?.charAt(0)}</div>
                     }
                   </div>
