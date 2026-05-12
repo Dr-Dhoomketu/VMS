@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import gsap from 'gsap';
 
 interface ModalProps {
@@ -23,38 +24,51 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
     } else {
       document.body.style.overflow = '';
     }
+    return () => { document.body.style.overflow = ''; };
   }, [isOpen]);
 
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-[100] overflow-y-auto"
-      style={{ background: 'rgba(10,31,68,0.35)', backdropFilter: 'blur(4px)' }}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 9999,
+        background: 'rgba(10,31,68,0.45)', backdropFilter: 'blur(4px)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: '24px', overflowY: 'auto',
+      }}
       onClick={(e) => { if (e.target === overlayRef.current) onClose(); }}
     >
-      <div className="flex min-h-full items-center justify-center p-4">
       <div
         ref={modalRef}
-        className="vp-modal relative w-full"
-        style={{ maxWidth: '460px', padding: '28px' }}
+        className="vp-modal"
+        style={{
+          position: 'relative', width: '100%', maxWidth: '480px',
+          maxHeight: 'calc(100vh - 48px)', overflowY: 'auto',
+          padding: '28px', margin: 'auto',
+        }}
+        onClick={e => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-base font-black text-[#0A1F44] tracking-tight">{title}</h2>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+          <h2 style={{ fontSize: '1rem', fontWeight: 900, color: '#0A1F44', letterSpacing: '-0.02em', margin: 0 }}>{title}</h2>
           <button
             onClick={onClose}
-            className="w-7 h-7 rounded-full border border-[#E2E8F0] flex items-center justify-center text-[#6B7FA3] hover:text-[#0A1F44] hover:border-[#0A1F44] transition-all flex-shrink-0"
+            style={{
+              width: 28, height: 28, borderRadius: '50%', border: '1px solid #E2E8F0',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: '#6B7FA3', background: 'transparent', cursor: 'pointer', flexShrink: 0,
+            }}
           >
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg style={{ width: 14, height: 14 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/>
             </svg>
           </button>
         </div>
-        <div className="h-px bg-[#E2E8F0] mb-4"/>
+        <div style={{ height: 1, background: '#E2E8F0', marginBottom: '20px' }}/>
         {children}
       </div>
-      </div>
-    </div>
+    </div>,
+    document.body
   );
 }
