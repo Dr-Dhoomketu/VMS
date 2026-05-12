@@ -176,6 +176,7 @@ router.put('/:id/status', protect, authorize('Admin', 'Employee'), async (req: a
       qrToken: visit.qrToken,
       scheduledTime: (visit as any).scheduledTime ? String((visit as any).scheduledTime) : undefined,
       fromTime: (visit as any).fromTime || undefined,
+      createdAt: (visit as any).createdAt ? String((visit as any).createdAt) : undefined,
     }).catch(() => {});
     res.json({ message: `Visit ${status.toLowerCase()}`, visit });
   } catch (err: any) {

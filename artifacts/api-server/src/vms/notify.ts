@@ -89,16 +89,12 @@ function visitorApprovedHtml(
   qrDataUri: string,
   scheduledTime?: string,
   fromTime?: string,
+  createdAt?: string,
 ): string {
   const year = new Date().getFullYear();
 
-  const frontendUrl = process.env['FRONTEND_URL'] || '';
-  const qrData = frontendUrl ? `${frontendUrl}/scan/${qrToken}` : qrToken;
-  const qrImgSrc = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(qrData)}&bgcolor=ffffff&color=0A1F44&qzone=3&margin=10`;
-
-  const meetingDateStr = scheduledTime
-    ? new Date(scheduledTime).toLocaleDateString('en-IN', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })
-    : '';
+  const dateSource = scheduledTime || createdAt || new Date().toISOString();
+  const meetingDateStr = new Date(dateSource).toLocaleDateString('en-IN', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
   const meetingTimeStr = fromTime ? fmt12h(fromTime) : '';
 
   const scheduleSection = (meetingDateStr || meetingTimeStr) ? `
@@ -198,7 +194,7 @@ function visitorApprovedHtml(
       <div class="qr-wrap">
         <p class="qr-label">Your Digital Gate Pass</p>
         <div class="qr-img-wrap">
-          <img src="${qrImgSrc}" width="220" height="220" alt="QR Access Code" style="display:block;border-radius:8px;"/>
+          <img src="${qrDataUri}" width="220" height="220" alt="QR Access Code" style="display:block;border-radius:8px;"/>
         </div>
         <br/>
         <span class="qr-token">${qrToken}</span>
@@ -393,6 +389,7 @@ export async function notifyVisitStatus(opts: {
   qrToken?: string;
   scheduledTime?: string;
   fromTime?: string;
+  createdAt?: string;
 }) {
   const approved = opts.status === 'Approved';
 
@@ -414,7 +411,7 @@ export async function notifyVisitStatus(opts: {
       opts.visitorEmail,
       approved ? `Your visit is approved — here's your QR code` : `Update on your visit request`,
       approved
-        ? visitorApprovedHtml(opts.visitorName, opts.qrToken ?? '', opts.visitId, qrDataUri, opts.scheduledTime, opts.fromTime)
+        ? visitorApprovedHtml(opts.visitorName, opts.qrToken ?? '', opts.visitId, qrDataUri, opts.scheduledTime, opts.fromTime, opts.createdAt)
         : visitorRejectedHtml(opts.visitorName, opts.visitId),
       approved
         ? `Hi ${opts.visitorName}, your visit has been approved. QR Token: ${opts.qrToken}`
