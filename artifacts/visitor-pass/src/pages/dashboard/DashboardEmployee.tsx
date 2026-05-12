@@ -118,24 +118,24 @@ export default function DashboardEmployee() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Full Name</label>
-              <input required type="text" value={newEmp.name} onChange={e => setNewEmp({...newEmp,name:e.target.value})}/>
+              <input required type="text" value={newEmp.name} onChange={e => setNewEmp({...newEmp,name:e.target.value})} style={{ width:'100%', padding:'10px 14px', border:'1.5px solid #E2E8F0', borderRadius:'10px', fontSize:'0.875rem', color:'#0A1F44', background:'#fff', outline:'none', boxSizing:'border-box' }}/>
             </div>
             <div>
               <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Email Address</label>
-              <input required type="email" value={newEmp.email} onChange={e => setNewEmp({...newEmp,email:e.target.value})}/>
+              <input required type="email" value={newEmp.email} onChange={e => setNewEmp({...newEmp,email:e.target.value})} style={{ width:'100%', padding:'10px 14px', border:'1.5px solid #E2E8F0', borderRadius:'10px', fontSize:'0.875rem', color:'#0A1F44', background:'#fff', outline:'none', boxSizing:'border-box' }}/>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Department</label>
-              <select required value={newEmp.department} onChange={e => setNewEmp({...newEmp,department:e.target.value})}>
+              <select required value={newEmp.department} onChange={e => setNewEmp({...newEmp,department:e.target.value})} style={{ width:'100%', padding:'10px 14px', border:'1.5px solid #E2E8F0', borderRadius:'10px', fontSize:'0.875rem', color:'#0A1F44', background:'#fff', outline:'none', boxSizing:'border-box' }}>
                 <option value="">Select Dept</option>
                 {departments.map(d => <option key={d._id} value={d._id}>{d.name}</option>)}
               </select>
             </div>
             <div>
               <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Designation</label>
-              <select required value={newEmp.designation} onChange={e => setNewEmp({...newEmp,designation:e.target.value})}>
+              <select required value={newEmp.designation} onChange={e => setNewEmp({...newEmp,designation:e.target.value})} style={{ width:'100%', padding:'10px 14px', border:'1.5px solid #E2E8F0', borderRadius:'10px', fontSize:'0.875rem', color:'#0A1F44', background:'#fff', outline:'none', boxSizing:'border-box' }}>
                 <option value="">Select Role</option>
                 {designations.map(d => <option key={d._id} value={d._id}>{d.name}</option>)}
               </select>

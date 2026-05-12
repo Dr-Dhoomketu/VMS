@@ -71,7 +71,25 @@ router.get('/history', async (req: Request, res: Response): Promise<void> => {
   const { phone } = req.query;
   if (!phone) { res.status(400).json({ message: 'Phone required' }); return; }
   try {
-    const visitor = await Visitor.findOne({ phone: String(phone) });
+    const rawPhone = String(phone);
+    let visitor: any = await Visitor.findOne({ phone: rawPhone });
+
+    if (!visitor) {
+      const normalized = rawPhone.replace(/[\s\-\(\)]/g, '');
+      visitor = await Visitor.findOne({ phone: normalized });
+    }
+
+    if (!visitor) {
+      const digits = rawPhone.replace(/\D/g, '');
+      if (digits.length >= 7) {
+        const suffix = digits.slice(-10);
+        const candidates = await Visitor.find({
+          phone: { $regex: suffix + '$' }
+        });
+        visitor = candidates[0] || null;
+      }
+    }
+
     if (!visitor) { res.status(404).json({ message: 'Visitor not found' }); return; }
     const lastVisit = await Visit.findOne({ visitor: (visitor as any)._id })
       .sort({ createdAt: -1 })
@@ -137,6 +155,8 @@ router.put('/:id/status', protect, authorize('Admin', 'Employee'), async (req: a
       status,
       visitId: String(visit._id),
       qrToken: visit.qrToken,
+      scheduledTime: (visit as any).scheduledTime ? String((visit as any).scheduledTime) : undefined,
+      fromTime: (visit as any).fromTime || undefined,
     }).catch(() => {});
     res.json({ message: `Visit ${status.toLowerCase()}`, visit });
   } catch (err: any) {

@@ -1,6 +1,21 @@
 import { useEffect, useMemo, useState } from 'react';
 import socket, { connectSocket } from '@/utils/socket';
 import { API_URL } from '@/lib/api';
+import QRCode from 'qrcode';
+
+function QrCodeImage({ token }: { token: string }) {
+  const [dataUrl, setDataUrl] = useState('');
+  useEffect(() => {
+    if (token) {
+      QRCode.toDataURL(token, { width: 220, margin: 2, color: { dark: '#0A1F44', light: '#FFFFFF' } })
+        .then(setDataUrl)
+        .catch(() => {});
+    }
+  }, [token]);
+  return dataUrl
+    ? <img src={dataUrl} alt="QR" style={{ width: '100%', height: '100%', borderRadius: 6 }} />
+    : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.55rem', color: '#888', textAlign: 'center' }}>Generating…</div>;
+}
 
 interface Visit {
   _id: string;
@@ -103,7 +118,7 @@ function VisitorPass({ visit, past }: { visit: Visit; past?: boolean }) {
         <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
           <div style={{ width: 100, height: 100, background: '#fff', borderRadius: 12, padding: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #E2E8F0', boxShadow: '0 2px 12px rgba(10,31,68,0.08)' }}>
             {visit.qrToken
-              ? <img src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(visit.qrToken)}&color=000000&bgcolor=FFFFFF`} alt="QR" style={{ width: '100%', height: '100%', borderRadius: 6 }}/>
+              ? <QrCodeImage token={visit.qrToken} />
               : <div style={{ textAlign: 'center' }}><div style={{ fontSize: '1.2rem' }}>🔲</div><div style={{ fontSize: '0.4rem', color: '#888', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.1em' }}>No QR</div></div>
             }
           </div>

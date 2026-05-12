@@ -7,8 +7,11 @@ import GeoBackground from '@/components/GeoBackground';
 import { signInWithPhoneNumber, RecaptchaVerifier, ConfirmationResult } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 
-function OtpInput({ value, onChange, label, hint }: { value: string; onChange: (v: string) => void; label: string; hint?: string }) {
+function OtpInput({ value, onChange, label, hint, autoFocus: autoFocusOtp }: { value: string; onChange: (v: string) => void; label: string; hint?: string; autoFocus?: boolean }) {
   const inputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (autoFocusOtp) inputRef.current?.focus();
+  }, []);
   return (
     <div>
       <label style={{ display: 'block', fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#6B7FA3', marginBottom: '12px' }}>{label}</label>
@@ -20,7 +23,6 @@ function OtpInput({ value, onChange, label, hint }: { value: string; onChange: (
           inputMode="numeric"
           maxLength={6}
           value={value}
-          autoFocus
           onChange={e => onChange(e.target.value.replace(/\D/g, '').slice(0, 6))}
           style={{
             position: 'absolute', opacity: 0, pointerEvents: 'none',
@@ -33,6 +35,7 @@ function OtpInput({ value, onChange, label, hint }: { value: string; onChange: (
           return (
             <div
               key={i}
+              onClick={() => inputRef.current?.focus()}
               style={{
                 width: '46px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: '1.4rem', fontWeight: 800, color: '#0A1F44',
@@ -864,7 +867,7 @@ export default function CheckInPage() {
                   )}
                 </div>
 
-                <OtpInput value={phoneOtp} onChange={setPhoneOtp} label="Mobile OTP (SMS)" hint="Check your SMS messages"/>
+                <OtpInput value={phoneOtp} onChange={setPhoneOtp} label="Mobile OTP (SMS)" hint="Check your SMS messages" autoFocus />
 
                 {formData.email && (
                   <div style={{ marginTop: '20px' }}>

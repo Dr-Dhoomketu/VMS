@@ -1,16 +1,13 @@
 import nodemailer from 'nodemailer';
+import QRCode from 'qrcode';
 import { logger } from '../lib/logger.js';
 
-// Strategy:
-//   1. Brevo HTTP API  (BREVO_API_KEY set) — HTTPS port 443, never blocked by any host
-//   2. Gmail SMTP      (SMTP_USER+SMTP_PASS set) — local dev fallback
 async function sendEmail(to: string, subject: string, html: string, text: string): Promise<boolean> {
   const brevoApiKey = process.env['BREVO_API_KEY'] || '';
-  const brevoSender = process.env['BREVO_USER'] || '';      // verified sender email in Brevo
+  const brevoSender = process.env['BREVO_USER'] || '';
   const gmailUser   = process.env['SMTP_USER'] || '';
   const gmailPass   = (process.env['SMTP_PASS'] || '').replace(/\s/g, '');
 
-  // ── 1. Brevo HTTP API ──────────────────────────────────────────────────────
   if (brevoApiKey && brevoSender) {
     try {
       const res = await fetch('https://api.brevo.com/v3/smtp/email', {
@@ -37,7 +34,6 @@ async function sendEmail(to: string, subject: string, html: string, text: string
     }
   }
 
-  // ── 2. Gmail SMTP fallback (local dev) ────────────────────────────────────
   if (!gmailUser || !gmailPass) {
     logger.error('No email credentials — set BREVO_API_KEY+BREVO_USER on Render, or SMTP_USER+SMTP_PASS locally');
     return false;
@@ -79,9 +75,37 @@ export async function sendOtpEmail(to: string, otp: string): Promise<boolean> {
   return sendEmail(to, 'Your VISITORPASS Email OTP', html, `Your VISITORPASS OTP is: ${otp}. Valid for 10 minutes.`);
 }
 
-function visitorApprovedHtml(name: string, qrToken: string, visitId: string): string {
+function fmt12h(t: string): string {
+  const [h, m] = t.split(':').map(Number);
+  const ap = h >= 12 ? 'PM' : 'AM';
+  const h12 = h % 12 || 12;
+  return `${h12}:${String(m).padStart(2, '0')} ${ap}`;
+}
+
+function visitorApprovedHtml(
+  name: string,
+  qrToken: string,
+  visitId: string,
+  qrDataUri: string,
+  scheduledTime?: string,
+  fromTime?: string,
+): string {
   const year = new Date().getFullYear();
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrToken)}&bgcolor=ffffff&color=0A1F44&qzone=3&margin=10`;
+
+  const qrImgSrc = qrDataUri ||
+    `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(qrToken)}&bgcolor=ffffff&color=0A1F44&qzone=3&margin=10`;
+
+  const meetingDateStr = scheduledTime
+    ? new Date(scheduledTime).toLocaleDateString('en-IN', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })
+    : '';
+  const meetingTimeStr = fromTime ? fmt12h(fromTime) : '';
+
+  const scheduleSection = (meetingDateStr || meetingTimeStr) ? `
+      <div class="ref-box" style="margin-bottom:16px;">
+        <p class="ref-label">Meeting Schedule</p>
+        ${meetingDateStr ? `<p class="ref-value" style="font-size:14px;margin-bottom:4px;">${meetingDateStr}</p>` : ''}
+        ${meetingTimeStr ? `<p class="ref-value" style="font-size:14px;">${meetingTimeStr}</p>` : ''}
+      </div>` : '';
 
   return `<!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
@@ -117,7 +141,7 @@ function visitorApprovedHtml(name: string, qrToken: string, visitId: string): st
   .step-desc { font-size:12px; color:#7A8FAB; line-height:1.5; margin:0; }
   .ref-box { background:#F8FAFF; border-radius:10px; padding:14px 18px; }
   .ref-label { font-size:9px; font-weight:800; letter-spacing:0.2em; text-transform:uppercase; color:#9CA3AF; margin:0 0 4px; }
-  .ref-value { font-size:12px; font-weight:700; color:#0B1E45; font-family:'Courier New',monospace; margin:0; }
+  .ref-value { font-family:'Courier New',monospace; font-size:12px; font-weight:700; color:#0B1E45; margin:0; }
   .footer { background:#F8FAFF; padding:20px 36px; text-align:center; border-top:1px solid #E8EFF8; }
   .footer-text { font-size:11px; color:#9CA3AF; line-height:1.7; margin:0 0 6px; }
   .footer-copy { font-size:10px; color:#C0C9D8; margin:0; }
@@ -173,13 +197,15 @@ function visitorApprovedHtml(name: string, qrToken: string, visitId: string): st
       <div class="qr-wrap">
         <p class="qr-label">Your Digital Gate Pass</p>
         <div class="qr-img-wrap">
-          <img src="${qrUrl}" width="200" height="200" alt="QR Access Code" style="display:block;border-radius:8px;"/>
+          <img src="${qrImgSrc}" width="220" height="220" alt="QR Access Code" style="display:block;border-radius:8px;"/>
         </div>
         <br/>
         <span class="qr-token">${qrToken}</span>
       </div>
 
       <div class="divider"></div>
+
+      ${scheduleSection}
 
       <!-- STEPS -->
       <p style="font-size:9px;font-weight:800;letter-spacing:0.3em;text-transform:uppercase;color:#9CA3AF;margin:0 0 12px;">How to check in</p>
@@ -252,10 +278,10 @@ function visitorRejectedHtml(name: string, visitId: string): string {
 
         <!-- HERO BAND -->
         <tr>
-          <td style="background:linear-gradient(135deg,#475569 0%,#334155 100%);padding:44px 40px 40px;text-align:center;">
-            <div style="width:68px;height:68px;background:rgba(255,255,255,0.12);border-radius:50%;margin:0 auto 22px;line-height:68px;font-size:30px;">&#128683;</div>
-            <h1 style="margin:0 0 12px;font-size:24px;font-weight:900;letter-spacing:-0.03em;color:#fff;">Visit Request Declined</h1>
-            <p style="margin:0;font-size:15px;color:rgba(255,255,255,0.7);line-height:1.65;">Hi <strong style="color:#fff;">${name}</strong>, unfortunately your visit request<br/>could not be approved at this time.</p>
+          <td style="background:linear-gradient(135deg,#FEF2F2 0%,#FEE2E2 100%);padding:44px 40px 40px;text-align:center;">
+            <div style="width:68px;height:68px;background:#FECACA;border:2px solid #FCA5A5;border-radius:50%;margin:0 auto 22px;line-height:68px;font-size:30px;">&#128683;</div>
+            <h1 style="margin:0 0 12px;font-size:24px;font-weight:900;letter-spacing:-0.03em;color:#7F1D1D;">Visit Request Declined</h1>
+            <p style="margin:0;font-size:15px;color:#991B1B;line-height:1.65;">Hi <strong style="color:#7F1D1D;">${name}</strong>, unfortunately your visit request<br/>could not be approved at this time.</p>
           </td>
         </tr>
 
@@ -364,15 +390,30 @@ export async function notifyVisitStatus(opts: {
   status: 'Approved' | 'Rejected';
   visitId: string;
   qrToken?: string;
+  scheduledTime?: string;
+  fromTime?: string;
 }) {
   const approved = opts.status === 'Approved';
+
+  let qrDataUri = '';
+  if (approved && opts.qrToken) {
+    try {
+      qrDataUri = await QRCode.toDataURL(opts.qrToken, {
+        width: 220,
+        margin: 2,
+        color: { dark: '#0B1E45', light: '#ffffff' },
+      });
+    } catch (err) {
+      logger.warn({ err }, 'Failed to generate QR data URI for email');
+    }
+  }
 
   if (opts.visitorEmail) {
     const ok = await sendEmail(
       opts.visitorEmail,
       approved ? `Your visit is approved — here's your QR code` : `Update on your visit request`,
       approved
-        ? visitorApprovedHtml(opts.visitorName, opts.qrToken ?? '', opts.visitId)
+        ? visitorApprovedHtml(opts.visitorName, opts.qrToken ?? '', opts.visitId, qrDataUri, opts.scheduledTime, opts.fromTime)
         : visitorRejectedHtml(opts.visitorName, opts.visitId),
       approved
         ? `Hi ${opts.visitorName}, your visit has been approved. QR Token: ${opts.qrToken}`

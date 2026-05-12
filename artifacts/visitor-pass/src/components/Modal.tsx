@@ -37,7 +37,7 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
       <div
         ref={modalRef}
         className="vp-modal relative w-full my-auto"
-        style={{ maxWidth: '420px', padding: '20px' }}
+        style={{ maxWidth: '420px', padding: '20px', maxHeight: 'calc(100vh - 48px)', overflowY: 'auto' }}
       >
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-base font-black text-[#0A1F44] tracking-tight">{title}</h2>

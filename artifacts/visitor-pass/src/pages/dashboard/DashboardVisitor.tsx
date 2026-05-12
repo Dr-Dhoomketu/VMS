@@ -5,6 +5,7 @@ import { API_URL } from '@/lib/api';
 interface Visit {
   _id: string; purpose: string; createdAt: string; status: string;
   checkoutTime?: string;
+  scheduledTime?: string;
   visitor?: { name: string; aadhar?: string; imageUrl?: string; };
   meetWith?: { name: string; };
 }
@@ -86,7 +87,7 @@ export default function DashboardVisitor() {
                 <td className="px-6 py-4 text-[#6B7FA3] text-[10px] font-mono">{v.visitor?.aadhar || '—'}</td>
                 <td className="px-6 py-4 text-[#6B7FA3] text-sm">{v.meetWith?.name}</td>
                 <td className="px-6 py-4 text-[#6B7FA3] text-xs uppercase tracking-widest">{v.purpose}</td>
-                <td className="px-6 py-4 text-[#6B7FA3] text-[10px]">{new Date(v.createdAt).toLocaleString()}</td>
+                <td className="px-6 py-4 text-[#6B7FA3] text-[10px]">{new Date(v.scheduledTime || v.createdAt).toLocaleString()}</td>
                 <td className="px-6 py-4 text-[#6B7FA3] text-[10px]">{v.checkoutTime ? new Date(v.checkoutTime).toLocaleString() : <span className="text-[#C4C9D4]">—</span>}</td>
                 <td className="px-6 py-4">
                   <span className={`badge ${v.status==='CheckedOut'?'badge-checkedout':v.status==='Approved'?'badge-approved':v.status==='Rejected'?'badge-rejected':'badge-pending'}`}>
