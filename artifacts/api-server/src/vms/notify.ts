@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+// @ts-ignore — @types/qrcode not available
 import QRCode from 'qrcode';
 import { logger } from '../lib/logger.js';
 
@@ -42,9 +43,8 @@ async function sendEmail(to: string, subject: string, html: string, text: string
     const transport = nodemailer.createTransport({
       host: 'smtp.gmail.com', port: 587, secure: false,
       auth: { user: gmailUser, pass: gmailPass },
-      family: 4,
       connectionTimeout: 20000, greetingTimeout: 15000, socketTimeout: 20000,
-    });
+    } as Parameters<typeof nodemailer.createTransport>[0]);
     await transport.sendMail({ from: `"VISITORPASS" <${gmailUser}>`, to, subject, html, text });
     logger.info({ to, method: 'gmail-smtp' }, 'Email sent successfully');
     return true;
