@@ -92,8 +92,8 @@ function visitorApprovedHtml(
 ): string {
   const year = new Date().getFullYear();
 
-  const frontendUrl = process.env['FRONTEND_URL'] || '';
-  const qrData = frontendUrl ? `${frontendUrl}/scan/${qrToken}` : qrToken;
+  const frontendUrl = (process.env['FRONTEND_URL'] || 'https://vms-shaurya.vercel.app').replace(/\/$/, '');
+  const qrData = `${frontendUrl}/scan/${qrToken}`;
   const qrImgSrc = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(qrData)}&bgcolor=ffffff&color=0A1F44&qzone=3&margin=10`;
 
   const meetingDateStr = scheduledTime
