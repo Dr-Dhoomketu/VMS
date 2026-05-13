@@ -1,6 +1,6 @@
 kind = "web"
 previewPath = "/"
-title = "VISITORPASS"
+title = "VisitorPass"
 version = "1.0.0"
 id = "artifacts/visitor-pass"
 router = "path"

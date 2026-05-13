@@ -12,6 +12,7 @@ import ReturningPage from "@/pages/ReturningPage";
 import ApprovalsPage from "@/pages/ApprovalsPage";
 import VideoPage from "@/pages/VideoPage";
 import ScanPage from "@/pages/ScanPage";
+import SetupPasswordPage from "@/pages/SetupPasswordPage";
 
 import DashboardLayout from "@/pages/dashboard/DashboardLayout";
 import DashboardHome from "@/pages/dashboard/DashboardHome";
@@ -53,39 +54,23 @@ function Router() {
       <Route path="/approvals" component={ApprovalsPage} />
       <Route path="/video" component={VideoPage} />
       <Route path="/scan/:token" component={ScanPage} />
+      <Route path="/setup-password" component={SetupPasswordPage} />
 
-      {/* Dashboard home */}
       <Route path="/dashboard">{() => <DashboardRoute component={DashboardHome} />}</Route>
-
-      {/* Approvals */}
       <Route path="/dashboard/approvals">{() => <DashboardRoute component={DashboardApprovals} />}</Route>
-
-      {/* Visitors — plural and singular */}
       <Route path="/dashboard/visitors">{() => <DashboardRoute component={DashboardVisitor} />}</Route>
       <Route path="/dashboard/visitor">{() => <DashboardRoute component={DashboardVisitor} />}</Route>
-
-      {/* Departments — plural, singular, and admin alias */}
       <Route path="/dashboard/departments">{() => <DashboardRoute component={DashboardDepartment} />}</Route>
       <Route path="/dashboard/department">{() => <DashboardRoute component={DashboardDepartment} />}</Route>
       <Route path="/admin/departments">{() => <DashboardRoute component={DashboardDepartment} />}</Route>
-
-      {/* Employees — plural and singular */}
       <Route path="/dashboard/employees">{() => <DashboardRoute component={DashboardEmployee} />}</Route>
       <Route path="/dashboard/employee">{() => <DashboardRoute component={DashboardEmployee} />}</Route>
-
-      {/* Designations — plural and singular */}
       <Route path="/dashboard/designations">{() => <DashboardRoute component={DashboardDesignation} />}</Route>
       <Route path="/dashboard/designation">{() => <DashboardRoute component={DashboardDesignation} />}</Route>
-
-      {/* Administrators — plural and singular */}
       <Route path="/dashboard/administrators">{() => <DashboardRoute component={DashboardAdministrator} />}</Route>
       <Route path="/dashboard/administrator">{() => <DashboardRoute component={DashboardAdministrator} />}</Route>
-
-      {/* Pre-visitors — plural and singular */}
       <Route path="/dashboard/pre-visitors">{() => <DashboardRoute component={DashboardPreVisitor} />}</Route>
       <Route path="/dashboard/pre-visitor">{() => <DashboardRoute component={DashboardPreVisitor} />}</Route>
-
-      {/* Permissions */}
       <Route path="/dashboard/permissions">{() => <DashboardRoute component={DashboardPermissions} />}</Route>
 
       <Route component={NotFound} />

@@ -88,11 +88,12 @@ function visitorApprovedHtml(
   visitId: string,
   scheduledTime?: string,
   fromTime?: string,
+  meetingWith?: string,
 ): string {
   const year = new Date().getFullYear();
 
-  const frontendUrl = process.env['FRONTEND_URL'] || '';
-  const qrData = frontendUrl ? `${frontendUrl}/scan/${qrToken}` : qrToken;
+  const frontendUrl = (process.env['FRONTEND_URL'] || 'https://vms-shaurya.vercel.app').replace(/\/$/, '');
+  const qrData = `${frontendUrl}/scan/${qrToken}`;
   const qrImgSrc = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(qrData)}&bgcolor=ffffff&color=0A1F44&qzone=3&margin=10`;
 
   const meetingDateStr = scheduledTime
@@ -100,11 +101,30 @@ function visitorApprovedHtml(
     : '';
   const meetingTimeStr = fromTime ? fmt12h(fromTime) : '';
 
-  const scheduleSection = (meetingDateStr || meetingTimeStr) ? `
+  const scheduleSection = (meetingWith || meetingDateStr || meetingTimeStr) ? `
       <div class="ref-box" style="margin-bottom:16px;">
-        <p class="ref-label">Meeting Schedule</p>
-        ${meetingDateStr ? `<p class="ref-value" style="font-size:14px;margin-bottom:4px;">${meetingDateStr}</p>` : ''}
-        ${meetingTimeStr ? `<p class="ref-value" style="font-size:14px;">${meetingTimeStr}</p>` : ''}
+        <p class="ref-label">Meeting Details</p>
+        ${meetingWith ? `
+        <table cellpadding="0" cellspacing="0" style="width:100%;margin-bottom:10px;">
+          <tr>
+            <td style="font-size:10px;font-weight:800;letter-spacing:0.15em;text-transform:uppercase;color:#9CA3AF;width:110px;padding-top:2px;">Meeting With</td>
+            <td style="font-size:13px;font-weight:700;color:#0B1E45;">${meetingWith}</td>
+          </tr>
+        </table>` : ''}
+        ${meetingDateStr ? `
+        <table cellpadding="0" cellspacing="0" style="width:100%;margin-bottom:10px;">
+          <tr>
+            <td style="font-size:10px;font-weight:800;letter-spacing:0.15em;text-transform:uppercase;color:#9CA3AF;width:110px;padding-top:2px;">Date</td>
+            <td style="font-size:13px;font-weight:700;color:#0B1E45;">${meetingDateStr}</td>
+          </tr>
+        </table>` : ''}
+        ${meetingTimeStr ? `
+        <table cellpadding="0" cellspacing="0" style="width:100%;">
+          <tr>
+            <td style="font-size:10px;font-weight:800;letter-spacing:0.15em;text-transform:uppercase;color:#9CA3AF;width:110px;padding-top:2px;">Time</td>
+            <td style="font-size:13px;font-weight:700;color:#0B1E45;">${meetingTimeStr}</td>
+          </tr>
+        </table>` : ''}
       </div>` : '';
 
   return `<!DOCTYPE html>
@@ -382,6 +402,99 @@ function hostNotifyHtml(visitorName: string, status: 'Approved' | 'Rejected', vi
 </html>`;
 }
 
+export async function sendInviteEmail(to: string, name: string, inviteUrl: string): Promise<boolean> {
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>You're invited to VISITORPASS</title></head>
+<body style="margin:0;padding:0;background:#F0F4FA;font-family:'Segoe UI',Helvetica,Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#F0F4FA;padding:40px 16px;">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;border-radius:20px;overflow:hidden;box-shadow:0 8px 40px rgba(10,31,68,0.10);">
+        <tr><td style="background:linear-gradient(135deg,#0A1F44 0%,#1a3a7a 100%);padding:28px 36px;">
+          <p style="margin:0 0 3px;font-size:10px;font-weight:800;letter-spacing:0.3em;text-transform:uppercase;color:rgba(255,255,255,0.45);">VTS INFOSOFT</p>
+          <p style="margin:0;font-size:20px;font-weight:900;letter-spacing:-0.03em;color:#fff;">VISITORPASS</p>
+        </td></tr>
+        <tr><td style="background:linear-gradient(135deg,#1e3a7a 0%,#2F5DAA 100%);padding:40px 36px;text-align:center;">
+          <div style="width:64px;height:64px;background:rgba(255,255,255,0.15);border-radius:50%;margin:0 auto 20px;line-height:64px;font-size:28px;">👋</div>
+          <h1 style="margin:0 0 10px;font-size:22px;font-weight:900;color:#fff;">You're Invited!</h1>
+          <p style="margin:0;font-size:14px;color:rgba(255,255,255,0.8);line-height:1.65;">Hi <strong style="color:#fff;">${name}</strong>, you've been added as an employee on VISITORPASS. Set up your password to access your dashboard.</p>
+        </td></tr>
+        <tr><td style="background:#fff;padding:36px;text-align:center;">
+          <p style="margin:0 0 24px;font-size:14px;color:#6B7FA3;line-height:1.75;">Click the button below to create your password and activate your account. This link expires in <strong style="color:#0A1F44;">7 days</strong>.</p>
+          <a href="${inviteUrl}" style="display:inline-block;padding:15px 36px;background:#0A1F44;color:#fff;border-radius:10px;font-size:13px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;text-decoration:none;">Set Up My Account →</a>
+          <p style="margin:28px 0 0;font-size:11px;color:#A0AEC0;">Or copy this link: <a href="${inviteUrl}" style="color:#2F5DAA;word-break:break-all;">${inviteUrl}</a></p>
+        </td></tr>
+        <tr><td style="background:#F8FAFF;padding:20px 36px;text-align:center;border-top:1px solid #E8EFF8;">
+          <p style="margin:0;font-size:11px;color:#C4C9D4;">If you did not expect this email, please ignore it. &copy; ${new Date().getFullYear()} VTS Infosoft</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body></html>`;
+  return sendEmail(to, `You're invited to VISITORPASS — Set up your account`, html, `Hi ${name}, you've been invited to VISITORPASS. Set up your account: ${inviteUrl}`);
+}
+
+export async function sendVisitRequestEmail(opts: {
+  employeeEmail: string;
+  employeeName: string;
+  visitorName: string;
+  purpose: string;
+  visitId: string;
+  dashboardUrl: string;
+}): Promise<boolean> {
+  const year = new Date().getFullYear();
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>New Visitor Request</title></head>
+<body style="margin:0;padding:0;background:#F0F4FA;font-family:'Segoe UI',Helvetica,Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#F0F4FA;padding:40px 16px;">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;border-radius:20px;overflow:hidden;box-shadow:0 8px 40px rgba(10,31,68,0.10);">
+        <tr><td style="background:linear-gradient(135deg,#0A1F44 0%,#1a3a7a 100%);padding:28px 36px;">
+          <table width="100%" cellpadding="0" cellspacing="0"><tr>
+            <td><p style="margin:0 0 3px;font-size:10px;font-weight:800;letter-spacing:0.3em;text-transform:uppercase;color:rgba(255,255,255,0.45);">VTS INFOSOFT</p><p style="margin:0;font-size:20px;font-weight:900;color:#fff;">VISITORPASS</p></td>
+            <td align="right"><span style="display:inline-block;background:#F59E0B;color:#fff;font-size:10px;font-weight:800;letter-spacing:0.15em;text-transform:uppercase;padding:5px 12px;border-radius:999px;">New Request</span></td>
+          </tr></table>
+        </td></tr>
+        <tr><td style="background:#fff;padding:36px;">
+          <p style="margin:0 0 8px;font-size:18px;font-weight:800;color:#0A1F44;">New visitor wants to meet you</p>
+          <p style="margin:0 0 28px;font-size:14px;color:#6B7FA3;line-height:1.7;">Hi <strong style="color:#0A1F44;">${opts.employeeName}</strong>, someone has submitted a visit request to meet with you. Please review and approve or decline.</p>
+          <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+            <tr><td style="background:#F8FAFF;border-radius:12px;padding:20px 24px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr><td style="padding-bottom:12px;border-bottom:1px solid #EEF3FB;">
+                  <p style="margin:0 0 3px;font-size:10px;font-weight:700;color:#9CA3AF;letter-spacing:0.12em;text-transform:uppercase;">Visitor Name</p>
+                  <p style="margin:0;font-size:14px;font-weight:700;color:#0A1F44;">${opts.visitorName}</p>
+                </td></tr>
+                <tr><td style="padding-top:12px;">
+                  <p style="margin:0 0 3px;font-size:10px;font-weight:700;color:#9CA3AF;letter-spacing:0.12em;text-transform:uppercase;">Purpose</p>
+                  <p style="margin:0;font-size:14px;font-weight:700;color:#0A1F44;">${opts.purpose}</p>
+                </td></tr>
+              </table>
+            </td></tr>
+          </table>
+          <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
+            <tr>
+              <td style="padding-right:8px;"><a href="${opts.dashboardUrl}/dashboard/approvals" style="display:block;padding:13px;background:#0A1F44;color:#fff;border-radius:10px;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;text-align:center;">Review Request →</a></td>
+            </tr>
+          </table>
+          <table width="100%" cellpadding="0" cellspacing="0">
+            <tr><td style="background:#F8FAFF;border-radius:10px;padding:14px 18px;">
+              <p style="margin:0 0 3px;font-size:10px;font-weight:700;color:#9CA3AF;letter-spacing:0.12em;text-transform:uppercase;">Visit Reference</p>
+              <p style="margin:0;font-size:12px;font-weight:700;color:#0A1F44;font-family:'Courier New',monospace;">${opts.visitId}</p>
+            </td></tr>
+          </table>
+        </td></tr>
+        <tr><td style="background:#F8FAFF;padding:20px 36px;text-align:center;border-top:1px solid #E8EFF8;">
+          <p style="margin:0;font-size:11px;color:#C4C9D4;">&copy; ${year} VTS Infosoft &middot; VISITORPASS Enterprise</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body></html>`;
+  return sendEmail(opts.employeeEmail, `New visitor request from ${opts.visitorName}`, html, `Hi ${opts.employeeName}, ${opts.visitorName} wants to visit you for: ${opts.purpose}. Review: ${opts.dashboardUrl}/dashboard/approvals`);
+}
+
 export async function notifyVisitStatus(opts: {
   visitorEmail?: string;
   visitorName: string;
@@ -401,7 +514,7 @@ export async function notifyVisitStatus(opts: {
       opts.visitorEmail,
       approved ? `Your visit is approved — here's your QR code` : `Update on your visit request`,
       approved
-        ? visitorApprovedHtml(opts.visitorName, opts.qrToken ?? '', opts.visitId, opts.scheduledTime, opts.fromTime)
+        ? visitorApprovedHtml(opts.visitorName, opts.qrToken ?? '', opts.visitId, opts.scheduledTime, opts.fromTime, opts.hostName)
         : visitorRejectedHtml(opts.visitorName, opts.visitId),
       approved
         ? `Hi ${opts.visitorName}, your visit has been approved. QR Token: ${opts.qrToken}`

@@ -131,6 +131,23 @@ router.get('/test-email', async (req: Request, res: Response): Promise<void> => 
   });
 });
 
+router.post('/accept-invite', async (req: Request, res: Response): Promise<void> => {
+  const { token, password } = req.body;
+  if (!token || !password) { res.status(400).json({ message: 'Token and password are required' }); return; }
+  if (password.length < 8) { res.status(400).json({ message: 'Password must be at least 8 characters' }); return; }
+  try {
+    const user = await VmsUser.findOne({ inviteToken: token, inviteExpires: { $gt: new Date() } }).select('+inviteToken +inviteExpires +password');
+    if (!user) { res.status(400).json({ message: 'Invalid or expired invitation link. Please ask your admin to resend.' }); return; }
+    user.password = await bcrypt.hash(password, 10);
+    (user as any).inviteToken = undefined;
+    (user as any).inviteExpires = undefined;
+    await user.save();
+    res.json({ message: 'Account activated successfully. You can now log in.' });
+  } catch (err: any) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
 router.get('/me', protect, async (req: any, res: Response): Promise<void> => {
   try {
     const user = await VmsUser.findById(req.user.id).populate('department designation');

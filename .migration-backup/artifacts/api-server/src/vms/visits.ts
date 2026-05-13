@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import QRCode from 'qrcode';
 import { Visit, Visitor, VmsUser } from './models.js';
 import { protect, authorize } from './auth.js';
-import { notifyVisitStatus } from './notify.js';
+import { notifyVisitStatus, sendVisitRequestEmail } from './notify.js';
 
 const router = Router();
 
@@ -58,8 +58,23 @@ router.post('/request', upload.single('photo'), async (req: any, res: Response):
     const io = req.app.get('io');
     if (io) {
       io.to('admin_channel').emit('new_visit', { visitId: visit._id, visitorName: visitor.name });
-      const employee = await VmsUser.findById(meetWith);
-      if (employee) io.to(`employee_${(employee as any)._id}`).emit('new_visit_request', { visitId: visit._id, visitorName: visitor.name });
+      if (meetWith) {
+        const employee = await VmsUser.findById(meetWith);
+        if (employee) {
+          io.to(`employee_${(employee as any)._id}`).emit('new_visit_request', { visitId: visit._id, visitorName: visitor.name });
+          if (employee.email) {
+            const dashboardUrl = (process.env['FRONTEND_URL'] || 'https://vms-shaurya.vercel.app').replace(/\/$/, '');
+            sendVisitRequestEmail({
+              employeeEmail: employee.email,
+              employeeName: employee.name,
+              visitorName: visitor.name,
+              purpose: purpose || 'Visit',
+              visitId: String(visit._id),
+              dashboardUrl,
+            }).catch(() => {});
+          }
+        }
+      }
     }
     res.status(201).json({ message: 'Visit request submitted', visitId: visit._id });
   } catch (err: any) {

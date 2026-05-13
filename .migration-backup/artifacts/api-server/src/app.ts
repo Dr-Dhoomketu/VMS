@@ -28,7 +28,27 @@ app.use(
   }),
 );
 
-app.use(cors({ origin: "*" }));
+const isProd = process.env["NODE_ENV"] === "production";
+
+const rawFrontendUrl = process.env["FRONTEND_URL"] || "";
+const allowedOrigins: string[] = rawFrontendUrl
+  ? rawFrontendUrl.split(",").map((o) => o.trim()).filter(Boolean)
+  : isProd
+    ? ["https://vms-shaurya.vercel.app"]
+    : ["*"];
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes("*") || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error(`CORS: origin '${origin}' not allowed`));
+      }
+    },
+    credentials: true,
+  }),
+);
 app.use(express.json({ limit: "20mb" }));
 app.use(express.urlencoded({ extended: true, limit: "20mb" }));
 
@@ -67,7 +87,7 @@ const httpServer = createServer(app);
 const socketPath = process.env["NODE_ENV"] === "production" ? "/api/socket.io" : "/socket.io";
 
 const io = new SocketIOServer(httpServer, {
-  cors: { origin: "*", methods: ["GET", "POST"] },
+  cors: { origin: allowedOrigins.includes("*") ? "*" : allowedOrigins, methods: ["GET", "POST"] },
   path: socketPath,
 });
 
@@ -101,7 +121,6 @@ async function connectDB() {
   try {
     await mongoose.connect(uri);
     logger.info("MongoDB connected");
-    const isProd = process.env["NODE_ENV"] === "production";
     const seedEnabled = process.env["SEED_DB"] === "true";
     if (!isProd || seedEnabled) {
       await autoSeed();

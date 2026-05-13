@@ -2,8 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Link } from 'wouter';
 import { API_URL } from '@/lib/api';
 import GeoBackground from '@/components/GeoBackground';
-
-interface Employee { _id: string; name: string; }
+import DeptEmployeePicker from '@/components/DeptEmployeePicker';
 interface Visitor { name: string; phone: string; email?: string; aadhar?: string; imageUrl?: string; }
 
 function generateTimeSlots() {
@@ -170,15 +169,9 @@ export default function ReturningPage() {
   const [phone, setPhone] = useState('');
   const [step, setStep] = useState(1);
   const [visitorData, setVisitorData] = useState<Visitor | null>(null);
-  const [employees, setEmployees] = useState<Employee[]>([]);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({ meetWith: '', purpose: '', fromTime: '', duration: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  useEffect(() => {
-    fetch(`${API_URL}/api/v1/users/employees`)
-      .then(r => r.json()).then(d => setEmployees(d)).catch(console.error);
-  }, []);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault(); setError('');
@@ -201,7 +194,7 @@ export default function ReturningPage() {
       if (visitorData?.phone) fd.append('phone', visitorData.phone);
       if (visitorData?.email) fd.append('email', visitorData.email);
       if (visitorData?.aadhar) fd.append('aadhar', visitorData.aadhar);
-      Object.entries(formData).forEach(([k, v]) => { if (v) fd.append(k, v); });
+      Object.entries(formData).forEach(([k, v]) => { if (v && !(k === 'meetWith' && v === 'unallocated')) fd.append(k, v); });
       const res = await fetch(`${API_URL}/api/v1/visits/request`, { method: 'POST', body: fd });
       if (res.ok) setStep(3);
       else { const d = await res.json().catch(() => ({})); setError(d.message || 'Submission failed'); }
@@ -284,10 +277,10 @@ export default function ReturningPage() {
 
                   <div>
                     <label className="vp-label">Who are you meeting?</label>
-                    <select required value={formData.meetWith} onChange={e => setFormData({ ...formData, meetWith: e.target.value })}>
-                      <option value="">Select Employee</option>
-                      {employees.map(emp => <option key={emp._id} value={emp._id}>{emp.name}</option>)}
-                    </select>
+                    <DeptEmployeePicker
+                      value={formData.meetWith}
+                      onChange={id => setFormData(f => ({ ...f, meetWith: id }))}
+                    />
                   </div>
 
                   <div>
