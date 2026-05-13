@@ -86,35 +86,26 @@ function visitorApprovedHtml(
   name: string,
   qrToken: string,
   visitId: string,
-  qrImageUrl: string,
   scheduledTime?: string,
   fromTime?: string,
-  createdAt?: string,
 ): string {
   const year = new Date().getFullYear();
 
-  const dateSource = scheduledTime || createdAt || new Date().toISOString();
-  const meetingDate = new Date(dateSource).toLocaleDateString('en-IN', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
-  const meetingTime = fromTime ? fmt12h(fromTime) : '';
+  const frontendUrl = process.env['FRONTEND_URL'] || '';
+  const qrData = frontendUrl ? `${frontendUrl}/scan/${qrToken}` : qrToken;
+  const qrImgSrc = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(qrData)}&bgcolor=ffffff&color=0A1F44&qzone=3&margin=10`;
 
-  // Colours — dark-navy palette that looks great in both light & dark mode
-  // because the email itself IS dark. No inversion surprises.
-  const BG      = '#0B1E45';   // deep navy — outer wrapper
-  const CARD    = '#0F2454';   // slightly lighter card bg
-  const PANEL   = '#152B60';   // inner panels / sections
-  const BORDER  = '#1E3A7A';   // subtle divider
-  const WHITE   = '#ffffff';
-  const GOLD    = '#F59E0B';   // accent — approved badge / icons
-  const GREEN   = '#22C55E';
-  const DIM     = 'rgba(255,255,255,0.55)';
-  const DIMMER  = 'rgba(255,255,255,0.35)';
+  const meetingDateStr = scheduledTime
+    ? new Date(scheduledTime).toLocaleDateString('en-IN', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })
+    : '';
+  const meetingTimeStr = fromTime ? fmt12h(fromTime) : '';
 
-  const steps: [string, string, string][] = [
-    ['01', 'Arrive at reception',       'Head to the main security desk at the entrance.'],
-    ['02', 'Show this QR code',          'Open this email and display the code on your screen.'],
-    ['03', 'Get scanned &amp; verified', 'The officer scans your QR — identity confirmed instantly.'],
-    ['04', 'Collect your pass',          'Receive your physical visitor pass and proceed inside.'],
-  ];
+  const scheduleSection = (meetingDateStr || meetingTimeStr) ? `
+      <div class="ref-box" style="margin-bottom:16px;">
+        <p class="ref-label">Meeting Schedule</p>
+        ${meetingDateStr ? `<p class="ref-value" style="font-size:14px;margin-bottom:4px;">${meetingDateStr}</p>` : ''}
+        ${meetingTimeStr ? `<p class="ref-value" style="font-size:14px;">${meetingTimeStr}</p>` : ''}
+      </div>` : '';
 
   return `<!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
@@ -125,130 +116,133 @@ function visitorApprovedHtml(
 <meta name="supported-color-schemes" content="light dark"/>
 <title>Visit Approved — VISITORPASS</title>
 <style>
-  body,table,td,p,a,h1,h2,h3{margin:0;padding:0;font-family:'Segoe UI',Helvetica,Arial,sans-serif;}
-  body{background:${BG};}
-  img{border:0;display:block;}
-  @media only screen and (max-width:600px){
-    .outer{padding:16px 0 !important;}
-    .card{border-radius:16px !important;}
-    .hero-pad{padding:28px 20px !important;}
-    .body-pad{padding:20px 16px !important;}
-    .qr-img{width:180px !important;height:180px !important;}
-    .step-title{font-size:13px !important;}
-    .step-desc{font-size:11px !important;}
+  :root { color-scheme: light dark; }
+  body { margin:0; padding:0; }
+  .wrapper { background:#F4F6FB; padding:40px 16px; }
+  .card { background:#ffffff; border-radius:20px; overflow:hidden; max-width:580px; margin:0 auto; box-shadow:0 4px 40px rgba(0,0,0,0.10); }
+  .header { background:#0B1E45; padding:28px 36px; }
+  .brand-sub { font-size:9px; font-weight:800; letter-spacing:0.4em; text-transform:uppercase; color:rgba(255,255,255,0.4); margin:0 0 4px; }
+  .brand-name { font-size:22px; font-weight:900; letter-spacing:0.06em; color:#ffffff; margin:0; }
+  .badge { display:inline-block; background:#16A34A; color:#fff; font-size:9px; font-weight:800; letter-spacing:0.2em; text-transform:uppercase; padding:5px 14px; border-radius:999px; }
+  .hero { background:linear-gradient(160deg,#0B1E45 0%,#1E3A7A 60%,#2F5DAA 100%); padding:40px 36px 36px; text-align:center; }
+  .hero-icon { font-size:36px; display:block; margin:0 auto 16px; }
+  .hero-title { font-size:24px; font-weight:900; color:#ffffff; margin:0 0 10px; letter-spacing:-0.02em; }
+  .hero-sub { font-size:14px; color:rgba(255,255,255,0.72); line-height:1.7; margin:0; }
+  .hero-name { color:#ffffff; font-weight:700; }
+  .body-area { background:#ffffff; padding:36px; }
+  .qr-wrap { text-align:center; padding:28px 20px 24px; background:#F8FAFF; border-radius:16px; border:1px solid #E4EAF6; margin-bottom:28px; }
+  .qr-label { font-size:9px; font-weight:800; letter-spacing:0.3em; text-transform:uppercase; color:#4A7FD4; margin:0 0 18px; }
+  .qr-img-wrap { display:inline-block; background:#fff; padding:10px; border-radius:12px; box-shadow:0 2px 20px rgba(10,31,68,0.10); margin-bottom:16px; }
+  .qr-token { display:inline-block; font-family:'Courier New',monospace; font-size:12px; font-weight:700; letter-spacing:0.12em; color:#0B1E45; background:#EEF3FB; padding:9px 18px; border-radius:8px; }
+  .divider { height:1px; background:#EEF3FB; margin:0 0 24px; }
+  .step-row { padding:12px 0; border-bottom:1px solid #F0F4FA; }
+  .step-num { width:32px; height:32px; background:#0B1E45; border-radius:8px; text-align:center; line-height:32px; font-size:10px; font-weight:900; color:#fff; letter-spacing:0.05em; display:inline-block; vertical-align:middle; }
+  .step-title { font-size:13px; font-weight:700; color:#0B1E45; margin:0 0 2px; }
+  .step-desc { font-size:12px; color:#7A8FAB; line-height:1.5; margin:0; }
+  .ref-box { background:#F8FAFF; border-radius:10px; padding:14px 18px; }
+  .ref-label { font-size:9px; font-weight:800; letter-spacing:0.2em; text-transform:uppercase; color:#9CA3AF; margin:0 0 4px; }
+  .ref-value { font-family:'Courier New',monospace; font-size:12px; font-weight:700; color:#0B1E45; margin:0; }
+  .footer { background:#F8FAFF; padding:20px 36px; text-align:center; border-top:1px solid #E8EFF8; }
+  .footer-text { font-size:11px; color:#9CA3AF; line-height:1.7; margin:0 0 6px; }
+  .footer-copy { font-size:10px; color:#C0C9D8; margin:0; }
+
+  @media (prefers-color-scheme: dark) {
+    .wrapper { background:#0F172A !important; }
+    .card { background:#1E293B !important; box-shadow:0 4px 40px rgba(0,0,0,0.40) !important; }
+    .body-area { background:#1E293B !important; }
+    .qr-wrap { background:#0F172A !important; border-color:#2D3F5C !important; }
+    .qr-label { color:#7EB3FF !important; }
+    .qr-img-wrap { background:#ffffff !important; }
+    .qr-token { background:#0B1E45 !important; color:#A8C4F0 !important; }
+    .divider { background:#2D3F5C !important; }
+    .step-row { border-bottom-color:#2D3F5C !important; }
+    .step-title { color:#E2E8F0 !important; }
+    .step-desc { color:#94A3B8 !important; }
+    .ref-box { background:#0F172A !important; }
+    .ref-value { color:#A8C4F0 !important; }
+    .footer { background:#0F172A !important; border-top-color:#2D3F5C !important; }
+    .footer-text { color:#64748B !important; }
+    .footer-copy { color:#475569 !important; }
   }
 </style>
 </head>
-<body style="margin:0;padding:0;background:${BG};">
-<table width="100%" cellpadding="0" cellspacing="0" class="outer" style="background:${BG};padding:32px 0;">
-<tr><td align="center" style="padding:0 12px;">
+<body>
+<div class="wrapper">
+  <div class="card">
 
-  <!-- CARD -->
-  <table width="100%" cellpadding="0" cellspacing="0" class="card" style="max-width:560px;border-radius:20px;overflow:hidden;border:1px solid ${BORDER};">
+    <!-- HEADER -->
+    <div class="header">
+      <table width="100%" cellpadding="0" cellspacing="0"><tr>
+        <td>
+          <p class="brand-sub">VTS Infosoft</p>
+          <p class="brand-name">VISITORPASS</p>
+        </td>
+        <td align="right" style="vertical-align:middle;">
+          <span class="badge">&#10003;&nbsp; Approved</span>
+        </td>
+      </tr></table>
+    </div>
 
-    <!-- ── HEADER ── -->
-    <tr>
-      <td style="background:${CARD};padding:22px 28px;">
-        <table width="100%" cellpadding="0" cellspacing="0"><tr>
-          <td style="vertical-align:middle;">
-            <p style="margin:0 0 2px;font-size:9px;font-weight:800;letter-spacing:0.35em;text-transform:uppercase;color:${DIMMER};">VTS Infosoft</p>
-            <p style="margin:0;font-size:20px;font-weight:900;letter-spacing:0.04em;color:${WHITE};">VISITOR<span style="color:${GOLD};">PASS</span></p>
-          </td>
-          <td align="right" style="vertical-align:middle;">
-            <span style="display:inline-block;background:${GREEN};color:${WHITE};font-size:9px;font-weight:800;letter-spacing:0.18em;text-transform:uppercase;padding:6px 14px;border-radius:999px;">&#10003;&nbsp;Approved</span>
-          </td>
-        </tr></table>
-      </td>
-    </tr>
+    <!-- HERO -->
+    <div class="hero">
+      <span class="hero-icon">&#128274;</span>
+      <h1 class="hero-title">You&rsquo;re cleared to visit</h1>
+      <p class="hero-sub">Hi <span class="hero-name">${name}</span>, your visit request has been approved.<br/>Present the QR code below at reception to check in instantly.</p>
+    </div>
 
-    <!-- ── HERO ── -->
-    <tr>
-      <td class="hero-pad" style="background:${PANEL};padding:36px 28px 32px;text-align:center;border-top:1px solid ${BORDER};border-bottom:1px solid ${BORDER};">
-        <p style="font-size:38px;margin:0 0 14px;">&#128274;</p>
-        <h1 style="font-size:22px;font-weight:900;color:${WHITE};margin:0 0 10px;letter-spacing:-0.02em;">You&rsquo;re cleared to visit</h1>
-        <p style="font-size:14px;color:${DIM};line-height:1.7;margin:0;">Hi <strong style="color:${WHITE};">${name}</strong>,<br/>your visit has been <strong style="color:${GREEN};">approved</strong>. Show the QR below at reception to check in instantly.</p>
-      </td>
-    </tr>
+    <!-- BODY -->
+    <div class="body-area">
 
-    <!-- ── QR SECTION ── -->
-    <tr>
-      <td class="body-pad" style="background:${CARD};padding:28px 28px 24px;text-align:center;border-bottom:1px solid ${BORDER};">
-        <p style="font-size:9px;font-weight:800;letter-spacing:0.3em;text-transform:uppercase;color:${GOLD};margin:0 0 20px;">Your Digital Gate Pass</p>
-        <!-- QR image: always white background so the code is scannable -->
-        <table cellpadding="0" cellspacing="0" align="center" style="margin:0 auto 20px;">
-          <tr><td style="background:#ffffff;border-radius:16px;padding:14px;box-shadow:0 0 0 4px rgba(245,158,11,0.25);">
-            <img src="${qrImageUrl}" class="qr-img" width="200" height="200" alt="QR Access Code" style="display:block;border-radius:8px;"/>
-          </td></tr>
-        </table>
-        <!-- Token -->
-        <p style="font-family:'Courier New',Courier,monospace;font-size:11px;font-weight:700;letter-spacing:0.14em;color:${DIM};background:${PANEL};display:inline-block;padding:9px 18px;border-radius:8px;border:1px solid ${BORDER};margin:0;">${qrToken}</p>
-        <p style="font-size:10px;color:${DIMMER};margin:12px 0 0;">Scan this code at the reception desk</p>
-      </td>
-    </tr>
+      <!-- QR CODE -->
+      <div class="qr-wrap">
+        <p class="qr-label">Your Digital Gate Pass</p>
+        <div class="qr-img-wrap">
+          <img src="${qrImgSrc}" width="220" height="220" alt="QR Access Code" style="display:block;border-radius:8px;"/>
+        </div>
+        <br/>
+        <span class="qr-token">${qrToken}</span>
+      </div>
 
-    <!-- ── SCHEDULE ── -->
-    ${(meetingDate || meetingTime) ? `
-    <tr>
-      <td class="body-pad" style="background:${PANEL};padding:20px 28px;border-bottom:1px solid ${BORDER};">
-        <p style="font-size:9px;font-weight:800;letter-spacing:0.3em;text-transform:uppercase;color:${GOLD};margin:0 0 14px;">Meeting Schedule</p>
-        <table width="100%" cellpadding="0" cellspacing="0"><tr>
-          ${meetingDate ? `<td style="vertical-align:top;padding-right:12px;">
-            <p style="font-size:9px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:${DIMMER};margin:0 0 4px;">Date</p>
-            <p style="font-size:15px;font-weight:700;color:${WHITE};margin:0;">${meetingDate}</p>
-          </td>` : ''}
-          ${meetingTime ? `<td style="vertical-align:top;text-align:right;">
-            <p style="font-size:9px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:${DIMMER};margin:0 0 4px;">Time</p>
-            <p style="font-size:22px;font-weight:900;color:${GOLD};margin:0;">${meetingTime}</p>
-          </td>` : ''}
-        </tr></table>
-      </td>
-    </tr>` : ''}
+      <div class="divider"></div>
 
-    <!-- ── HOW TO CHECK IN ── -->
-    <tr>
-      <td class="body-pad" style="background:${CARD};padding:24px 28px;border-bottom:1px solid ${BORDER};">
-        <p style="font-size:9px;font-weight:800;letter-spacing:0.3em;text-transform:uppercase;color:${DIMMER};margin:0 0 16px;">How to check in</p>
-        ${steps.map(([n, t, d], i) => `
-        <table width="100%" cellpadding="0" cellspacing="0" style="${i < steps.length - 1 ? `border-bottom:1px solid ${BORDER};` : ''}padding:12px 0;">
-          <tr>
-            <td style="vertical-align:top;width:36px;">
-              <span style="display:inline-block;width:28px;height:28px;line-height:28px;text-align:center;background:${PANEL};border:1px solid ${BORDER};border-radius:8px;font-size:9px;font-weight:900;color:${GOLD};letter-spacing:0.04em;">${n}</span>
-            </td>
-            <td style="vertical-align:top;padding-left:12px;">
-              <p class="step-title" style="font-size:14px;font-weight:700;color:${WHITE};margin:0 0 3px;">${t}</p>
-              <p class="step-desc" style="font-size:12px;color:${DIM};line-height:1.5;margin:0;">${d}</p>
-            </td>
-          </tr>
-        </table>`).join('')}
-      </td>
-    </tr>
+      ${scheduleSection}
 
-    <!-- ── REFERENCE ── -->
-    <tr>
-      <td class="body-pad" style="background:${PANEL};padding:18px 28px;border-bottom:1px solid ${BORDER};">
-        <table width="100%" cellpadding="0" cellspacing="0"><tr>
-          <td style="vertical-align:middle;">
-            <p style="font-size:9px;font-weight:800;letter-spacing:0.2em;text-transform:uppercase;color:${DIMMER};margin:0 0 4px;">Visit Reference</p>
-            <p style="font-family:'Courier New',Courier,monospace;font-size:13px;font-weight:700;color:${WHITE};margin:0;letter-spacing:0.06em;">${visitId}</p>
-          </td>
-          <td align="right" style="vertical-align:middle;">
-            <span style="font-size:22px;">&#128203;</span>
+      <!-- STEPS -->
+      <p style="font-size:9px;font-weight:800;letter-spacing:0.3em;text-transform:uppercase;color:#9CA3AF;margin:0 0 12px;">How to check in</p>
+      ${[
+        ['01', 'Arrive at reception', 'Head to the main security desk at the entrance.'],
+        ['02', 'Show this QR code', 'Open this email and display the code on your screen.'],
+        ['03', 'Get scanned &amp; verified', 'The officer scans your QR — identity confirmed instantly.'],
+        ['04', 'Collect your pass', 'Receive your physical gate pass and proceed.'],
+      ].map(([n, t, d]) => `
+      <div class="step-row">
+        <table cellpadding="0" cellspacing="0"><tr>
+          <td style="vertical-align:middle;width:32px;"><span class="step-num">${n}</span></td>
+          <td style="vertical-align:middle;padding-left:14px;">
+            <p class="step-title">${t}</p>
+            <p class="step-desc">${d}</p>
           </td>
         </tr></table>
-      </td>
-    </tr>
+      </div>`).join('')}
 
-    <!-- ── FOOTER ── -->
-    <tr>
-      <td style="background:${BG};padding:20px 28px;text-align:center;">
-        <p style="font-size:11px;color:${DIMMER};line-height:1.7;margin:0 0 6px;">This QR code is for your personal use only — do not share it.<br/>If you did not request this visit, please ignore this email.</p>
-        <p style="font-size:10px;color:rgba(255,255,255,0.2);margin:0;">&copy; ${year} VTS Infosoft &middot; VISITORPASS Enterprise</p>
-      </td>
-    </tr>
+      <div style="height:24px;"></div>
 
-  </table>
-</td></tr>
-</table>
+      <!-- REFERENCE -->
+      <div class="ref-box">
+        <p class="ref-label">Visit Reference</p>
+        <p class="ref-value">${visitId}</p>
+      </div>
+
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer">
+      <p class="footer-text">This QR code is for your personal use only — do not share it.<br/>If you did not request this visit, please ignore this email.</p>
+      <p class="footer-copy">&copy; ${year} VTS Infosoft &middot; VISITORPASS Enterprise</p>
+    </div>
+
+  </div>
+</div>
 </body>
 </html>`;
 }
@@ -402,20 +396,12 @@ export async function notifyVisitStatus(opts: {
 }) {
   const approved = opts.status === 'Approved';
 
-  // Use a fully-public third-party QR API so Gmail (and all email clients) can
-  // always fetch the image — our own Replit dev URL is behind a session gate
-  // that Gmail's fetch servers cannot pass.
-  const qrImageUrl = approved && opts.qrToken
-    ? `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(opts.qrToken)}&bgcolor=ffffff&color=000000&qzone=1`
-    : '';
-  logger.info({ qrImageUrl }, 'QR image URL for email');
-
   if (opts.visitorEmail) {
     const ok = await sendEmail(
       opts.visitorEmail,
       approved ? `Your visit is approved — here's your QR code` : `Update on your visit request`,
       approved
-        ? visitorApprovedHtml(opts.visitorName, opts.qrToken ?? '', opts.visitId, qrImageUrl, opts.scheduledTime, opts.fromTime, opts.createdAt)
+        ? visitorApprovedHtml(opts.visitorName, opts.qrToken ?? '', opts.visitId, opts.scheduledTime, opts.fromTime)
         : visitorRejectedHtml(opts.visitorName, opts.visitId),
       approved
         ? `Hi ${opts.visitorName}, your visit has been approved. QR Token: ${opts.qrToken}`
