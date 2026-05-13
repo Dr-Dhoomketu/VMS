@@ -3,7 +3,7 @@ import { useLocation } from 'wouter';
 import socket, { connectSocket } from '@/utils/socket';
 import { API_URL } from '@/lib/api';
 
-const statCards = [
+const adminStatCards = [
   { key:'total',      label:'Total Visits',  sub:'All Time',    color:'#2F5DAA', bg:'rgba(47,93,170,0.08)',  bar:'#2F5DAA' },
   { key:'today',      label:'Today',         sub:'Live Traffic', color:'#0A1F44', bg:'rgba(10,31,68,0.06)',   bar:'#0A1F44' },
   { key:'checkedIn',  label:'On Premise',    sub:'Active Now',  color:'#16a34a', bg:'rgba(22,163,74,0.08)',  bar:'#16a34a' },
@@ -12,12 +12,19 @@ const statCards = [
 ];
 
 interface Stats { total:number; today:number; checkedIn:number; checkedOut:number; preVisitor:number; }
-interface Visit { _id:string; purpose:string; createdAt:string; status:string; visitor?:{name:string;email?:string;imageUrl?:string}; meetWith?:{name:string}; }
+interface Visit {
+  _id:string; purpose:string; createdAt:string; status:string;
+  visitor?:{name:string;email?:string;imageUrl?:string};
+  meetWith?:{name:string};
+  meetWithDept?:{name:string};
+  isVariableEmployee?:boolean;
+}
 
 export default function DashboardHome() {
   const [, navigate] = useLocation();
   const [stats, setStats] = useState<Stats>({ total:0, today:0, checkedIn:0, checkedOut:0, preVisitor:0 });
   const [visitors, setVisitors] = useState<Visit[]>([]);
+  const [pending, setPending] = useState<Visit[]>([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<{ name:string; role:string }|null>(null);
 
@@ -26,11 +33,16 @@ export default function DashboardHome() {
     if (!userStr) { navigate('/login'); return; }
     const u = JSON.parse(userStr);
     setUser(u);
-    fetchStats(); fetchVisitors();
+    if (u.role === 'Admin') {
+      fetchStats();
+    }
+    fetchVisitors(u.role);
+    fetchPending();
     connectSocket(u);
-    socket.on('visit_updated', () => { fetchStats(); fetchVisitors(); });
-    socket.on('new_visit', () => { fetchStats(); fetchVisitors(); });
-    return () => { socket.off('visit_updated'); socket.off('new_visit'); };
+    socket.on('visit_updated', () => { if (u.role === 'Admin') fetchStats(); fetchVisitors(u.role); });
+    socket.on('new_visit', () => { if (u.role === 'Admin') fetchStats(); fetchPending(); });
+    socket.on('new_visit_request', () => fetchPending());
+    return () => { socket.off('visit_updated'); socket.off('new_visit'); socket.off('new_visit_request'); };
   }, []);
 
   const fetchStats = async () => {
@@ -41,7 +53,7 @@ export default function DashboardHome() {
     } catch {}
   };
 
-  const fetchVisitors = async () => {
+  const fetchVisitors = async (role: string) => {
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(`${API_URL}/api/v1/visits?status=Approved`, { headers: { Authorization: `Bearer ${token}` } });
@@ -49,22 +61,38 @@ export default function DashboardHome() {
     } catch {} finally { setLoading(false); }
   };
 
+  const fetchPending = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/api/v1/visits/pending`, { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json(); if (res.ok) setPending(data);
+    } catch {}
+  };
+
   const handleCheckout = async (id: string) => {
     const token = localStorage.getItem('token');
     try {
       const res = await fetch(`${API_URL}/api/v1/visits/${id}/checkout`, { method:'POST', headers: { Authorization: `Bearer ${token}` } });
-      if (res.ok) { fetchStats(); fetchVisitors(); }
+      if (res.ok) { fetchStats(); fetchVisitors(user?.role || ''); }
     } catch {}
   };
+
+  const isEmployee = user?.role === 'Employee';
 
   return (
     <div className="fade-up">
       {/* Page header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '28px', paddingBottom: '24px', borderBottom: '1px solid #E2E8F0' }}>
         <div>
-          <p style={{ fontSize: '0.55rem', fontWeight: 800, letterSpacing: '0.35em', textTransform: 'uppercase', color: '#2F5DAA', marginBottom: '6px' }}>Operations Center</p>
-          <h1 style={{ fontSize: '1.8rem', fontWeight: 900, letterSpacing: '-0.03em', color: '#0A1F44' }}>System Overview</h1>
-          <p style={{ fontSize: '0.82rem', color: '#6B7FA3', marginTop: '4px' }}>Real-time monitoring of facility access and visitor flow.</p>
+          <p style={{ fontSize: '0.55rem', fontWeight: 800, letterSpacing: '0.35em', textTransform: 'uppercase', color: '#2F5DAA', marginBottom: '6px' }}>
+            {isEmployee ? 'My Portal' : 'Operations Center'}
+          </p>
+          <h1 style={{ fontSize: '1.8rem', fontWeight: 900, letterSpacing: '-0.03em', color: '#0A1F44' }}>
+            {isEmployee ? 'My Dashboard' : 'System Overview'}
+          </h1>
+          <p style={{ fontSize: '0.82rem', color: '#6B7FA3', marginTop: '4px' }}>
+            {isEmployee ? 'Your active visitors and pending approvals.' : 'Real-time monitoring of facility access and visitor flow.'}
+          </p>
         </div>
         {user && (
           <div style={{ textAlign: 'right' }}>
@@ -75,38 +103,93 @@ export default function DashboardHome() {
         )}
       </div>
 
-      {/* Stat cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '14px', marginBottom: '28px' }}>
-        {statCards.map(({ key, label, sub, color, bg, bar }) => (
-          <div key={key} style={{
-            background: '#ffffff', borderRadius: '16px',
-            border: '1px solid rgba(10,31,68,0.06)',
-            boxShadow: '0 2px 12px rgba(10,31,68,0.04)',
-            overflow: 'hidden', position: 'relative',
-          }}>
-            <div style={{ height: '3px', background: `linear-gradient(90deg, ${bar}, transparent)` }}/>
-            <div style={{ padding: '20px' }}>
-              <div style={{
-                width: '34px', height: '34px', borderRadius: '10px',
-                background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                marginBottom: '12px',
-              }}>
-                <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: color }}/>
+      {/* Admin stat cards */}
+      {!isEmployee && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '14px', marginBottom: '28px' }}>
+          {adminStatCards.map(({ key, label, sub, color, bg, bar }) => (
+            <div key={key} style={{
+              background: '#ffffff', borderRadius: '16px',
+              border: '1px solid rgba(10,31,68,0.06)',
+              boxShadow: '0 2px 12px rgba(10,31,68,0.04)',
+              overflow: 'hidden',
+            }}>
+              <div style={{ height: '3px', background: `linear-gradient(90deg, ${bar}, transparent)` }}/>
+              <div style={{ padding: '20px' }}>
+                <div style={{ width: '34px', height: '34px', borderRadius: '10px', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
+                  <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: color }}/>
+                </div>
+                <div style={{ fontSize: '1.8rem', fontWeight: 900, color: '#0A1F44', letterSpacing: '-0.03em', lineHeight: 1 }}>
+                  {(stats as Record<string,number>)[key] ?? 0}
+                </div>
+                <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#0A1F44', marginTop: '6px' }}>{label}</div>
+                <div style={{ fontSize: '0.55rem', fontWeight: 700, color: '#6B7FA3', textTransform: 'uppercase', letterSpacing: '0.15em', marginTop: '3px' }}>{sub}</div>
               </div>
-              <div style={{ fontSize: '1.8rem', fontWeight: 900, color: '#0A1F44', letterSpacing: '-0.03em', lineHeight: 1 }}>
-                {(stats as Record<string,number>)[key] ?? 0}
-              </div>
-              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#0A1F44', marginTop: '6px' }}>{label}</div>
-              <div style={{ fontSize: '0.55rem', fontWeight: 700, color: '#6B7FA3', textTransform: 'uppercase', letterSpacing: '0.15em', marginTop: '3px' }}>{sub}</div>
             </div>
+          ))}
+        </div>
+      )}
+
+      {/* Employee quick-stat cards */}
+      {isEmployee && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '14px', marginBottom: '28px' }}>
+          {[
+            { label: 'Active Visitors', value: visitors.length, sub: 'On Premise Now', color: '#16a34a', bg: 'rgba(22,163,74,0.08)', bar: '#16a34a' },
+            { label: 'Pending Approvals', value: pending.length, sub: 'Awaiting Your Decision', color: '#d97706', bg: 'rgba(217,119,6,0.08)', bar: '#d97706' },
+            { label: 'Total (My Visits)', value: visitors.length + pending.length, sub: 'All Assigned', color: '#2F5DAA', bg: 'rgba(47,93,170,0.08)', bar: '#2F5DAA' },
+          ].map(({ label, value, sub, color, bg, bar }) => (
+            <div key={label} style={{ background: '#fff', borderRadius: '16px', border: '1px solid rgba(10,31,68,0.06)', boxShadow: '0 2px 12px rgba(10,31,68,0.04)', overflow: 'hidden' }}>
+              <div style={{ height: '3px', background: `linear-gradient(90deg, ${bar}, transparent)` }}/>
+              <div style={{ padding: '20px' }}>
+                <div style={{ width: '34px', height: '34px', borderRadius: '10px', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
+                  <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: color }}/>
+                </div>
+                <div style={{ fontSize: '1.8rem', fontWeight: 900, color: '#0A1F44', letterSpacing: '-0.03em', lineHeight: 1 }}>{value}</div>
+                <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#0A1F44', marginTop: '6px' }}>{label}</div>
+                <div style={{ fontSize: '0.55rem', fontWeight: 700, color: '#6B7FA3', textTransform: 'uppercase', letterSpacing: '0.15em', marginTop: '3px' }}>{sub}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Pending approvals for employees */}
+      {isEmployee && pending.length > 0 && (
+        <div style={{ marginBottom: '28px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+            <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#d97706', animation: 'pulse 2s ease-in-out infinite' }}/>
+            <h2 style={{ fontSize: '1rem', fontWeight: 800, color: '#0A1F44', letterSpacing: '-0.02em' }}>Pending Approvals</h2>
+            <span style={{ background: 'rgba(217,119,6,0.1)', color: '#d97706', borderRadius: 9999, padding: '1px 8px', fontSize: '0.6rem', fontWeight: 900 }}>{pending.length}</span>
           </div>
-        ))}
-      </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '12px' }}>
+            {pending.slice(0, 4).map(v => (
+              <div key={v._id} style={{ background: '#fff', borderRadius: '14px', border: '1px solid #E2E8F0', padding: '14px 16px', boxShadow: '0 2px 8px rgba(10,31,68,0.04)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(217,119,6,0.08)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 800, color: '#d97706' }}>
+                    {v.visitor?.name?.charAt(0)}
+                  </div>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#0A1F44', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v.visitor?.name}</div>
+                    <div style={{ fontSize: '0.6rem', color: '#6B7FA3' }}>{v.purpose}</div>
+                  </div>
+                  {v.isVariableEmployee && (
+                    <span style={{ marginLeft: 'auto', background: 'rgba(124,58,237,0.1)', color: '#7C3AED', borderRadius: 6, padding: '2px 6px', fontSize: '0.5rem', fontWeight: 900, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>Variable</span>
+                  )}
+                </div>
+                <a href="/dashboard/approvals" style={{ marginTop: '10px', display: 'block', textAlign: 'center', padding: '6px', borderRadius: '8px', background: '#0A1F44', color: '#fff', fontSize: '0.6rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', textDecoration: 'none' }}>
+                  Review →
+                </a>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Active visitors table */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
         <div>
-          <h2 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0A1F44', letterSpacing: '-0.02em' }}>Active Visitors</h2>
+          <h2 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0A1F44', letterSpacing: '-0.02em' }}>
+            {isEmployee ? 'My Active Visitors' : 'Active Visitors'}
+          </h2>
           <p style={{ fontSize: '0.72rem', color: '#6B7FA3', marginTop: '3px' }}>Currently on premises</p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -121,6 +204,7 @@ export default function DashboardHome() {
             <tr>
               <th>Visitor</th>
               <th>Meeting With</th>
+              {isEmployee && <th>Department</th>}
               <th>Purpose</th>
               <th>Check-In</th>
               <th>Status</th>
@@ -129,9 +213,9 @@ export default function DashboardHome() {
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={6} style={{ textAlign: 'center', padding: '48px', color: '#6B7FA3', fontSize: '0.875rem' }}>Loading...</td></tr>
+              <tr><td colSpan={isEmployee ? 7 : 6} style={{ textAlign: 'center', padding: '48px', color: '#6B7FA3', fontSize: '0.875rem' }}>Loading...</td></tr>
             ) : visitors.length === 0 ? (
-              <tr><td colSpan={6} style={{ textAlign: 'center', padding: '48px', color: '#6B7FA3', fontSize: '0.875rem' }}>No active visitors on premises.</td></tr>
+              <tr><td colSpan={isEmployee ? 7 : 6} style={{ textAlign: 'center', padding: '48px', color: '#6B7FA3', fontSize: '0.875rem' }}>No active visitors on premises.</td></tr>
             ) : visitors.map(v => (
               <tr key={v._id}>
                 <td>
@@ -148,7 +232,15 @@ export default function DashboardHome() {
                     </div>
                   </div>
                 </td>
-                <td style={{ fontSize: '0.875rem', color: '#0A1F44', fontWeight: 500 }}>{v.meetWith?.name || '—'}</td>
+                <td style={{ fontSize: '0.875rem', color: '#0A1F44', fontWeight: 500 }}>
+                  {v.isVariableEmployee
+                    ? <span style={{ color: '#7C3AED', fontWeight: 700, fontSize: '0.78rem' }}>Variable Employee</span>
+                    : v.meetWith?.name || '—'
+                  }
+                </td>
+                {isEmployee && (
+                  <td style={{ fontSize: '0.78rem', color: '#6B7FA3' }}>{v.meetWithDept?.name || '—'}</td>
+                )}
                 <td style={{ fontSize: '0.875rem', color: '#6B7FA3' }}>{v.purpose}</td>
                 <td style={{ fontSize: '0.78rem', color: '#6B7FA3' }}>{new Date(v.createdAt).toLocaleTimeString()}</td>
                 <td><span className="badge badge-approved">Active</span></td>
@@ -157,8 +249,7 @@ export default function DashboardHome() {
                     style={{
                       fontSize: '0.72rem', fontWeight: 700, color: '#dc2626',
                       background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.15)',
-                      borderRadius: '8px', padding: '6px 14px', cursor: 'pointer',
-                      transition: 'all 0.2s',
+                      borderRadius: '8px', padding: '6px 14px', cursor: 'pointer', transition: 'all 0.2s',
                     }}
                     onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(239,68,68,0.12)'; }}
                     onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(239,68,68,0.06)'; }}
