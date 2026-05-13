@@ -12,6 +12,7 @@ import ReturningPage from "@/pages/ReturningPage";
 import ApprovalsPage from "@/pages/ApprovalsPage";
 import VideoPage from "@/pages/VideoPage";
 import ScanPage from "@/pages/ScanPage";
+import SetupPasswordPage from "@/pages/SetupPasswordPage";
 
 import DashboardLayout from "@/pages/dashboard/DashboardLayout";
 import DashboardHome from "@/pages/dashboard/DashboardHome";
@@ -53,6 +54,7 @@ function Router() {
       <Route path="/approvals" component={ApprovalsPage} />
       <Route path="/video" component={VideoPage} />
       <Route path="/scan/:token" component={ScanPage} />
+      <Route path="/setup-password" component={SetupPasswordPage} />
 
       <Route path="/dashboard">{() => <DashboardRoute component={DashboardHome} />}</Route>
       <Route path="/dashboard/approvals">{() => <DashboardRoute component={DashboardApprovals} />}</Route>

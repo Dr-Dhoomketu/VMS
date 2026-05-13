@@ -4,7 +4,7 @@ import { protect, authorize } from './auth.js';
 
 const router = Router();
 
-router.get('/', protect, async (_req: Request, res: Response): Promise<void> => {
+router.get('/', async (_req: Request, res: Response): Promise<void> => {
   try { res.json(await Department.find()); } catch { res.status(500).json({ message: 'Server error' }); }
 });
 

@@ -4,6 +4,7 @@ import Cropper from 'react-easy-crop';
 import { Link } from 'wouter';
 import { API_URL } from '@/lib/api';
 import GeoBackground from '@/components/GeoBackground';
+import DeptEmployeePicker from '@/components/DeptEmployeePicker';
 import { signInWithPhoneNumber, RecaptchaVerifier, ConfirmationResult } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 
@@ -65,7 +66,6 @@ function OtpInput({ value, onChange, label, hint, autoFocus: autoFocusOtp }: { v
   );
 }
 
-interface Employee { _id: string; name: string; }
 interface CropArea { x: number; y: number; width: number; height: number; }
 
 const COUNTRIES = [
@@ -334,7 +334,6 @@ function CountryCodePicker({ value, onChange }: { value: string; onChange: (v: s
 
 export default function CheckInPage() {
   const [step, setStep] = useState(1);
-  const [employees, setEmployees] = useState<Employee[]>([]);
   const [countryCode, setCountryCode] = useState('+91');
   const [badgeColor, setBadgeColor] = useState('#2F5DAA');
   const [formData, setFormData] = useState({
@@ -378,10 +377,6 @@ export default function CheckInPage() {
   const blinkCanvasRef = useRef<HTMLCanvasElement>(null);
   const blinkIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const lastBrightnessRef = useRef<number[]>([]);
-
-  useEffect(() => {
-    fetch(`${API_URL}/api/v1/users/employees`).then(r => r.json()).then(d => setEmployees(d)).catch(console.error);
-  }, []);
 
   // Blink detection via frame brightness analysis
   useEffect(() => {
@@ -576,7 +571,11 @@ export default function CheckInPage() {
     e.preventDefault(); setError(''); setIsSubmitting(true);
     try {
       const payload = new FormData();
-      Object.entries({ ...formData, phone: `${countryCode}${formData.phone}`, badgeColor }).forEach(([k, v]) => payload.append(k, v));
+      if (!formData.meetWith) { setError('Please select who you are meeting.'); setIsSubmitting(false); return; }
+      Object.entries({ ...formData, phone: `${countryCode}${formData.phone}`, badgeColor }).forEach(([k, v]) => {
+        if (k === 'meetWith' && v === 'unallocated') return;
+        payload.append(k, v);
+      });
       if (croppedPhoto) payload.append('photo', croppedPhoto);
       const res = await fetch(`${API_URL}/api/v1/visits/request`, { method: 'POST', body: payload });
       if (res.ok) setStep(3);
@@ -958,10 +957,11 @@ export default function CheckInPage() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '18px' }}>
                 <div style={{ gridColumn: '1/-1' }}>
                   <label className="vp-label">Who are you meeting? *</label>
-                  <select required name="meetWith" value={formData.meetWith} onChange={handleChange}>
-                    <option value="">Select Employee</option>
-                    {employees.map(e => <option key={e._id} value={e._id}>{e.name}</option>)}
-                  </select>
+                  <DeptEmployeePicker
+                    value={formData.meetWith}
+                    onChange={id => setFormData(f => ({ ...f, meetWith: id }))}
+                    required
+                  />
                 </div>
                 <div style={{ gridColumn: '1/-1' }}>
                   <label className="vp-label">Purpose of Visit *</label>

@@ -4,6 +4,7 @@ import Cropper from 'react-easy-crop';
 import { Link } from 'wouter';
 import { API_URL } from '@/lib/api';
 import GeoBackground from '@/components/GeoBackground';
+import DeptEmployeePicker from '@/components/DeptEmployeePicker';
 
 interface CropArea { x: number; y: number; width: number; height: number; }
 
@@ -22,7 +23,6 @@ function getCroppedImg(imageSrc: string, croppedAreaPixels: CropArea): Promise<F
   });
 }
 
-interface Employee { _id: string; name: string; }
 
 // Generate time slots every 15 min, 7 AM – 9 PM
 function generateTimeSlots() {
@@ -135,7 +135,6 @@ function QuickTimePicker({
 
 export default function AppointmentPage() {
   const [step, setStep] = useState(1);
-  const [employees, setEmployees] = useState<Employee[]>([]);
   const [formData, setFormData] = useState({
     name: '', email: '', phone: '', gender: '', address: '',
     meetWith: '', purpose: '', scheduledTime: '', visitorStatus: '',
@@ -238,10 +237,6 @@ export default function AppointmentPage() {
     }
   }, []);
 
-  useEffect(() => {
-    fetch(`${API_URL}/api/v1/users/employees`).then(r => r.json()).then(d => setEmployees(d)).catch(console.error);
-  }, []);
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
@@ -250,7 +245,10 @@ export default function AppointmentPage() {
     e.preventDefault(); setError(''); setIsSubmitting(true);
     try {
       const payload = new FormData();
-      Object.entries(formData).forEach(([k, v]) => payload.append(k, v));
+      Object.entries(formData).forEach(([k, v]) => {
+        if (k === 'meetWith' && v === 'unallocated') return;
+        payload.append(k, v);
+      });
       if (croppedPhoto) payload.append('photo', croppedPhoto);
       const res = await fetch(`${API_URL}/api/v1/visits/request`, { method: 'POST', body: payload });
       if (res.ok) setStep(2);
@@ -475,10 +473,11 @@ export default function AppointmentPage() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '18px' }}>
                 <div>
                   <label className="vp-label">Who are you meeting? <span style={{ color: '#ef4444' }}>*</span></label>
-                  <select required name="meetWith" value={formData.meetWith} onChange={handleChange}>
-                    <option value="">Select Employee</option>
-                    {employees.map(emp => <option key={emp._id} value={emp._id}>{emp.name}</option>)}
-                  </select>
+                  <DeptEmployeePicker
+                    value={formData.meetWith}
+                    onChange={id => setFormData(f => ({ ...f, meetWith: id }))}
+                    required
+                  />
                 </div>
                 <div>
                   <label className="vp-label">Appointment Date <span style={{ color: '#ef4444' }}>*</span></label>

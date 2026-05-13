@@ -20,7 +20,7 @@ export interface IVisit extends Document {
 }
 const VisitSchema = new Schema<IVisit>({
   visitor: { type: Schema.Types.ObjectId, ref: 'Visitor', required: true },
-  meetWith: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  meetWith: { type: Schema.Types.ObjectId, ref: 'User' },
   purpose: { type: String, required: true },
   status: { type: String, default: 'Pending', enum: ['Pending','Approved','Rejected','CheckedIn','CheckedOut'] },
   scheduledTime: Date, fromTime: String, toTime: String,
@@ -33,6 +33,8 @@ export interface IVmsUser extends Document {
   role: string; isActive: boolean;
   department?: mongoose.Types.ObjectId;
   designation?: mongoose.Types.ObjectId;
+  inviteToken?: string;
+  inviteExpires?: Date;
 }
 const VmsUserSchema = new Schema<IVmsUser>({
   name: { type: String, required: true },
@@ -42,6 +44,8 @@ const VmsUserSchema = new Schema<IVmsUser>({
   isActive: { type: Boolean, default: true },
   department: { type: Schema.Types.ObjectId, ref: 'Department' },
   designation: { type: Schema.Types.ObjectId, ref: 'Designation' },
+  inviteToken: { type: String, select: false },
+  inviteExpires: { type: Date, select: false },
 }, { timestamps: true });
 export const VmsUser = mongoose.model<IVmsUser>('User', VmsUserSchema, 'users');
 
