@@ -28,8 +28,18 @@ const roleColors: Record<string, { bg: string; text: string; border: string }> =
   Security: { bg: 'rgba(124,58,237,0.06)', text: '#7c3aed', border: 'rgba(124,58,237,0.2)' },
 };
 
+const PERM_STORAGE_KEY = 'vms_role_permissions';
+
+export function loadStoredPermissions(): Permission[] {
+  try {
+    const raw = localStorage.getItem(PERM_STORAGE_KEY);
+    if (raw) return JSON.parse(raw) as Permission[];
+  } catch {}
+  return defaultPermissions;
+}
+
 export default function DashboardPermissions() {
-  const [permissions, setPermissions] = useState<Permission[]>(defaultPermissions);
+  const [permissions, setPermissions] = useState<Permission[]>(() => loadStoredPermissions());
   const [saved, setSaved] = useState(false);
 
   const toggle = (key: string, role: string) => {
@@ -41,6 +51,7 @@ export default function DashboardPermissions() {
   };
 
   const handleSave = () => {
+    try { localStorage.setItem(PERM_STORAGE_KEY, JSON.stringify(permissions)); } catch {}
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
   };
@@ -153,7 +164,7 @@ export default function DashboardPermissions() {
       </div>
 
       <p style={{ fontSize: '0.68rem', color: '#A0AEC0', marginTop: '16px', textAlign: 'center' }}>
-        Changes are stored in local configuration. Connect to your backend to persist permissions across sessions.
+        Changes are saved to this device. Employees will see only the navigation items their role allows.
       </p>
     </div>
   );

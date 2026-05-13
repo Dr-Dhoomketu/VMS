@@ -254,6 +254,40 @@ router.put('/:id/divert', protect, authorize('Admin'), async (req: any, res: Res
   } catch (err: any) { res.status(500).json({ message: 'Server error', error: err.message }); }
 });
 
+router.post('/checkin/:token', protect, authorize('Admin', 'Employee', 'Security'), async (req: any, res: Response): Promise<void> => {
+  try {
+    const visit = await Visit.findOne({ qrToken: req.params.token })
+      .populate('visitor', 'name phone email imageUrl')
+      .populate('meetWith', 'name email');
+    if (!visit) { res.status(404).json({ message: 'Invalid or expired QR token' }); return; }
+    if (visit.status === 'CheckedIn') { res.json({ message: 'Already checked in', visit }); return; }
+    if (visit.status !== 'Approved') { res.status(400).json({ message: `Cannot check in — visit status is ${visit.status}` }); return; }
+    visit.status = 'CheckedIn';
+    (visit as any).checkInTime = new Date();
+    await visit.save();
+    const io = req.app.get('io');
+    if (io) io.emit('visit_updated', { visitId: visit._id, status: 'CheckedIn' });
+    res.json({ message: 'Visitor checked in successfully', visit });
+  } catch (err: any) { res.status(500).json({ message: 'Server error', error: err.message }); }
+});
+
+router.post('/checkout/:token', protect, authorize('Admin', 'Employee', 'Security'), async (req: any, res: Response): Promise<void> => {
+  try {
+    const visit = await Visit.findOne({ qrToken: req.params.token })
+      .populate('visitor', 'name phone email imageUrl')
+      .populate('meetWith', 'name email');
+    if (!visit) { res.status(404).json({ message: 'Invalid or expired QR token' }); return; }
+    if (visit.status === 'CheckedOut') { res.json({ message: 'Already checked out', visit }); return; }
+    if (!['Approved', 'CheckedIn'].includes(visit.status)) { res.status(400).json({ message: `Cannot check out — visit status is ${visit.status}` }); return; }
+    visit.status = 'CheckedOut';
+    visit.checkoutTime = new Date();
+    await visit.save();
+    const io = req.app.get('io');
+    if (io) io.emit('visit_updated', { visitId: visit._id, status: 'CheckedOut' });
+    res.json({ message: 'Visitor checked out successfully', visit });
+  } catch (err: any) { res.status(500).json({ message: 'Server error', error: err.message }); }
+});
+
 router.get('/scan/:token', async (req: Request, res: Response): Promise<void> => {
   try {
     const visit = await Visit.findOne({ qrToken: req.params.token })
