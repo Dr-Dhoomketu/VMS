@@ -1,0 +1,9 @@
+{
+  "buildCommand": "pnpm --filter @workspace/visitor-pass run build",
+  "outputDirectory": "artifacts/visitor-pass/dist/public",
+  "installCommand": "pnpm install",
+  "framework": null,
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
