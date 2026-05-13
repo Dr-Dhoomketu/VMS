@@ -402,15 +402,13 @@ export async function notifyVisitStatus(opts: {
 }) {
   const approved = opts.status === 'Approved';
 
-  // Build a publicly accessible QR image URL so all email clients (including
-  // Gmail web) can fetch and display it.
-  // Prefers FRONTEND_URL secret; auto-detects Replit dev/prod domain as fallback.
-  const replitDomain = process.env['REPLIT_DOMAINS']?.split(',')[0]?.trim() ?? '';
-  const baseUrl = (process.env['FRONTEND_URL'] || (replitDomain ? `https://${replitDomain}` : '')).replace(/\/$/, '');
-  const qrImageUrl = approved && opts.qrToken && baseUrl
-    ? `${baseUrl}/api/v1/visits/qr/${encodeURIComponent(opts.qrToken)}`
+  // Use a fully-public third-party QR API so Gmail (and all email clients) can
+  // always fetch the image — our own Replit dev URL is behind a session gate
+  // that Gmail's fetch servers cannot pass.
+  const qrImageUrl = approved && opts.qrToken
+    ? `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(opts.qrToken)}&bgcolor=ffffff&color=000000&qzone=1`
     : '';
-  logger.info({ baseUrl, qrImageUrl }, 'QR image URL for email');
+  logger.info({ qrImageUrl }, 'QR image URL for email');
 
   if (opts.visitorEmail) {
     const ok = await sendEmail(
