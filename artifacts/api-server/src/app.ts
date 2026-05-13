@@ -87,7 +87,7 @@ const httpServer = createServer(app);
 const socketPath = process.env["NODE_ENV"] === "production" ? "/api/socket.io" : "/socket.io";
 
 const io = new SocketIOServer(httpServer, {
-  cors: { origin: allowedOrigin || "*", methods: ["GET", "POST"] },
+  cors: { origin: allowedOrigins.includes("*") ? "*" : allowedOrigins, methods: ["GET", "POST"] },
   path: socketPath,
 });
 
