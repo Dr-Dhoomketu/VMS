@@ -29,8 +29,26 @@ app.use(
 );
 
 const isProd = process.env["NODE_ENV"] === "production";
-const allowedOrigin = process.env["FRONTEND_URL"] || (isProd ? false : "*");
-app.use(cors({ origin: allowedOrigin, credentials: true }));
+
+const rawFrontendUrl = process.env["FRONTEND_URL"] || "";
+const allowedOrigins: string[] = rawFrontendUrl
+  ? rawFrontendUrl.split(",").map((o) => o.trim()).filter(Boolean)
+  : isProd
+    ? ["https://vms-shaurya.vercel.app"]
+    : ["*"];
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes("*") || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error(`CORS: origin '${origin}' not allowed`));
+      }
+    },
+    credentials: true,
+  }),
+);
 app.use(express.json({ limit: "20mb" }));
 app.use(express.urlencoded({ extended: true, limit: "20mb" }));
 
