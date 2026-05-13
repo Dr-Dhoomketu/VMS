@@ -3,7 +3,19 @@ import nodemailer from 'nodemailer';
 import QRCode from 'qrcode';
 import { logger } from '../lib/logger.js';
 
-async function sendEmail(to: string, subject: string, html: string, text: string): Promise<boolean> {
+interface InlineImage {
+  cid: string;
+  buffer: Buffer;
+  filename: string;
+}
+
+async function sendEmail(
+  to: string,
+  subject: string,
+  html: string,
+  text: string,
+  inlineImages?: InlineImage[],
+): Promise<boolean> {
   const brevoApiKey = process.env['BREVO_API_KEY'] || '';
   const brevoSender = process.env['BREVO_USER'] || '';
   const gmailUser   = process.env['SMTP_USER'] || '';
@@ -11,6 +23,11 @@ async function sendEmail(to: string, subject: string, html: string, text: string
 
   if (brevoApiKey && brevoSender) {
     try {
+      const attachment = (inlineImages ?? []).map(img => ({
+        name: img.filename,
+        content: img.buffer.toString('base64'),
+        contentId: img.cid,
+      }));
       const res = await fetch('https://api.brevo.com/v3/smtp/email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'api-key': brevoApiKey },
@@ -20,6 +37,7 @@ async function sendEmail(to: string, subject: string, html: string, text: string
           subject,
           htmlContent: html,
           textContent: text,
+          ...(attachment.length > 0 ? { attachment } : {}),
         }),
       });
       if (res.ok) {
@@ -45,7 +63,13 @@ async function sendEmail(to: string, subject: string, html: string, text: string
       auth: { user: gmailUser, pass: gmailPass },
       connectionTimeout: 20000, greetingTimeout: 15000, socketTimeout: 20000,
     } as Parameters<typeof nodemailer.createTransport>[0]);
-    await transport.sendMail({ from: `"VISITORPASS" <${gmailUser}>`, to, subject, html, text });
+    const attachments = (inlineImages ?? []).map(img => ({
+      filename: img.filename,
+      content: img.buffer,
+      contentType: 'image/png',
+      cid: img.cid,
+    }));
+    await transport.sendMail({ from: `"VISITORPASS" <${gmailUser}>`, to, subject, html, text, attachments });
     logger.info({ to, method: 'gmail-smtp' }, 'Email sent successfully');
     return true;
   } catch (err: any) {
@@ -86,7 +110,6 @@ function visitorApprovedHtml(
   name: string,
   qrToken: string,
   visitId: string,
-  qrDataUri: string,
   scheduledTime?: string,
   fromTime?: string,
   createdAt?: string,
@@ -194,7 +217,7 @@ function visitorApprovedHtml(
       <div class="qr-wrap">
         <p class="qr-label">Your Digital Gate Pass</p>
         <div class="qr-img-wrap">
-          <img src="${qrDataUri}" width="220" height="220" alt="QR Access Code" style="display:block;border-radius:8px;"/>
+          <img src="cid:qrcode@visitorpass" width="220" height="220" alt="QR Access Code" style="display:block;border-radius:8px;"/>
         </div>
         <br/>
         <span class="qr-token">${qrToken}</span>
@@ -393,29 +416,34 @@ export async function notifyVisitStatus(opts: {
 }) {
   const approved = opts.status === 'Approved';
 
-  let qrDataUri = '';
+  let qrBuffer: Buffer | null = null;
   if (approved && opts.qrToken) {
     try {
-      qrDataUri = await QRCode.toDataURL(opts.qrToken, {
+      qrBuffer = await QRCode.toBuffer(opts.qrToken, {
         width: 220,
         margin: 2,
         color: { dark: '#0B1E45', light: '#ffffff' },
       });
     } catch (err) {
-      logger.warn({ err }, 'Failed to generate QR data URI for email');
+      logger.warn({ err }, 'Failed to generate QR buffer for email');
     }
   }
+
+  const qrInline: InlineImage[] = qrBuffer
+    ? [{ cid: 'qrcode@visitorpass', buffer: qrBuffer, filename: 'qr.png' }]
+    : [];
 
   if (opts.visitorEmail) {
     const ok = await sendEmail(
       opts.visitorEmail,
       approved ? `Your visit is approved — here's your QR code` : `Update on your visit request`,
       approved
-        ? visitorApprovedHtml(opts.visitorName, opts.qrToken ?? '', opts.visitId, qrDataUri, opts.scheduledTime, opts.fromTime, opts.createdAt)
+        ? visitorApprovedHtml(opts.visitorName, opts.qrToken ?? '', opts.visitId, opts.scheduledTime, opts.fromTime, opts.createdAt)
         : visitorRejectedHtml(opts.visitorName, opts.visitId),
       approved
         ? `Hi ${opts.visitorName}, your visit has been approved. QR Token: ${opts.qrToken}`
         : `Hi ${opts.visitorName}, your visit request was not approved. Please contact your host to reschedule.`,
+      approved ? qrInline : undefined,
     );
     if (!ok) logger.warn({ email: opts.visitorEmail }, 'Failed to send visitor notification email');
   }
