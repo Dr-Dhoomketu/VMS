@@ -1,11 +1,31 @@
 import { Router, Request, Response } from 'express';
 import multer from 'multer';
 import { v4 as uuidv4 } from 'uuid';
+// @ts-ignore
+import QRCode from 'qrcode';
 import { Visit, Visitor, VmsUser } from './models.js';
 import { protect, authorize } from './auth.js';
 import { notifyVisitStatus } from './notify.js';
 
 const router = Router();
+
+// Public — generate QR PNG for a token (used in approval emails)
+router.get('/qr/:token', async (req: Request, res: Response): Promise<void> => {
+  const { token } = req.params;
+  if (!token) { res.status(400).send('Missing token'); return; }
+  try {
+    const buf: Buffer = await QRCode.toBuffer(token, {
+      width: 260,
+      margin: 2,
+      color: { dark: '#0B1E45', light: '#ffffff' },
+    });
+    res.setHeader('Content-Type', 'image/png');
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.send(buf);
+  } catch {
+    res.status(500).send('QR generation failed');
+  }
+});
 
 const upload = multer({
   storage: multer.memoryStorage(),

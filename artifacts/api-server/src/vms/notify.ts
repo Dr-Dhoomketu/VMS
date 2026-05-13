@@ -3,19 +3,7 @@ import nodemailer from 'nodemailer';
 import QRCode from 'qrcode';
 import { logger } from '../lib/logger.js';
 
-interface InlineImage {
-  cid: string;
-  buffer: Buffer;
-  filename: string;
-}
-
-async function sendEmail(
-  to: string,
-  subject: string,
-  html: string,
-  text: string,
-  inlineImages?: InlineImage[],
-): Promise<boolean> {
+async function sendEmail(to: string, subject: string, html: string, text: string): Promise<boolean> {
   const brevoApiKey = process.env['BREVO_API_KEY'] || '';
   const brevoSender = process.env['BREVO_USER'] || '';
   const gmailUser   = process.env['SMTP_USER'] || '';
@@ -23,11 +11,6 @@ async function sendEmail(
 
   if (brevoApiKey && brevoSender) {
     try {
-      const attachment = (inlineImages ?? []).map(img => ({
-        name: img.filename,
-        content: img.buffer.toString('base64'),
-        contentId: img.cid,
-      }));
       const res = await fetch('https://api.brevo.com/v3/smtp/email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'api-key': brevoApiKey },
@@ -37,7 +20,6 @@ async function sendEmail(
           subject,
           htmlContent: html,
           textContent: text,
-          ...(attachment.length > 0 ? { attachment } : {}),
         }),
       });
       if (res.ok) {
@@ -54,7 +36,7 @@ async function sendEmail(
   }
 
   if (!gmailUser || !gmailPass) {
-    logger.error('No email credentials — set BREVO_API_KEY+BREVO_USER on Render, or SMTP_USER+SMTP_PASS locally');
+    logger.error('No email credentials — set BREVO_API_KEY+BREVO_USER or SMTP_USER+SMTP_PASS');
     return false;
   }
   try {
@@ -63,13 +45,7 @@ async function sendEmail(
       auth: { user: gmailUser, pass: gmailPass },
       connectionTimeout: 20000, greetingTimeout: 15000, socketTimeout: 20000,
     } as Parameters<typeof nodemailer.createTransport>[0]);
-    const attachments = (inlineImages ?? []).map(img => ({
-      filename: img.filename,
-      content: img.buffer,
-      contentType: 'image/png',
-      cid: img.cid,
-    }));
-    await transport.sendMail({ from: `"VISITORPASS" <${gmailUser}>`, to, subject, html, text, attachments });
+    await transport.sendMail({ from: `"VISITORPASS" <${gmailUser}>`, to, subject, html, text });
     logger.info({ to, method: 'gmail-smtp' }, 'Email sent successfully');
     return true;
   } catch (err: any) {
@@ -110,6 +86,7 @@ function visitorApprovedHtml(
   name: string,
   qrToken: string,
   visitId: string,
+  qrImageUrl: string,
   scheduledTime?: string,
   fromTime?: string,
   createdAt?: string,
@@ -200,7 +177,7 @@ function visitorApprovedHtml(
         <!-- QR image: always white background so the code is scannable -->
         <table cellpadding="0" cellspacing="0" align="center" style="margin:0 auto 20px;">
           <tr><td style="background:#ffffff;border-radius:16px;padding:14px;box-shadow:0 0 0 4px rgba(245,158,11,0.25);">
-            <img src="cid:qrcode@visitorpass" class="qr-img" width="200" height="200" alt="QR Access Code" style="display:block;border-radius:8px;"/>
+            <img src="${qrImageUrl}" class="qr-img" width="200" height="200" alt="QR Access Code" style="display:block;border-radius:8px;"/>
           </td></tr>
         </table>
         <!-- Token -->
@@ -425,34 +402,26 @@ export async function notifyVisitStatus(opts: {
 }) {
   const approved = opts.status === 'Approved';
 
-  let qrBuffer: Buffer | null = null;
-  if (approved && opts.qrToken) {
-    try {
-      qrBuffer = await QRCode.toBuffer(opts.qrToken, {
-        width: 220,
-        margin: 2,
-        color: { dark: '#0B1E45', light: '#ffffff' },
-      });
-    } catch (err) {
-      logger.warn({ err }, 'Failed to generate QR buffer for email');
-    }
-  }
-
-  const qrInline: InlineImage[] = qrBuffer
-    ? [{ cid: 'qrcode@visitorpass', buffer: qrBuffer, filename: 'qr.png' }]
-    : [];
+  // Build a publicly accessible QR image URL so all email clients (including
+  // Gmail web) can fetch and display it.
+  // Prefers FRONTEND_URL secret; auto-detects Replit dev/prod domain as fallback.
+  const replitDomain = process.env['REPLIT_DOMAINS']?.split(',')[0]?.trim() ?? '';
+  const baseUrl = (process.env['FRONTEND_URL'] || (replitDomain ? `https://${replitDomain}` : '')).replace(/\/$/, '');
+  const qrImageUrl = approved && opts.qrToken && baseUrl
+    ? `${baseUrl}/api/v1/visits/qr/${encodeURIComponent(opts.qrToken)}`
+    : '';
+  logger.info({ baseUrl, qrImageUrl }, 'QR image URL for email');
 
   if (opts.visitorEmail) {
     const ok = await sendEmail(
       opts.visitorEmail,
       approved ? `Your visit is approved — here's your QR code` : `Update on your visit request`,
       approved
-        ? visitorApprovedHtml(opts.visitorName, opts.qrToken ?? '', opts.visitId, opts.scheduledTime, opts.fromTime, opts.createdAt)
+        ? visitorApprovedHtml(opts.visitorName, opts.qrToken ?? '', opts.visitId, qrImageUrl, opts.scheduledTime, opts.fromTime, opts.createdAt)
         : visitorRejectedHtml(opts.visitorName, opts.visitId),
       approved
         ? `Hi ${opts.visitorName}, your visit has been approved. QR Token: ${opts.qrToken}`
         : `Hi ${opts.visitorName}, your visit request was not approved. Please contact your host to reschedule.`,
-      approved ? qrInline : undefined,
     );
     if (!ok) logger.warn({ email: opts.visitorEmail }, 'Failed to send visitor notification email');
   }
