@@ -36,7 +36,7 @@ async function sendEmail(to: string, subject: string, html: string, text: string
   }
 
   if (!gmailUser || !gmailPass) {
-    logger.error('No email credentials — set BREVO_API_KEY+BREVO_USER on Render, or SMTP_USER+SMTP_PASS locally');
+    logger.error('No email credentials — set BREVO_API_KEY+BREVO_USER or SMTP_USER+SMTP_PASS');
     return false;
   }
   try {
@@ -86,7 +86,6 @@ function visitorApprovedHtml(
   name: string,
   qrToken: string,
   visitId: string,
-  qrDataUri: string,
   scheduledTime?: string,
   fromTime?: string,
 ): string {
@@ -393,28 +392,16 @@ export async function notifyVisitStatus(opts: {
   qrToken?: string;
   scheduledTime?: string;
   fromTime?: string;
+  createdAt?: string;
 }) {
   const approved = opts.status === 'Approved';
-
-  let qrDataUri = '';
-  if (approved && opts.qrToken) {
-    try {
-      qrDataUri = await QRCode.toDataURL(opts.qrToken, {
-        width: 220,
-        margin: 2,
-        color: { dark: '#0B1E45', light: '#ffffff' },
-      });
-    } catch (err) {
-      logger.warn({ err }, 'Failed to generate QR data URI for email');
-    }
-  }
 
   if (opts.visitorEmail) {
     const ok = await sendEmail(
       opts.visitorEmail,
       approved ? `Your visit is approved — here's your QR code` : `Update on your visit request`,
       approved
-        ? visitorApprovedHtml(opts.visitorName, opts.qrToken ?? '', opts.visitId, qrDataUri, opts.scheduledTime, opts.fromTime)
+        ? visitorApprovedHtml(opts.visitorName, opts.qrToken ?? '', opts.visitId, opts.scheduledTime, opts.fromTime)
         : visitorRejectedHtml(opts.visitorName, opts.visitId),
       approved
         ? `Hi ${opts.visitorName}, your visit has been approved. QR Token: ${opts.qrToken}`

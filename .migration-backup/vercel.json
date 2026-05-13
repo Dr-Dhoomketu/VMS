@@ -1,17 +1,8 @@
 {
-  "version": 2,
   "buildCommand": "pnpm --filter @workspace/visitor-pass run build",
   "outputDirectory": "artifacts/visitor-pass/dist/public",
-  "installCommand": "MMS_DISABLE_POSTINSTALL=1 pnpm install",
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        { "key": "Permissions-Policy", "value": "camera=*, microphone=*" },
-        { "key": "Feature-Policy", "value": "camera *; microphone *" }
-      ]
-    }
-  ],
+  "installCommand": "pnpm install",
+  "framework": null,
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ]
