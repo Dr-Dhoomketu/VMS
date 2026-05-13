@@ -11,20 +11,57 @@ const VisitorSchema = new Schema<IVisitor>({
 }, { timestamps: true });
 export const Visitor = mongoose.model<IVisitor>('Visitor', VisitorSchema);
 
+export interface IDivertEntry {
+  from: mongoose.Types.ObjectId;
+  to: mongoose.Types.ObjectId;
+  by: mongoose.Types.ObjectId;
+  reason?: string;
+  at: Date;
+}
+
+export interface IDivertRequest {
+  _id?: mongoose.Types.ObjectId;
+  from: mongoose.Types.ObjectId;
+  to: mongoose.Types.ObjectId;
+  reason?: string;
+  status: 'Pending' | 'Accepted' | 'Rejected';
+  at: Date;
+}
+
 export interface IVisit extends Document {
   visitor: mongoose.Types.ObjectId;
-  meetWith: mongoose.Types.ObjectId;
+  meetWith?: mongoose.Types.ObjectId;
+  meetWithDept?: mongoose.Types.ObjectId;
+  isVariableEmployee?: boolean;
   purpose: string; status: string;
   scheduledTime?: Date; fromTime?: string; toTime?: string;
   duration?: string; qrToken?: string; checkinTime?: Date; checkoutTime?: Date;
+  divertHistory?: IDivertEntry[];
+  divertRequests?: IDivertRequest[];
 }
 const VisitSchema = new Schema<IVisit>({
   visitor: { type: Schema.Types.ObjectId, ref: 'Visitor', required: true },
   meetWith: { type: Schema.Types.ObjectId, ref: 'User' },
+  meetWithDept: { type: Schema.Types.ObjectId, ref: 'Department' },
+  isVariableEmployee: { type: Boolean, default: false },
   purpose: { type: String, required: true },
   status: { type: String, default: 'Pending', enum: ['Pending','Approved','Rejected','CheckedIn','CheckedOut'] },
   scheduledTime: Date, fromTime: String, toTime: String,
   duration: String, qrToken: String, checkinTime: Date, checkoutTime: Date,
+  divertHistory: [{
+    from: { type: Schema.Types.ObjectId, ref: 'User' },
+    to: { type: Schema.Types.ObjectId, ref: 'User' },
+    by: { type: Schema.Types.ObjectId, ref: 'User' },
+    reason: String,
+    at: { type: Date, default: Date.now },
+  }],
+  divertRequests: [{
+    from: { type: Schema.Types.ObjectId, ref: 'User' },
+    to: { type: Schema.Types.ObjectId, ref: 'User' },
+    reason: String,
+    status: { type: String, default: 'Pending', enum: ['Pending','Accepted','Rejected'] },
+    at: { type: Date, default: Date.now },
+  }],
 }, { timestamps: true });
 export const Visit = mongoose.model<IVisit>('Visit', VisitSchema);
 
