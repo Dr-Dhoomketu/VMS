@@ -19,6 +19,15 @@ export interface IDivertEntry {
   at: Date;
 }
 
+export interface IDivertRequest {
+  _id?: mongoose.Types.ObjectId;
+  from: mongoose.Types.ObjectId;
+  to: mongoose.Types.ObjectId;
+  reason?: string;
+  status: 'Pending' | 'Accepted' | 'Rejected';
+  at: Date;
+}
+
 export interface IVisit extends Document {
   visitor: mongoose.Types.ObjectId;
   meetWith?: mongoose.Types.ObjectId;
@@ -28,6 +37,7 @@ export interface IVisit extends Document {
   scheduledTime?: Date; fromTime?: string; toTime?: string;
   duration?: string; qrToken?: string; checkinTime?: Date; checkoutTime?: Date;
   divertHistory?: IDivertEntry[];
+  divertRequests?: IDivertRequest[];
 }
 const VisitSchema = new Schema<IVisit>({
   visitor: { type: Schema.Types.ObjectId, ref: 'Visitor', required: true },
@@ -43,6 +53,13 @@ const VisitSchema = new Schema<IVisit>({
     to: { type: Schema.Types.ObjectId, ref: 'User' },
     by: { type: Schema.Types.ObjectId, ref: 'User' },
     reason: String,
+    at: { type: Date, default: Date.now },
+  }],
+  divertRequests: [{
+    from: { type: Schema.Types.ObjectId, ref: 'User' },
+    to: { type: Schema.Types.ObjectId, ref: 'User' },
+    reason: String,
+    status: { type: String, default: 'Pending', enum: ['Pending','Accepted','Rejected'] },
     at: { type: Date, default: Date.now },
   }],
 }, { timestamps: true });
