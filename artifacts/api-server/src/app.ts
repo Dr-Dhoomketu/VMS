@@ -28,7 +28,9 @@ app.use(
   }),
 );
 
-app.use(cors({ origin: "*" }));
+const isProd = process.env["NODE_ENV"] === "production";
+const allowedOrigin = process.env["FRONTEND_URL"] || (isProd ? false : "*");
+app.use(cors({ origin: allowedOrigin, credentials: true }));
 app.use(express.json({ limit: "20mb" }));
 app.use(express.urlencoded({ extended: true, limit: "20mb" }));
 
@@ -67,7 +69,7 @@ const httpServer = createServer(app);
 const socketPath = process.env["NODE_ENV"] === "production" ? "/api/socket.io" : "/socket.io";
 
 const io = new SocketIOServer(httpServer, {
-  cors: { origin: "*", methods: ["GET", "POST"] },
+  cors: { origin: allowedOrigin || "*", methods: ["GET", "POST"] },
   path: socketPath,
 });
 
@@ -101,7 +103,6 @@ async function connectDB() {
   try {
     await mongoose.connect(uri);
     logger.info("MongoDB connected");
-    const isProd = process.env["NODE_ENV"] === "production";
     const seedEnabled = process.env["SEED_DB"] === "true";
     if (!isProd || seedEnabled) {
       await autoSeed();
