@@ -88,6 +88,7 @@ function visitorApprovedHtml(
   visitId: string,
   scheduledTime?: string,
   fromTime?: string,
+  meetingWith?: string,
 ): string {
   const year = new Date().getFullYear();
 
@@ -100,11 +101,30 @@ function visitorApprovedHtml(
     : '';
   const meetingTimeStr = fromTime ? fmt12h(fromTime) : '';
 
-  const scheduleSection = (meetingDateStr || meetingTimeStr) ? `
+  const scheduleSection = (meetingWith || meetingDateStr || meetingTimeStr) ? `
       <div class="ref-box" style="margin-bottom:16px;">
-        <p class="ref-label">Meeting Schedule</p>
-        ${meetingDateStr ? `<p class="ref-value" style="font-size:14px;margin-bottom:4px;">${meetingDateStr}</p>` : ''}
-        ${meetingTimeStr ? `<p class="ref-value" style="font-size:14px;">${meetingTimeStr}</p>` : ''}
+        <p class="ref-label">Meeting Details</p>
+        ${meetingWith ? `
+        <table cellpadding="0" cellspacing="0" style="width:100%;margin-bottom:10px;">
+          <tr>
+            <td style="font-size:10px;font-weight:800;letter-spacing:0.15em;text-transform:uppercase;color:#9CA3AF;width:110px;padding-top:2px;">Meeting With</td>
+            <td style="font-size:13px;font-weight:700;color:#0B1E45;">${meetingWith}</td>
+          </tr>
+        </table>` : ''}
+        ${meetingDateStr ? `
+        <table cellpadding="0" cellspacing="0" style="width:100%;margin-bottom:10px;">
+          <tr>
+            <td style="font-size:10px;font-weight:800;letter-spacing:0.15em;text-transform:uppercase;color:#9CA3AF;width:110px;padding-top:2px;">Date</td>
+            <td style="font-size:13px;font-weight:700;color:#0B1E45;">${meetingDateStr}</td>
+          </tr>
+        </table>` : ''}
+        ${meetingTimeStr ? `
+        <table cellpadding="0" cellspacing="0" style="width:100%;">
+          <tr>
+            <td style="font-size:10px;font-weight:800;letter-spacing:0.15em;text-transform:uppercase;color:#9CA3AF;width:110px;padding-top:2px;">Time</td>
+            <td style="font-size:13px;font-weight:700;color:#0B1E45;">${meetingTimeStr}</td>
+          </tr>
+        </table>` : ''}
       </div>` : '';
 
   return `<!DOCTYPE html>
@@ -401,7 +421,7 @@ export async function notifyVisitStatus(opts: {
       opts.visitorEmail,
       approved ? `Your visit is approved — here's your QR code` : `Update on your visit request`,
       approved
-        ? visitorApprovedHtml(opts.visitorName, opts.qrToken ?? '', opts.visitId, opts.scheduledTime, opts.fromTime)
+        ? visitorApprovedHtml(opts.visitorName, opts.qrToken ?? '', opts.visitId, opts.scheduledTime, opts.fromTime, opts.hostName)
         : visitorRejectedHtml(opts.visitorName, opts.visitId),
       approved
         ? `Hi ${opts.visitorName}, your visit has been approved. QR Token: ${opts.qrToken}`
