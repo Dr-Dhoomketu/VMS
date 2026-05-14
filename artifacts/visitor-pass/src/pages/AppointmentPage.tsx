@@ -358,7 +358,7 @@ export default function AppointmentPage() {
         background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(10,31,68,0.06)',
       }}>
-        <img src="/vts-logo.svg" alt="VISITORPASS" style={{ height: '32px', width: 'auto', objectFit: 'contain' }}/>
+        <img src="/vts-logo.png" alt="VISITORPASS" style={{ height: '32px', width: 'auto', objectFit: 'contain' }}/>
         <Link href="/" style={{
           display: 'inline-flex', alignItems: 'center', gap: '8px',
           fontSize: '0.65rem', fontWeight: 700, color: '#6B7FA3', textDecoration: 'none',

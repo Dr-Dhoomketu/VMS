@@ -229,7 +229,7 @@ export default function LandingPage() {
         backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
         borderBottom: '1px solid rgba(47,93,170,0.08)',
       }}>
-        <img src="/vts-logo.svg" alt="VISITORPASS" style={{ height: '36px', width: 'auto', objectFit: 'contain' }}/>
+        <img src="/vts-logo.png" alt="VISITORPASS" style={{ height: '36px', width: 'auto', objectFit: 'contain' }}/>
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
           <Link href="/check-in">
             <button style={{
@@ -420,7 +420,7 @@ export default function LandingPage() {
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         flexWrap: 'wrap', gap: '16px', background: '#fff', position: 'relative', zIndex: 1,
       }}>
-        <img src="/vts-logo.svg" alt="VISITORPASS" style={{ height: '28px', width: 'auto', objectFit: 'contain' }}/>
+        <img src="/vts-logo.png" alt="VISITORPASS" style={{ height: '28px', width: 'auto', objectFit: 'contain' }}/>
         <div style={{ display: 'flex', gap: '28px', flexWrap: 'wrap' }}>
           {['New Visitor', 'Returning', 'Appointment', 'Login'].map((t, i) => (
             <Link key={t} href={['/check-in', '/returning', '/appointment', '/login'][i]}
