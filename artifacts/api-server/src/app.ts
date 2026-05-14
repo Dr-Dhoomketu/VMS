@@ -129,10 +129,33 @@ async function connectDB() {
     } else {
       logger.info("Production mode — skipping auto-seed. Set SEED_DB=true to seed explicitly.");
     }
+    startExpiredInviteCleanup();
   } catch (err) {
     logger.error({ err }, "MongoDB connection failed — exiting");
     process.exit(1);
   }
+}
+
+async function cleanupExpiredInvites() {
+  try {
+    const { VmsUser } = await import("./vms/models.js");
+    const result = await VmsUser.deleteMany({
+      inviteToken: { $exists: true },
+      inviteExpires: { $lt: new Date() },
+    });
+    if (result.deletedCount > 0) {
+      logger.info({ count: result.deletedCount }, "Cleaned up expired pending invites");
+    }
+  } catch (err) {
+    logger.error({ err }, "Failed to clean up expired invites");
+  }
+}
+
+function startExpiredInviteCleanup() {
+  cleanupExpiredInvites();
+  const ONE_HOUR = 60 * 60 * 1000;
+  setInterval(cleanupExpiredInvites, ONE_HOUR);
+  logger.info("Expired invite cleanup scheduled (runs every hour)");
 }
 
 connectDB();
