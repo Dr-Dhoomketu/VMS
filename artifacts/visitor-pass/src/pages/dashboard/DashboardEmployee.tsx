@@ -2,7 +2,12 @@ import { useState, useEffect } from 'react';
 import Modal from '@/components/Modal';
 import { API_URL } from '@/lib/api';
 
-interface Emp { _id: string; name: string; email: string; role: string; department?: { _id: string; name: string } | string; designation?: { _id: string; name: string } | string; }
+interface Emp {
+  _id: string; name: string; email: string; role: string;
+  department?: { _id: string; name: string } | string;
+  designation?: { _id: string; name: string } | string;
+  pendingSetup?: boolean;
+}
 interface Dept { _id: string; name: string; }
 interface Des { _id: string; name: string; }
 
@@ -16,7 +21,11 @@ export default function DashboardEmployee() {
   const [error, setError] = useState('');
   const [inviteResult, setInviteResult] = useState<{ name: string; url: string } | null>(null);
   const [resendLoading, setResendLoading] = useState<string | null>(null);
+  const [revokeLoading, setRevokeLoading] = useState<string | null>(null);
   const [newEmp, setNewEmp] = useState({ name: '', email: '', role: 'Employee', department: '', designation: '' });
+
+  const activeStaff = employees.filter(e => !e.pendingSetup);
+  const pendingInvites = employees.filter(e => e.pendingSetup);
 
   const fetchData = async () => {
     const token = localStorage.getItem('token');
@@ -27,7 +36,9 @@ export default function DashboardEmployee() {
         fetch(`${API_URL}/api/v1/departments`, { headers: h }).then(r => r.json()),
         fetch(`${API_URL}/api/v1/designations`, { headers: h }).then(r => r.json()),
       ]);
-      setEmployees(Array.isArray(e) ? e : []); setDepartments(Array.isArray(d) ? d : []); setDesignations(Array.isArray(des) ? des : []);
+      setEmployees(Array.isArray(e) ? e : []);
+      setDepartments(Array.isArray(d) ? d : []);
+      setDesignations(Array.isArray(des) ? des : []);
     } catch {}
   };
 
@@ -81,6 +92,16 @@ export default function DashboardEmployee() {
     } catch {}
   };
 
+  const handleRevoke = async (emp: Emp) => {
+    if (!confirm(`Revoke invite for ${emp.name}? This will delete their account and free up the email address.`)) return;
+    setRevokeLoading(emp._id);
+    const token = localStorage.getItem('token');
+    try {
+      await fetch(`${API_URL}/api/v1/users/${emp._id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+      fetchData();
+    } catch {} finally { setRevokeLoading(null); }
+  };
+
   const handleResendInvite = async (emp: Emp) => {
     setResendLoading(emp._id);
     const token = localStorage.getItem('token');
@@ -89,7 +110,7 @@ export default function DashboardEmployee() {
         method: 'POST', headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
-      if (res.ok) alert(`Invite sent to ${emp.email}${data.inviteUrl ? `\n\nSetup link:\n${data.inviteUrl}` : ''}`);
+      if (res.ok) alert(`Invite resent to ${emp.email}${data.inviteUrl ? `\n\nSetup link:\n${data.inviteUrl}` : ''}`);
       else alert(data.message || 'Failed to resend invite');
     } catch { alert('Network error'); } finally { setResendLoading(null); }
   };
@@ -116,6 +137,102 @@ export default function DashboardEmployee() {
         </button>
       </div>
 
+      {/* Pending Invites Section */}
+      {pendingInvites.length > 0 && (
+        <div style={{ marginBottom: '28px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+            <h2 style={{ fontSize: '0.7rem', fontWeight: 900, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#92400e' }}>
+              Pending Invites
+            </h2>
+            <span style={{ padding: '2px 10px', borderRadius: '20px', fontSize: '0.6rem', fontWeight: 900, background: 'rgba(245,158,11,0.12)', color: '#92400e', border: '1px solid rgba(245,158,11,0.3)' }}>
+              {pendingInvites.length} awaiting setup
+            </span>
+          </div>
+          <div style={{ border: '1.5px solid rgba(245,158,11,0.25)', borderRadius: '14px', overflow: 'hidden', background: '#fffbeb' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ background: 'rgba(245,158,11,0.08)', borderBottom: '1px solid rgba(245,158,11,0.2)' }}>
+                  <th style={{ padding: '12px 20px', textAlign: 'left', fontSize: '0.6rem', fontWeight: 900, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#92400e' }}>Name</th>
+                  <th style={{ padding: '12px 20px', textAlign: 'left', fontSize: '0.6rem', fontWeight: 900, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#92400e' }}>Email</th>
+                  <th style={{ padding: '12px 20px', textAlign: 'center', fontSize: '0.6rem', fontWeight: 900, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#92400e' }}>Role</th>
+                  <th style={{ padding: '12px 20px', textAlign: 'center', fontSize: '0.6rem', fontWeight: 900, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#92400e' }}>Status</th>
+                  <th style={{ padding: '12px 20px', textAlign: 'center', fontSize: '0.6rem', fontWeight: 900, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#92400e' }}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pendingInvites.map(emp => (
+                  <tr key={emp._id} style={{ borderBottom: '1px solid rgba(245,158,11,0.15)' }}>
+                    <td style={{ padding: '14px 20px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(245,158,11,0.15)', color: '#92400e', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '0.85rem', flexShrink: 0 }}>
+                          {emp.name?.charAt(0)}
+                        </div>
+                        <span style={{ color: '#0A1F44', fontWeight: 700, fontSize: '0.875rem' }}>{emp.name}</span>
+                      </div>
+                    </td>
+                    <td style={{ padding: '14px 20px', color: '#6B7FA3', fontSize: '0.8rem' }}>{emp.email}</td>
+                    <td style={{ padding: '14px 20px', textAlign: 'center' }}>
+                      <span style={{
+                        padding: '3px 12px', borderRadius: 20, fontSize: '0.6rem', fontWeight: 900, letterSpacing: '0.12em', textTransform: 'uppercase',
+                        color: roleStyle[emp.role]?.color || '#6B7FA3',
+                        background: roleStyle[emp.role]?.bg || '#F1F5F9',
+                        border: `1px solid ${roleStyle[emp.role]?.border || '#E2E8F0'}`,
+                      }}>{emp.role}</span>
+                    </td>
+                    <td style={{ padding: '14px 20px', textAlign: 'center' }}>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '3px 12px', borderRadius: 20, fontSize: '0.6rem', fontWeight: 900, letterSpacing: '0.12em', textTransform: 'uppercase', background: 'rgba(245,158,11,0.12)', color: '#92400e', border: '1px solid rgba(245,158,11,0.3)' }}>
+                        <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#f59e0b', display: 'inline-block' }}/>
+                        Invite Sent
+                      </span>
+                    </td>
+                    <td style={{ padding: '14px 20px', textAlign: 'center' }}>
+                      <div style={{ display: 'flex', justifyContent: 'center', gap: '6px' }}>
+                        <button
+                          onClick={() => handleResendInvite(emp)}
+                          disabled={resendLoading === emp._id}
+                          title="Resend invite email"
+                          style={{ padding: '6px 12px', borderRadius: '8px', border: '1.5px solid rgba(47,93,170,0.3)', background: 'rgba(47,93,170,0.06)', color: '#2F5DAA', fontSize: '0.65rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                        >
+                          {resendLoading === emp._id
+                            ? <svg style={{ width: '12px', height: '12px' }} className="animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                            : <svg style={{ width: '12px', height: '12px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                          }
+                          Resend
+                        </button>
+                        <button
+                          onClick={() => handleRevoke(emp)}
+                          disabled={revokeLoading === emp._id}
+                          title="Revoke invite and free up email"
+                          style={{ padding: '6px 12px', borderRadius: '8px', border: '1.5px solid rgba(239,68,68,0.3)', background: 'rgba(239,68,68,0.06)', color: '#dc2626', fontSize: '0.65rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                        >
+                          {revokeLoading === emp._id
+                            ? <svg style={{ width: '12px', height: '12px' }} className="animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                            : <svg style={{ width: '12px', height: '12px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                          }
+                          Revoke
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Active Staff Section */}
+      {pendingInvites.length > 0 && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+          <h2 style={{ fontSize: '0.7rem', fontWeight: 900, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#0A1F44' }}>
+            Active Staff
+          </h2>
+          <span style={{ padding: '2px 10px', borderRadius: '20px', fontSize: '0.6rem', fontWeight: 900, background: 'rgba(22,163,74,0.08)', color: '#166534', border: '1px solid rgba(22,163,74,0.2)' }}>
+            {activeStaff.length} members
+          </span>
+        </div>
+      )}
+
       <div className="dark-table-container">
         <table className="dark-table w-full">
           <thead><tr>
@@ -127,9 +244,9 @@ export default function DashboardEmployee() {
             <th className="px-6 py-4 text-center">Action</th>
           </tr></thead>
           <tbody>
-            {employees.length === 0
-              ? <tr><td colSpan={6} className="py-12 text-center text-gray-500 italic">No staff records found.</td></tr>
-              : employees.map(emp => (
+            {activeStaff.length === 0
+              ? <tr><td colSpan={6} className="py-12 text-center text-gray-500 italic">No active staff records found.</td></tr>
+              : activeStaff.map(emp => (
                 <tr key={emp._id} className="group hover:bg-[#F8FAFC] transition-colors">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
@@ -154,21 +271,10 @@ export default function DashboardEmployee() {
                   </td>
                   <td className="px-6 py-4 text-center">
                     <div className="flex justify-center gap-2">
-                      <button
-                        onClick={() => handleResendInvite(emp)}
-                        disabled={resendLoading === emp._id}
-                        title="Resend invite email"
-                        className="text-[#6B7FA3] hover:text-[#2F5DAA] transition-colors p-2"
-                      >
-                        {resendLoading === emp._id
-                          ? <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-                          : <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                        }
-                      </button>
-                      <button onClick={() => handleOpenModal(emp)} className="text-[#6B7FA3] hover:text-[#0A1F44] transition-colors p-2">
+                      <button onClick={() => handleOpenModal(emp)} className="text-[#6B7FA3] hover:text-[#0A1F44] transition-colors p-2" title="Edit">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                       </button>
-                      <button onClick={() => handleDelete(emp._id)} className="text-[#6B7FA3] hover:text-red-500 transition-colors p-2">
+                      <button onClick={() => handleDelete(emp._id)} className="text-[#6B7FA3] hover:text-red-500 transition-colors p-2" title="Remove">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                       </button>
                     </div>

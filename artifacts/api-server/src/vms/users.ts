@@ -32,8 +32,14 @@ router.get('/', protect, authorize('Admin'), async (req: Request, res: Response)
   try {
     const filter: any = {};
     if (req.query.role) filter.role = req.query.role;
-    const users = await VmsUser.find(filter).populate('department designation').select('-password');
-    res.json(users);
+    const users = await VmsUser.find(filter).populate('department designation').select('-password +inviteToken');
+    const mapped = users.map(u => {
+      const obj = u.toObject() as any;
+      obj.pendingSetup = !!obj.inviteToken;
+      delete obj.inviteToken;
+      return obj;
+    });
+    res.json(mapped);
   } catch { res.status(500).json({ message: 'Server error' }); }
 });
 
