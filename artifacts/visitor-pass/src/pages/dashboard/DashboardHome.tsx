@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useLocation } from 'wouter';
 import socket, { connectSocket } from '@/utils/socket';
 import { API_URL } from '@/lib/api';
+import DashboardSecurity from './DashboardSecurity';
 
 const adminStatCards = [
   { key:'total',      label:'Total Visits',  sub:'All Time',     color:'#2F5DAA', bg:'rgba(47,93,170,0.08)',   bar:'#2F5DAA' },
@@ -83,6 +84,7 @@ export default function DashboardHome() {
     } catch {}
   };
 
+  if (user?.role === 'Security') return <DashboardSecurity />;
   const isEmployee = user?.role === 'Employee';
 
   return (

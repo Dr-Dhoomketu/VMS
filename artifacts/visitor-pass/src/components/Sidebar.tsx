@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'wouter';
 import { disconnectSocket } from '@/utils/socket';
-import { loadStoredPermissions } from '@/pages/dashboard/DashboardPermissions';
+import { usePermissions } from '@/hooks/usePermissions';
 
 const PERM_KEY_MAP: Record<string, string> = {
   '/dashboard':               'view_dashboard',
@@ -96,14 +96,14 @@ export default function Sidebar() {
     navigate('/');
   };
 
-  const storedPerms = loadStoredPermissions();
+  const { permissions: livePerms } = usePermissions();
   const filteredLinks = navLinks.filter(link => {
     if (!user) return true;
     if (!link.roles.includes(user.role)) return false;
     if (user.role === 'Admin') return true;
     const permKey = PERM_KEY_MAP[link.path];
     if (!permKey) return true;
-    const perm = storedPerms.find(p => p.key === permKey);
+    const perm = livePerms.find(p => p.key === permKey);
     return perm ? (perm.roles[user.role] !== false) : true;
   });
 
