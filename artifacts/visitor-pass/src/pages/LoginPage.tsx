@@ -57,8 +57,7 @@ export default function LoginPage() {
       if (res.ok) {
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data));
-        if (data.role === 'Admin') navigate('/dashboard');
-        else navigate('/approvals');
+        navigate('/dashboard');
       } else {
         setError(data.message || 'Invalid credentials');
       }
