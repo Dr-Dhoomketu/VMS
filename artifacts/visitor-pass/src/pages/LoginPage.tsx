@@ -62,7 +62,13 @@ export default function LoginPage() {
       } else {
         setError(data.message || 'Invalid credentials');
       }
-    } catch { setError('Connection error. Please try again.'); }
+    } catch {
+      if (!API_URL) {
+        setError('API server URL is not configured. Set VITE_API_URL in your Vercel environment variables and redeploy.');
+      } else {
+        setError(`Cannot reach the server at ${API_URL}. Check that your backend is running and FRONTEND_URL is set on Render.`);
+      }
+    }
     finally { setLoading(false); }
   };
 

@@ -33,9 +33,11 @@ const isProd = process.env["NODE_ENV"] === "production";
 const rawFrontendUrl = process.env["FRONTEND_URL"] || "";
 const allowedOrigins: string[] = rawFrontendUrl
   ? rawFrontendUrl.split(",").map((o) => o.trim()).filter(Boolean)
-  : isProd
-    ? []
-    : ["*"];
+  : ["*"];
+
+if (isProd && !rawFrontendUrl) {
+  logger.warn("FRONTEND_URL not set — allowing all CORS origins. Set FRONTEND_URL to restrict access.");
+}
 
 app.use(
   cors({
@@ -87,7 +89,7 @@ const httpServer = createServer(app);
 const socketPath = process.env["NODE_ENV"] === "production" ? "/api/socket.io" : "/socket.io";
 
 const io = new SocketIOServer(httpServer, {
-  cors: { origin: allowedOrigins.includes("*") ? "*" : allowedOrigins, methods: ["GET", "POST"] },
+  cors: { origin: allowedOrigins.includes("*") ? true : allowedOrigins, methods: ["GET", "POST"] },
   path: socketPath,
 });
 
