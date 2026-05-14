@@ -26,3 +26,8 @@ externalPort = 8080
 [[ports]]
 localPort = 25678
 externalPort = 80
+
+[userenv]
+
+[userenv.shared]
+FRONTEND_URL = "https://vms-shaurya.vercel.app"
