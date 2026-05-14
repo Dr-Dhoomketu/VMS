@@ -97,16 +97,22 @@ export default function DashboardEmployee() {
   const deptName = (d: { _id: string; name: string } | string | undefined) => typeof d === 'object' ? d?.name : 'N/A';
   const desName = (d: { _id: string; name: string } | string | undefined) => typeof d === 'object' ? d?.name : 'N/A';
 
+  const roleStyle: Record<string, { color: string; bg: string; border: string }> = {
+    Employee: { color: '#2F5DAA', bg: 'rgba(47,93,170,0.08)', border: 'rgba(47,93,170,0.2)' },
+    Security: { color: '#7c3aed', bg: 'rgba(124,58,237,0.08)', border: 'rgba(124,58,237,0.2)' },
+    Admin:    { color: '#0A1F44', bg: 'rgba(10,31,68,0.06)',   border: 'rgba(10,31,68,0.15)'  },
+  };
+
   return (
     <div className="fade-up w-full">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-black tracking-tighter uppercase mb-1 text-[#0A1F44]">Employees</h1>
-          <p className="text-[#6B7FA3] text-xs">Monitor and manage the active team directory.</p>
+          <h1 className="text-2xl font-black tracking-tighter uppercase mb-1 text-[#0A1F44]">Staff Directory</h1>
+          <p className="text-[#6B7FA3] text-xs">Manage employees and security personnel. Each person gets their own login credentials.</p>
         </div>
         <button onClick={() => handleOpenModal()} className="btn-primary px-4 py-2.5 rounded-xl font-bold flex items-center gap-2 text-sm">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"/></svg>
-          ADD EMPLOYEE
+          ADD STAFF
         </button>
       </div>
 
@@ -117,22 +123,35 @@ export default function DashboardEmployee() {
             <th className="px-6 py-4 text-left">Email</th>
             <th className="px-6 py-4 text-left">Department</th>
             <th className="px-6 py-4 text-left">Designation</th>
+            <th className="px-6 py-4 text-center">System Role</th>
             <th className="px-6 py-4 text-center">Action</th>
           </tr></thead>
           <tbody>
             {employees.length === 0
-              ? <tr><td colSpan={5} className="py-12 text-center text-gray-500 italic">No employee records found.</td></tr>
+              ? <tr><td colSpan={6} className="py-12 text-center text-gray-500 italic">No staff records found.</td></tr>
               : employees.map(emp => (
                 <tr key={emp._id} className="group hover:bg-[#F8FAFC] transition-colors">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-full bg-[#EEF3FB] flex items-center justify-center text-[#2F5DAA] font-bold text-base flex-shrink-0">{emp.name?.charAt(0)}</div>
+                      <div className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-base flex-shrink-0"
+                        style={{ background: roleStyle[emp.role]?.bg || '#EEF3FB', color: roleStyle[emp.role]?.color || '#2F5DAA' }}>
+                        {emp.name?.charAt(0)}
+                      </div>
                       <span className="text-[#0A1F44] font-bold uppercase tracking-wide">{emp.name}</span>
                     </div>
                   </td>
                   <td className="px-6 py-4 text-[#6B7FA3] text-sm">{emp.email}</td>
                   <td className="px-6 py-4 text-[#6B7FA3] text-xs uppercase tracking-widest">{deptName(emp.department)}</td>
                   <td className="px-6 py-4 text-[#6B7FA3] text-xs uppercase tracking-widest">{desName(emp.designation)}</td>
+                  <td className="px-6 py-4 text-center">
+                    <span style={{
+                      padding: '3px 12px', borderRadius: 20,
+                      fontSize: '0.6rem', fontWeight: 900, letterSpacing: '0.15em', textTransform: 'uppercase',
+                      color: roleStyle[emp.role]?.color || '#6B7FA3',
+                      background: roleStyle[emp.role]?.bg || '#F1F5F9',
+                      border: `1px solid ${roleStyle[emp.role]?.border || '#E2E8F0'}`,
+                    }}>{emp.role}</span>
+                  </td>
                   <td className="px-6 py-4 text-center">
                     <div className="flex justify-center gap-2">
                       <button
@@ -195,25 +214,37 @@ export default function DashboardEmployee() {
                 <input required type="email" value={newEmp.email} onChange={e => setNewEmp({ ...newEmp, email: e.target.value })} style={{ width: '100%', padding: '10px 14px', border: '1.5px solid #94A3B8', borderRadius: '10px', fontSize: '0.875rem', color: '#0A1F44', background: '#F8FAFC', outline: 'none', boxSizing: 'border-box' }}/>
               </div>
             </div>
+            <div>
+              <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">System Role</label>
+              <select value={newEmp.role} onChange={e => setNewEmp({ ...newEmp, role: e.target.value })} style={{ width: '100%', padding: '10px 14px', border: '1.5px solid #94A3B8', borderRadius: '10px', fontSize: '0.875rem', color: '#0A1F44', background: '#F8FAFC', outline: 'none', boxSizing: 'border-box' }}>
+                <option value="Employee">Employee — can approve visits &amp; manage appointments</option>
+                <option value="Security">Security — gate access, QR scanning &amp; visitor log</option>
+              </select>
+              <p style={{ fontSize: '0.6rem', color: '#94A3B8', marginTop: '4px', fontWeight: 600 }}>
+                {newEmp.role === 'Security'
+                  ? 'Security staff will see the Security Dashboard with live gate activity after logging in.'
+                  : 'Employees will see their personal dashboard with visit approvals and appointments.'}
+              </p>
+            </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Department</label>
-                <select required value={newEmp.department} onChange={e => setNewEmp({ ...newEmp, department: e.target.value })} style={{ width: '100%', padding: '10px 14px', border: '1.5px solid #94A3B8', borderRadius: '10px', fontSize: '0.875rem', color: '#0A1F44', background: '#F8FAFC', outline: 'none', boxSizing: 'border-box' }}>
+                <select value={newEmp.department} onChange={e => setNewEmp({ ...newEmp, department: e.target.value })} style={{ width: '100%', padding: '10px 14px', border: '1.5px solid #94A3B8', borderRadius: '10px', fontSize: '0.875rem', color: '#0A1F44', background: '#F8FAFC', outline: 'none', boxSizing: 'border-box' }}>
                   <option value="">Select Dept</option>
                   {departments.map(d => <option key={d._id} value={d._id}>{d.name}</option>)}
                 </select>
               </div>
               <div>
                 <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Designation</label>
-                <select required value={newEmp.designation} onChange={e => setNewEmp({ ...newEmp, designation: e.target.value })} style={{ width: '100%', padding: '10px 14px', border: '1.5px solid #94A3B8', borderRadius: '10px', fontSize: '0.875rem', color: '#0A1F44', background: '#F8FAFC', outline: 'none', boxSizing: 'border-box' }}>
-                  <option value="">Select Role</option>
+                <select value={newEmp.designation} onChange={e => setNewEmp({ ...newEmp, designation: e.target.value })} style={{ width: '100%', padding: '10px 14px', border: '1.5px solid #94A3B8', borderRadius: '10px', fontSize: '0.875rem', color: '#0A1F44', background: '#F8FAFC', outline: 'none', boxSizing: 'border-box' }}>
+                  <option value="">Select Designation (optional)</option>
                   {designations.map(d => <option key={d._id} value={d._id}>{d.name}</option>)}
                 </select>
               </div>
             </div>
             <div className="pt-2">
               <button disabled={loading} type="submit" className="w-full btn-primary py-3.5 rounded-xl font-black tracking-widest uppercase disabled:opacity-50">
-                {loading ? 'Processing...' : currentEmp ? 'Update Profile' : 'Send Invite & Add Employee'}
+                {loading ? 'Processing...' : currentEmp ? 'Update Profile' : `Send Invite & Add ${newEmp.role}`}
               </button>
             </div>
           </form>

@@ -67,8 +67,11 @@ export async function autoSeed() {
   await ensureUser('hr@vms.com', 'HR Employee', 'password123', 'Employee', { department: hr?._id, designation: mgr?._id });
   await ensureUser('general@vms.com', 'General Employee', 'password123', 'Employee', { department: gen?._id, designation: mgr?._id });
 
+  await ensureUser('security@vms.com', 'Security Officer', 'password123', 'Security', { department: gen?._id });
+
   await ensureUser('admin@visitorpass.com', 'Admin User', 'admin123', 'Admin');
   await ensureUser('employee@visitorpass.com', 'John Smith', 'employee123', 'Employee', { department: eng?._id, designation: mgr?._id });
+  await ensureUser('security@visitorpass.com', 'Gate Officer', 'security123', 'Security');
 
   console.log('Auto-seed complete.');
 }
