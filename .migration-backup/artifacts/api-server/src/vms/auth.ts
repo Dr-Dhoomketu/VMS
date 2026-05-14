@@ -10,8 +10,10 @@ function getJwtSecret(): string {
   const secret = process.env['JWT_SECRET'];
   if (!secret) {
     if (process.env['NODE_ENV'] === 'production') {
-      throw new Error('JWT_SECRET is required in production — set it as a Replit Secret');
+      console.error('FATAL: JWT_SECRET is not set. Exiting to prevent insecure token signing.');
+      process.exit(1);
     }
+    console.warn('[dev] JWT_SECRET not set — using insecure dev fallback. Set JWT_SECRET before deploying.');
     return 'dev-fallback-jwt-secret-change-in-production';
   }
   return secret;
@@ -118,7 +120,7 @@ router.post('/verify-otp', async (req: Request, res: Response): Promise<void> =>
   res.json({ message: 'OTP verified' });
 });
 
-router.get('/test-email', async (req: Request, res: Response): Promise<void> => {
+router.get('/test-email', protect, authorize('Admin'), async (req: Request, res: Response): Promise<void> => {
   const to = req.query['to'] as string || process.env['SMTP_USER'] || '';
   if (!to) { res.status(400).json({ error: 'Provide ?to=your@email.com as query param' }); return; }
   const method = process.env['BREVO_API_KEY'] ? 'brevo-api' : 'gmail-smtp';

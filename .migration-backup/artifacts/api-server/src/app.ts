@@ -6,9 +6,9 @@ import { createServer } from "http";
 import { Server as SocketIOServer } from "socket.io";
 import mongoose from "mongoose";
 import { rateLimit } from "express-rate-limit";
-import router from "./routes/index.js";
-import { logger } from "./lib/logger.js";
-import { autoSeed } from "./vms/seed.js";
+import router from "./routes";
+import { logger } from "./lib/logger";
+import { autoSeed } from "./vms/seed";
 
 const app: Express = express();
 
@@ -33,9 +33,11 @@ const isProd = process.env["NODE_ENV"] === "production";
 const rawFrontendUrl = process.env["FRONTEND_URL"] || "";
 const allowedOrigins: string[] = rawFrontendUrl
   ? rawFrontendUrl.split(",").map((o) => o.trim()).filter(Boolean)
-  : isProd
-    ? ["https://vms-shaurya.vercel.app"]
-    : ["*"];
+  : ["*"];
+
+if (isProd && !rawFrontendUrl) {
+  logger.error("FRONTEND_URL is not set in production — all CORS origins are allowed. Set FRONTEND_URL=https://your-app.replit.app to lock this down.");
+}
 
 app.use(
   cors({
@@ -87,7 +89,7 @@ const httpServer = createServer(app);
 const socketPath = process.env["NODE_ENV"] === "production" ? "/api/socket.io" : "/socket.io";
 
 const io = new SocketIOServer(httpServer, {
-  cors: { origin: allowedOrigins.includes("*") ? "*" : allowedOrigins, methods: ["GET", "POST"] },
+  cors: { origin: allowedOrigins.includes("*") ? true : allowedOrigins, methods: ["GET", "POST"] },
   path: socketPath,
 });
 

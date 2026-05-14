@@ -24,6 +24,7 @@ import DashboardDesignation from "@/pages/dashboard/DashboardDesignation";
 import DashboardAdministrator from "@/pages/dashboard/DashboardAdministrator";
 import DashboardPreVisitor from "@/pages/dashboard/DashboardPreVisitor";
 import DashboardPermissions from "@/pages/dashboard/DashboardPermissions";
+import DashboardScanQR from "@/pages/dashboard/DashboardScanQR";
 
 const queryClient = new QueryClient();
 
@@ -72,6 +73,7 @@ function Router() {
       <Route path="/dashboard/pre-visitors">{() => <DashboardRoute component={DashboardPreVisitor} />}</Route>
       <Route path="/dashboard/pre-visitor">{() => <DashboardRoute component={DashboardPreVisitor} />}</Route>
       <Route path="/dashboard/permissions">{() => <DashboardRoute component={DashboardPermissions} />}</Route>
+      <Route path="/dashboard/scan">{() => <DashboardRoute component={DashboardScanQR} />}</Route>
 
       <Route component={NotFound} />
     </Switch>

@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { API_URL } from '@/lib/api';
 
 interface Permission {
   key: string;
@@ -28,9 +29,27 @@ const roleColors: Record<string, { bg: string; text: string; border: string }> =
   Security: { bg: 'rgba(124,58,237,0.06)', text: '#7c3aed', border: 'rgba(124,58,237,0.2)' },
 };
 
+const PERM_STORAGE_KEY = 'vms_role_permissions';
+
+export function loadStoredPermissions(): Permission[] {
+  try {
+    const raw = localStorage.getItem(PERM_STORAGE_KEY);
+    if (raw) return JSON.parse(raw) as Permission[];
+  } catch {}
+  return defaultPermissions;
+}
+
 export default function DashboardPermissions() {
   const [permissions, setPermissions] = useState<Permission[]>(defaultPermissions);
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    fetch(`${API_URL}/api/v1/settings/permissions`)
+      .then(r => r.json())
+      .then(data => { if (Array.isArray(data)) setPermissions(data); })
+      .catch(() => {});
+  }, []);
 
   const toggle = (key: string, role: string) => {
     if (role === 'Admin') return;
@@ -40,9 +59,22 @@ export default function DashboardPermissions() {
     setSaved(false);
   };
 
-  const handleSave = () => {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/api/v1/settings/permissions`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(permissions),
+      });
+      if (res.ok) {
+        try { localStorage.setItem(PERM_STORAGE_KEY, JSON.stringify(permissions)); } catch {}
+        setSaved(true);
+        setTimeout(() => setSaved(false), 3000);
+      }
+    } catch {}
+    finally { setSaving(false); }
   };
 
   return (
@@ -53,7 +85,7 @@ export default function DashboardPermissions() {
           <h1 style={{ fontSize: '1.4rem', fontWeight: 900, letterSpacing: '-0.03em', color: '#0A1F44' }}>Role Permissions</h1>
           <p style={{ fontSize: '0.75rem', color: '#6B7FA3', marginTop: '2px' }}>Configure which roles can access each feature. Admin permissions cannot be changed.</p>
         </div>
-        <button onClick={handleSave} style={{
+        <button onClick={handleSave} disabled={saving} style={{
           display: 'flex', alignItems: 'center', gap: '8px',
           padding: '12px 24px', borderRadius: '12px',
           background: saved ? '#16a34a' : '#0A1F44', color: '#fff',
@@ -63,12 +95,14 @@ export default function DashboardPermissions() {
           {saved ? (
             <>
               <svg style={{ width: '14px', height: '14px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/></svg>
-              Saved
+              Saved & Live
             </>
+          ) : saving ? (
+            <>Saving…</>
           ) : (
             <>
               <svg style={{ width: '14px', height: '14px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
-              Save Changes
+              Save &amp; Push Live
             </>
           )}
         </button>
@@ -153,7 +187,7 @@ export default function DashboardPermissions() {
       </div>
 
       <p style={{ fontSize: '0.68rem', color: '#A0AEC0', marginTop: '16px', textAlign: 'center' }}>
-        Changes are stored in local configuration. Connect to your backend to persist permissions across sessions.
+        Changes are saved to the database and pushed live instantly — employees and security staff see updated nav without any refresh or redeploy.
       </p>
     </div>
   );

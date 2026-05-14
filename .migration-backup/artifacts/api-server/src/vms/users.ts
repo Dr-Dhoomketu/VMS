@@ -39,7 +39,8 @@ router.post('/', protect, authorize('Admin'), async (req: Request, res: Response
       department, designation, inviteToken, inviteExpires,
     });
 
-    const frontendUrl = (process.env['FRONTEND_URL'] || 'https://vms-shaurya.vercel.app').replace(/\/$/, '');
+    const frontendUrl = (process.env['FRONTEND_URL'] ||
+      (process.env['REPLIT_DEV_DOMAIN'] ? `https://${process.env['REPLIT_DEV_DOMAIN']}` : '')).replace(/\/$/, '');
     const inviteUrl = `${frontendUrl}/setup-password?token=${inviteToken}`;
     sendInviteEmail(email, name, inviteUrl).catch(() => {});
 
@@ -57,7 +58,8 @@ router.post('/:id/resend-invite', protect, authorize('Admin'), async (req: Reque
     const user = await VmsUser.findByIdAndUpdate(req.params.id, { inviteToken, inviteExpires }, { new: true });
     if (!user) { res.status(404).json({ message: 'User not found' }); return; }
 
-    const frontendUrl = (process.env['FRONTEND_URL'] || 'https://vms-shaurya.vercel.app').replace(/\/$/, '');
+    const frontendUrl = (process.env['FRONTEND_URL'] ||
+      (process.env['REPLIT_DEV_DOMAIN'] ? `https://${process.env['REPLIT_DEV_DOMAIN']}` : '')).replace(/\/$/, '');
     const inviteUrl = `${frontendUrl}/setup-password?token=${inviteToken}`;
     sendInviteEmail(user.email, user.name, inviteUrl).catch(() => {});
     res.json({ message: 'Invite resent', inviteUrl });

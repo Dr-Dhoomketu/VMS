@@ -1,11 +1,12 @@
 import { Router, type IRouter } from "express";
-import healthRouter from "./health.js";
-import authRouter from "../vms/auth.js";
-import visitsRouter from "../vms/visits.js";
-import usersRouter from "../vms/users.js";
-import departmentsRouter from "../vms/departments.js";
-import designationsRouter from "../vms/designations.js";
-import mobileRouter from "../vms/mobile.js";
+import healthRouter from "./health";
+import authRouter from "../vms/auth";
+import visitsRouter from "../vms/visits";
+import usersRouter from "../vms/users";
+import departmentsRouter from "../vms/departments";
+import designationsRouter from "../vms/designations";
+import mobileRouter from "../vms/mobile";
+import settingsRouter from "../vms/settings";
 
 const router: IRouter = Router();
 
@@ -17,5 +18,6 @@ router.use("/v1/users", usersRouter);
 router.use("/v1/departments", departmentsRouter);
 router.use("/v1/designations", designationsRouter);
 router.use("/v1/mobile", mobileRouter);
+router.use("/v1/settings", settingsRouter);
 
 export default router;

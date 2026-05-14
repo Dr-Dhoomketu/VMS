@@ -1,5 +1,5 @@
-import { httpServer } from "./app.js";
-import { logger } from "./lib/logger.js";
+import { httpServer } from "./app";
+import { logger } from "./lib/logger";
 
 const rawPort = process.env["PORT"] || "8080";
 
