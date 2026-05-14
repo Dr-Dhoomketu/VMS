@@ -36,7 +36,7 @@ const allowedOrigins: string[] = rawFrontendUrl
   : ["*"];
 
 if (isProd && !rawFrontendUrl) {
-  logger.warn("FRONTEND_URL not set — allowing all CORS origins. Set FRONTEND_URL to restrict access.");
+  logger.error("FRONTEND_URL is not set in production — all CORS origins are allowed. Set FRONTEND_URL=https://your-app.replit.app to lock this down.");
 }
 
 app.use(
