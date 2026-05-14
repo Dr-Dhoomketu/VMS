@@ -40,7 +40,7 @@ export default function SetupPasswordPage() {
     <main style={{ minHeight: '100vh', background: '#F4F7FC', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 20px' }}>
       <div style={{ width: '100%', maxWidth: '440px' }}>
         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-          <img src="/vts-logo.png" alt="VTS Infosoft" style={{ height: '38px', objectFit: 'contain', marginBottom: '28px', display: 'block', margin: '0 auto 28px' }}/>
+          <img src="/vts-logo.svg" alt="VTS Infosoft" style={{ height: '38px', objectFit: 'contain', marginBottom: '28px', display: 'block', margin: '0 auto 28px' }}/>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '5px 14px', borderRadius: '999px', background: 'rgba(47,93,170,0.08)', border: '1px solid rgba(47,93,170,0.15)', marginBottom: '16px' }}>
             <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#2F5DAA' }}/>
             <span style={{ fontSize: '0.55rem', fontWeight: 800, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#2F5DAA' }}>Employee Onboarding</span>

@@ -183,7 +183,7 @@ export default function LoginPage() {
         <div style={{ width: '100%', maxWidth: '420px', position: 'relative', zIndex: 10 }}>
           {/* Logo */}
           <Link href="/">
-            <img src="/vts-logo.png" alt="VISITORPASS" style={{ height: '38px', width: 'auto', objectFit: 'contain', marginBottom: '44px', display: 'block', cursor: 'pointer' }}/>
+            <img src="/vts-logo.svg" alt="VISITORPASS" style={{ height: '38px', width: 'auto', objectFit: 'contain', marginBottom: '44px', display: 'block', cursor: 'pointer' }}/>
           </Link>
 
           {/* Heading */}

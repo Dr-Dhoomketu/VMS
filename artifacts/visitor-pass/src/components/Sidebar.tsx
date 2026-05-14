@@ -40,7 +40,7 @@ function VTSLogo() {
       boxShadow: '0 2px 8px rgba(0,0,0,0.18)',
     }}>
       <img
-        src="/vts-logo.png"
+        src="/vts-logo.svg"
         alt="VTS Infosoft"
         style={{ height: '38px', width: 'auto', objectFit: 'contain', display: 'block' }}
       />
@@ -62,7 +62,7 @@ function VTSLogoMini() {
       height: '40px',
     }}>
       <img
-        src="/vts-logo.png"
+        src="/vts-logo.svg"
         alt="VTS"
         style={{ height: '28px', width: 'auto', objectFit: 'contain', display: 'block' }}
       />

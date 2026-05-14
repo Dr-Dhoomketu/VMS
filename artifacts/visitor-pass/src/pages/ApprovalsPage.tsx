@@ -50,7 +50,7 @@ export default function ApprovalsPage() {
     <main className="min-h-screen bg-[#F8FAFC] text-[#0A1F44]">
       <header className="bg-white border-b border-[#E2E8F0] px-8 py-5 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <img src="/vts-logo.png" alt="VISITORPASS" className="h-8 w-auto object-contain"/>
+          <img src="/vts-logo.svg" alt="VISITORPASS" className="h-8 w-auto object-contain"/>
           <div className="w-px h-6 bg-[#E2E8F0]"/>
           <div>
             <h1 className="text-sm font-black text-[#0A1F44] uppercase tracking-tight">Pending Approvals</h1>

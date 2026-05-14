@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 48" fill="none">
+  <!-- Shield icon -->
+  <rect x="0" y="4" width="40" height="40" rx="10" fill="#0A1F44"/>
+  <path d="M20 10 L30 14 L30 24 C30 30 20 36 20 36 C20 36 10 30 10 24 L10 14 Z" fill="#2F5DAA" stroke="none"/>
+  <path d="M15 23 L19 27 L26 19" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- VISITOR text -->
+  <text x="50" y="21" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="900" letter-spacing="2" fill="#0A1F44">VISITOR</text>
+  <!-- PASS text -->
+  <text x="50" y="38" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="900" letter-spacing="2" fill="#2F5DAA">PASS</text>
+</svg>

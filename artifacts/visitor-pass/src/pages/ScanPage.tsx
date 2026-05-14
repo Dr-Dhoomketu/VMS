@@ -87,7 +87,7 @@ export default function ScanPage() {
         background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(20px)',
         borderBottom: '1px solid rgba(10,31,68,0.07)',
       }}>
-        <img src="/vts-logo.png" alt="VISITORPASS" style={{ height: '28px', objectFit: 'contain' }}/>
+        <img src="/vts-logo.svg" alt="VISITORPASS" style={{ height: '28px', objectFit: 'contain' }}/>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <span style={{ fontSize: '0.6rem', fontWeight: 800, letterSpacing: '0.25em', textTransform: 'uppercase', color: '#6B7FA3' }}>Gate Pass Verification</span>
           {user && (
