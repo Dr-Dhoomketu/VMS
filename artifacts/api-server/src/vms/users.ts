@@ -40,16 +40,21 @@ router.get('/', protect, authorize('Admin'), async (req: Request, res: Response)
 router.post('/', protect, authorize('Admin'), async (req: Request, res: Response): Promise<void> => {
   const { name, email, role, department, designation, sendInvite } = req.body;
   try {
+    if (!name || !email) { res.status(400).json({ message: 'Name and email are required' }); return; }
     if (await VmsUser.findOne({ email })) { res.status(400).json({ message: 'User already exists' }); return; }
 
     const inviteToken = randomBytes(32).toString('hex');
     const inviteExpires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
     const tempPassword = await bcrypt.hash(inviteToken, 10);
 
-    const user = await VmsUser.create({
+    const userData: any = {
       name, email, password: tempPassword, role: role || 'Employee',
-      department, designation, inviteToken, inviteExpires,
-    });
+      inviteToken, inviteExpires,
+    };
+    if (department && department !== '') userData.department = department;
+    if (designation && designation !== '') userData.designation = designation;
+
+    const user = await VmsUser.create(userData);
 
     const frontendUrl = getFrontendUrl();
     const inviteUrl = `${frontendUrl}/setup-password?token=${inviteToken}`;
@@ -79,12 +84,14 @@ router.post('/:id/resend-invite', protect, authorize('Admin'), async (req: Reque
 router.put('/:id', protect, authorize('Admin'), async (req: Request, res: Response): Promise<void> => {
   try {
     const { name, email, role, department, designation, isActive, password } = req.body;
-    const update: any = { name, email, role, department, designation, isActive };
+    const update: any = { name, email, role, isActive };
+    if (department && department !== '') update.department = department;
+    if (designation && designation !== '') update.designation = designation;
     if (password) update.password = await bcrypt.hash(password, 10);
     const user = await VmsUser.findByIdAndUpdate(req.params.id, update, { new: true }).select('-password');
     if (!user) { res.status(404).json({ message: 'User not found' }); return; }
     res.json(user);
-  } catch { res.status(500).json({ message: 'Server error' }); }
+  } catch (err: any) { res.status(500).json({ message: 'Server error', error: err.message }); }
 });
 
 router.delete('/:id', protect, authorize('Admin'), async (req: Request, res: Response): Promise<void> => {
