@@ -27,7 +27,7 @@ export default function DashboardEmployee() {
         fetch(`${API_URL}/api/v1/departments`, { headers: h }).then(r => r.json()),
         fetch(`${API_URL}/api/v1/designations`, { headers: h }).then(r => r.json()),
       ]);
-      setEmployees(e || []); setDepartments(d || []); setDesignations(des || []);
+      setEmployees(Array.isArray(e) ? e : []); setDepartments(Array.isArray(d) ? d : []); setDesignations(Array.isArray(des) ? des : []);
     } catch {}
   };
 
